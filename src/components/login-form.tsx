@@ -12,9 +12,9 @@ import {
   FieldDescription,
   FieldGroup,
   FieldLabel,
-  FieldSeparator,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import { Separator } from "@/components/ui/separator"
 
 export function LoginForm({
   className,
@@ -52,9 +52,7 @@ export function LoginForm({
                   Login with Google
                 </Button>
               </Field>
-              <FieldSeparator className="*:data-[slot=field-separator-content]:bg-card">
-                Or continue with
-              </FieldSeparator>
+              <Separator className="my-2" />
               <Field>
                 <FieldLabel htmlFor="email">Email</FieldLabel>
                 <Input
