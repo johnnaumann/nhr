@@ -34,10 +34,12 @@ jobs:
         run: npx tsc -b
 
       - name: Build
-        env:
+        run: |
           # GitHub Pages project URL is https://<owner>.github.io/<repo>/
-          GITHUB_PAGES_BASE_PATH: /${{ github.event.repository.name }}/
-        run: npx vite build
+          # GITHUB_REPOSITORY is always available (even for workflow_dispatch): "owner/repo"
+          REPO_NAME="${GITHUB_REPOSITORY#*/}"
+          export GITHUB_PAGES_BASE_PATH="/${REPO_NAME}/"
+          npx vite build
 
       # Avoid Jekyll processing (not required for Vite, but harmless and common)
       - name: Disable Jekyll
