@@ -283,14 +283,14 @@ const teamPerformanceConfig = {
 
 function ChartTeamPerformance() {
   return (
-    <Card>
+    <Card className="flex flex-col">
       <CardHeader className="items-center">
         <CardTitle>Team Performance</CardTitle>
         <CardDescription>
           Cross-functional score comparison — Q1 2025
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex-1">
         <ChartContainer
           config={teamPerformanceConfig}
           className="mx-auto aspect-square max-h-[250px]"
