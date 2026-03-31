@@ -3,6 +3,7 @@ import type { CSSProperties } from 'react'
 import data from '@/app/dashboard/data.json'
 import { AppSidebar } from '@/components/app-sidebar'
 import { ChartAreaInteractive } from '@/components/chart-area-interactive'
+import { ChartSection } from '@/components/chart-section'
 import { DataTable } from '@/components/data-table'
 import { SectionCards } from '@/components/section-cards'
 import { SiteHeader } from '@/components/site-header'
@@ -28,6 +29,7 @@ export function DashboardPage() {
               <div className="px-4 lg:px-6">
                 <ChartAreaInteractive />
               </div>
+              <ChartSection />
               <DataTable data={data} />
             </div>
           </div>
