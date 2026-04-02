@@ -108,6 +108,34 @@ function parseDataDate(iso: string) {
   return new Date(y, m - 1, d)
 }
 
+type PieBreakdownRow = {
+  key: InstitutionKey
+  label: string
+  value: number
+  pct: number
+}
+
+function buildPieInsight(sorted: PieBreakdownRow[], total: number): string {
+  if (sorted.length === 0 || total === 0) {
+    return ""
+  }
+  const top = sorted[0]!
+  const second = sorted[1]
+  const bottom = sorted[sorted.length - 1]!
+  const spread = top.pct - bottom.pct
+
+  if (second && Math.abs(top.pct - second.pct) < 4) {
+    return `${top.label} and ${second.label} are almost tied (${top.pct.toFixed(1)}% vs ${second.pct.toFixed(1)}%). Compare their curves in the line chart to see timing.`
+  }
+  if (spread < 12) {
+    return "Workload is fairly even across institutions this period—no single site dominates."
+  }
+  if (top.pct >= 38) {
+    return `${top.label} accounts for a large share (${top.pct.toFixed(1)}%). Worth confirming whether that reflects real volume or documentation habits at that site.`
+  }
+  return `${top.label} leads with ${top.pct.toFixed(1)}% of ${total.toLocaleString()} total changes; ${bottom.label} is lowest at ${bottom.pct.toFixed(1)}%.`
+}
+
 export function ChartAreaInteractive() {
   const { range } = useDashboardDateRange()
 
@@ -123,7 +151,7 @@ export function ChartAreaInteractive() {
     )
   }, [range])
 
-  const pieData = React.useMemo(() => {
+  const { pieData, pieTotal, pieBreakdown, pieInsight } = React.useMemo(() => {
     const sums: Record<InstitutionKey, number> = {
       institution1: 0,
       institution2: 0,
@@ -136,21 +164,33 @@ export function ChartAreaInteractive() {
       sums.institution3 += row.institution3
       sums.institution4 += row.institution4
     }
-    return SERIES_KEYS.map((key) => ({
+    const total = SERIES_KEYS.reduce((acc, key) => acc + sums[key], 0)
+
+    const breakdown: PieBreakdownRow[] = SERIES_KEYS.map((key) => {
+      const value = sums[key]
+      const pct = total > 0 ? (value / total) * 100 : 0
+      const label = String(chartConfig[key].label)
+      return { key, label, value, pct }
+    })
+
+    const pieData = breakdown.map(({ key, label, value, pct }) => ({
       category: key,
-      value: sums[key],
+      /** Human-readable name for tooltips and slice context */
+      name: label,
+      value,
+      pct,
       fill: `var(--color-${key})`,
     }))
-  }, [filteredData])
 
-  const pieTotal = React.useMemo(
-    () => pieData.reduce((acc, row) => acc + row.value, 0),
-    [pieData]
-  )
+    const pieBreakdown = [...breakdown].sort((a, b) => b.value - a.value)
+    const pieInsight = buildPieInsight(pieBreakdown, total)
+
+    return { pieData, pieTotal: total, pieBreakdown, pieInsight }
+  }, [filteredData])
 
   return (
     <Card className="@container/card">
-      <CardHeader>
+      <CardHeader className="lg:px-6">
         <CardTitle>Worksheets changed</CardTitle>
         <CardDescription>
           <span className="hidden @[540px]/card:block">
@@ -160,16 +200,13 @@ export function ChartAreaInteractive() {
           <span className="@[540px]/card:hidden">By institution</span>
         </CardDescription>
       </CardHeader>
-      <CardContent className="px-0 pt-2 pb-4 sm:pt-4">
+      <CardContent className="px-4 pt-2 pb-4 sm:pt-4 lg:px-6">
         {/*
-          Matches SectionCards: same grid columns + gap so vertical rhythm aligns
-          with the four stat cards (line = 3 cols, pie = 1 col at @5xl/main).
+          Same horizontal inset as SectionCards / toolbar (px-4 lg:px-6). Grid
+          still mirrors four stat columns at @5xl (line 3, pie 1).
         */}
         <div className="grid grid-cols-1 items-stretch gap-4 @xl/main:grid-cols-2 @5xl/main:grid-cols-4">
-          <div className="flex h-full min-h-[240px] min-w-0 flex-col gap-2 rounded-xl border border-border/60 bg-muted/40 p-3 sm:p-4 @xl/main:col-span-2 @5xl/main:col-span-3 @5xl/main:min-h-[300px] dark:bg-muted/20">
-            <p className="shrink-0 text-sm font-medium text-muted-foreground">
-              Over time
-            </p>
+          <div className="flex h-full min-h-[240px] min-w-0 flex-col rounded-xl border border-border/60 bg-muted/40 p-3 sm:p-4 @xl/main:col-span-2 @5xl/main:col-span-3 @5xl/main:min-h-[300px] dark:bg-muted/20">
             <ChartContainer
               config={chartConfig}
               className="!aspect-auto min-h-[12rem] w-full min-w-0 flex-1 md:min-h-[16rem] @5xl/main:min-h-0"
@@ -262,19 +299,16 @@ export function ChartAreaInteractive() {
             </ChartContainer>
           </div>
 
-          <div className="flex h-full min-h-[240px] w-full flex-col gap-2 rounded-xl border border-border/60 bg-muted/40 p-3 sm:p-4 @xl/main:col-span-2 @5xl/main:col-span-1 @5xl/main:min-h-[300px] dark:bg-muted/20">
-            <p className="shrink-0 text-sm font-medium text-muted-foreground @5xl/main:text-center">
-              Total
-            </p>
-            <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-2">
+          <div className="flex h-full min-h-[240px] min-w-0 flex-col rounded-xl border border-border/60 bg-muted/40 p-3 sm:p-4 @xl/main:col-span-2 @5xl/main:col-span-1 @5xl/main:min-h-[300px] dark:bg-muted/20">
+            <div className="flex min-h-0 min-w-0 w-full flex-1 flex-col items-center justify-center">
               {pieTotal === 0 ? (
-                <div className="flex w-full flex-1 items-center justify-center px-2 text-center text-sm text-muted-foreground">
+                <div className="flex w-full flex-1 items-center justify-center text-center text-sm text-muted-foreground">
                   No worksheet changes in this period
                 </div>
               ) : (
                 <ChartContainer
                   config={chartConfig}
-                  className="aspect-square h-full max-h-full min-h-[12rem] w-full max-w-[min(100%,280px)] @5xl/main:max-w-full"
+                  className="aspect-square w-full min-h-[12rem] max-w-full min-w-0 shrink-0 md:min-h-[14rem]"
                 >
                   <PieChart>
                     <ChartTooltip
@@ -284,6 +318,29 @@ export function ChartAreaInteractive() {
                           hideLabel
                           nameKey="category"
                           indicator="dot"
+                          formatter={(value) => {
+                            const v = Number(value)
+                            const pct =
+                              pieTotal > 0
+                                ? ((v / pieTotal) * 100).toFixed(1)
+                                : "0.0"
+                            return (
+                              <span className="inline-flex flex-wrap items-baseline gap-x-1 text-xs leading-none">
+                                <span className="font-mono font-medium text-foreground tabular-nums">
+                                  {v.toLocaleString()}
+                                </span>
+                                <span className="text-muted-foreground">
+                                  worksheet changes
+                                </span>
+                                <span className="font-mono font-medium text-foreground tabular-nums">
+                                  ({pct}%)
+                                </span>
+                                <span className="text-muted-foreground">
+                                  of period total
+                                </span>
+                              </span>
+                            )
+                          }}
                         />
                       }
                     />
@@ -291,17 +348,45 @@ export function ChartAreaInteractive() {
                       data={pieData}
                       dataKey="value"
                       nameKey="category"
-                      stroke="var(--background)"
-                      strokeWidth={2}
+                      stroke="var(--border)"
+                      strokeWidth={1}
                     />
                   </PieChart>
                 </ChartContainer>
               )}
             </div>
             {pieTotal > 0 ? (
-              <p className="shrink-0 text-center text-xs text-muted-foreground tabular-nums">
-                {pieTotal.toLocaleString()} changes in view
-              </p>
+              <div className="w-full shrink-0 space-y-2 pt-1">
+                <p className="text-left text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+                  Breakdown
+                </p>
+                <ul className="space-y-2 text-left text-xs">
+                  {pieBreakdown.map((row) => (
+                    <li key={row.key} className="flex items-start gap-2.5">
+                      <span
+                        className="mt-0.5 size-2.5 shrink-0 rounded-sm"
+                        style={{
+                          backgroundColor: chartConfig[row.key].color,
+                        }}
+                        aria-hidden
+                      />
+                      <span className="min-w-0 leading-snug">
+                        <span className="font-medium text-foreground">
+                          {row.label}
+                        </span>
+                        <span className="mt-0.5 block text-muted-foreground">
+                          {row.value.toLocaleString()} worksheet changes ·{" "}
+                          {row.pct.toFixed(1)}% of period total
+                        </span>
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+                <p className="text-left text-xs leading-relaxed text-muted-foreground">
+                  <span className="font-medium text-foreground">Summary: </span>
+                  {pieInsight}
+                </p>
+              </div>
             ) : null}
           </div>
         </div>
