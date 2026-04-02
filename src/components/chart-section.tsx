@@ -31,12 +31,12 @@ const TYPE_KEYS = [
 type ChangeTypeKey = (typeof TYPE_KEYS)[number]
 
 const AMOUNTS: { key: ChangeTypeKey; label: string; count: number }[] = [
-  { key: "drg", label: "DRG Changes", count: 285 },
-  { key: "cqe", label: "CQE", count: 9 },
-  { key: "hospitalMod", label: "Hospital Mod", count: 4 },
-  { key: "needsAddDoc", label: "Needs Add Doc", count: 5 },
-  { key: "noChange", label: "No Change", count: 742 },
-  { key: "noDecision", label: "No Decision", count: 10 },
+  { key: "drg", label: "DRG Changes", count: 118 },
+  { key: "cqe", label: "CQE", count: 95 },
+  { key: "hospitalMod", label: "Hospital Mod", count: 72 },
+  { key: "needsAddDoc", label: "Needs Add Doc", count: 88 },
+  { key: "noChange", label: "No Change", count: 142 },
+  { key: "noDecision", label: "No Decision", count: 85 },
 ]
 
 const chartConfig = {
@@ -54,12 +54,16 @@ function stackValue(periodIndex: number, keyIndex: number, key: ChangeTypeKey) {
   const wave = Math.sin(n * 0.35) * 0.35 + 0.65
   const base =
     key === "noChange"
-      ? 55
+      ? 36
       : key === "drg"
-        ? 22
-        : key === "cqe" || key === "hospitalMod" || key === "needsAddDoc"
-          ? 6
-          : 8
+        ? 30
+        : key === "cqe"
+          ? 26
+          : key === "needsAddDoc"
+            ? 24
+            : key === "noDecision"
+              ? 23
+              : 20
   return Math.max(2, Math.round(base * wave + (n % 7)))
 }
 
@@ -99,71 +103,71 @@ export function ChartSection() {
   )
 
   return (
-    <div className="px-4 lg:px-6">
-      <Card className="@container/types-chart">
-        <CardHeader className="pb-2">
-          <CardTitle>Types of Changes</CardTitle>
-        </CardHeader>
-        <CardContent className="pb-4 pt-0 sm:pb-6">
-          <div className="grid grid-cols-1 gap-6 @xl/types-chart:grid-cols-12 @xl/types-chart:items-stretch">
+    <Card className="@container/types-chart">
+      <CardHeader className="pt-2">
+        <CardTitle>Types of Changes</CardTitle>
+      </CardHeader>
+      <CardContent className="px-4 pt-2 pb-2 sm:pt-4 lg:px-6">
+        <div className="grid grid-cols-1 gap-4 @xl/types-chart:grid-cols-12 @xl/types-chart:items-stretch">
             {/* Amounts + legend */}
-            <div className="flex min-h-0 min-w-0 flex-col gap-3 @xl/types-chart:col-span-3">
-              <div className="flex items-start justify-between gap-2">
-                <p className="text-sm text-muted-foreground">
-                  Amount of Types of Changes
-                </p>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-xs"
-                  className="shrink-0 text-muted-foreground"
-                  aria-label={
-                    sortDesc
-                      ? "Sort ascending by count"
-                      : "Sort descending by count"
-                  }
-                  onClick={() => setSortDesc((d) => !d)}
-                >
-                  <ArrowDownUpIcon className="size-3.5" />
-                </Button>
-              </div>
-              <ul className="flex flex-col gap-3">
-                {sortedAmounts.map(({ key, label, count }) => (
-                  <li
-                    key={key}
-                    className="flex min-w-0 items-center gap-2.5 text-sm"
+            <div className="flex min-h-0 min-w-0 flex-col @xl/types-chart:col-span-3">
+              <div className="flex h-full min-h-0 flex-1 flex-col gap-3 rounded-xl border border-border/60 bg-muted/40 p-3 sm:p-4 dark:bg-muted/20">
+                <div className="flex items-start justify-between gap-2">
+                  <p className="text-sm text-muted-foreground">
+                    Amount of Types of Changes
+                  </p>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-xs"
+                    className="shrink-0 text-muted-foreground"
+                    aria-label={
+                      sortDesc
+                        ? "Sort ascending by count"
+                        : "Sort descending by count"
+                    }
+                    onClick={() => setSortDesc((d) => !d)}
                   >
-                    <span
-                      className="size-3.5 shrink-0 rounded-sm border border-border shadow-none"
-                      style={{
-                        backgroundColor: chartConfig[key].color,
-                      }}
-                      aria-hidden
-                    />
-                    <span className="min-w-0 flex-1 truncate font-medium text-foreground">
-                      {label}
-                    </span>
-                    <Badge
-                      variant="secondary"
-                      className="shrink-0 gap-1 tabular-nums"
+                    <ArrowDownUpIcon className="size-3.5" />
+                  </Button>
+                </div>
+                <ul className="flex flex-col gap-3">
+                  {sortedAmounts.map(({ key, label, count }) => (
+                    <li
+                      key={key}
+                      className="flex min-w-0 items-center gap-2.5 text-sm"
                     >
-                      <span>{count.toLocaleString()}</span>
-                      <SearchIcon
-                        className="size-3 opacity-60"
+                      <span
+                        className="size-3.5 shrink-0 rounded-sm border border-border shadow-none"
+                        style={{
+                          backgroundColor: chartConfig[key].color,
+                        }}
                         aria-hidden
                       />
-                    </Badge>
-                  </li>
-                ))}
-              </ul>
+                      <span className="min-w-0 flex-1 truncate font-medium text-foreground">
+                        {label}
+                      </span>
+                      <Badge
+                        variant="secondary"
+                        className="shrink-0 gap-1 tabular-nums"
+                      >
+                        <span>{count.toLocaleString()}</span>
+                        <SearchIcon
+                          className="size-3 opacity-60"
+                          aria-hidden
+                        />
+                      </Badge>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
 
-            {/* Stacked bars — over time */}
-            <div className="flex min-h-0 min-w-0 flex-col gap-3 rounded-xl border border-border/60 bg-muted/40 p-3 sm:p-4 @xl/types-chart:col-span-6 dark:bg-muted/20">
-              <p className="text-sm text-muted-foreground">Over Time</p>
+            {/* Stacked bars */}
+            <div className="flex min-h-0 min-w-0 flex-col rounded-xl border border-border/60 bg-muted/40 p-3 sm:p-4 @xl/types-chart:col-span-6 dark:bg-muted/20">
               <ChartContainer
                 config={chartConfig}
-                className="!aspect-auto min-h-[220px] w-full min-w-0 flex-1 md:min-h-[260px]"
+                className="!aspect-auto min-h-[240px] w-full min-w-0 flex-1 md:min-h-[280px]"
               >
                 <BarChart
                   accessibilityLayer
@@ -210,10 +214,9 @@ export function ChartSection() {
               </ChartContainer>
             </div>
 
-            {/* Total pie */}
-            <div className="flex min-h-0 min-w-0 flex-col items-center gap-3 @xl/types-chart:col-span-3">
-              <p className="w-full text-sm text-muted-foreground">Total</p>
-              <div className="flex w-full max-w-[220px] flex-1 flex-col items-center justify-center">
+            {/* Pie chart */}
+            <div className="flex min-h-0 min-w-0 flex-col @xl/types-chart:col-span-3">
+              <div className="flex h-full min-h-0 min-w-0 flex-1 flex-col items-center justify-center rounded-xl border border-border/60 bg-muted/40 p-3 sm:p-4 dark:bg-muted/20">
                 <ChartContainer
                   config={chartConfig}
                   className="!aspect-square h-[200px] w-full max-w-[200px] min-w-0 sm:h-[220px] sm:max-w-[220px]"
@@ -252,9 +255,8 @@ export function ChartSection() {
                 </ChartContainer>
               </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+        </div>
+      </CardContent>
+    </Card>
   )
 }

@@ -33,7 +33,9 @@ export function DashboardPage() {
                 <div className="px-4 lg:px-6">
                   <ChartAreaInteractive />
                 </div>
-                <ChartSection />
+                <div className="px-4 lg:px-6">
+                  <ChartSection />
+                </div>
                 <DataTable data={data} />
               </div>
             </div>
