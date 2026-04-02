@@ -199,7 +199,7 @@ export function ChartAreaInteractive() {
 
   return (
     <Card className="@container/card">
-      <CardHeader className="lg:px-6">
+      <CardHeader className="pt-2">
         <CardTitle>Worksheets changed</CardTitle>
         <CardDescription>
           <span className="hidden @[540px]/card:block">
@@ -243,16 +243,16 @@ export function ChartAreaInteractive() {
           </ToggleGroup>
         </CardAction>
       </CardHeader>
-      <CardContent className="px-4 pt-2 pb-4 sm:pt-4 lg:px-6">
+      <CardContent className="px-4 pt-2 pb-2 sm:pt-4 lg:px-6">
         {/*
           Same horizontal inset as SectionCards / toolbar (px-4 lg:px-6). Grid
           still mirrors four stat columns at @5xl (line 3, pie 1).
         */}
         <div className="grid grid-cols-1 items-stretch gap-4 @xl/main:grid-cols-2 @5xl/main:grid-cols-4">
-          <div className="flex h-full min-h-[240px] min-w-0 flex-col rounded-xl border border-border/60 bg-muted/40 p-3 sm:p-4 @xl/main:col-span-2 @5xl/main:col-span-3 @5xl/main:min-h-[300px] dark:bg-muted/20">
+          <div className="flex h-full min-h-0 min-w-0 flex-col rounded-xl border border-border/60 bg-muted/40 p-3 sm:p-4 @xl/main:col-span-2 @5xl/main:col-span-3 dark:bg-muted/20">
             <ChartContainer
               config={chartConfig}
-              className="!aspect-auto min-h-[12rem] w-full min-w-0 flex-1 md:min-h-[16rem] @5xl/main:min-h-0"
+              className="!aspect-auto min-h-[240px] w-full min-w-0 flex-1 md:min-h-[280px]"
             >
               <LineChart
                 accessibilityLayer
@@ -316,21 +316,21 @@ export function ChartAreaInteractive() {
             </ChartContainer>
           </div>
 
-          <div className="flex h-full min-h-[240px] min-w-0 flex-col rounded-xl border border-border/60 bg-muted/40 p-3 sm:p-4 @xl/main:col-span-2 @5xl/main:col-span-1 @5xl/main:min-h-[300px] dark:bg-muted/20">
-            <div className="flex min-h-0 min-w-0 w-full flex-1 flex-col items-center justify-center">
+          <div className="flex h-full min-h-0 min-w-0 flex-col rounded-xl border border-border/60 bg-muted/40 p-3 sm:p-4 @xl/main:col-span-2 @5xl/main:col-span-1 dark:bg-muted/20">
+            <div className="flex h-[240px] w-full shrink-0 flex-col items-center justify-center md:h-[280px]">
               {visibleKeys.length === 0 ? (
-                <div className="flex w-full flex-1 items-center justify-center px-2 text-center text-sm text-muted-foreground">
+                <div className="flex h-full w-full items-center justify-center px-2 text-center text-sm text-muted-foreground">
                   Turn on at least one institution in the legend to see the pie
                   chart.
                 </div>
               ) : pieTotal === 0 ? (
-                <div className="flex w-full flex-1 items-center justify-center text-center text-sm text-muted-foreground">
+                <div className="flex h-full w-full items-center justify-center text-center text-sm text-muted-foreground">
                   No worksheet changes in this period
                 </div>
               ) : (
                 <ChartContainer
                   config={chartConfig}
-                  className="aspect-square w-full min-h-[12rem] max-w-full min-w-0 shrink-0 md:min-h-[14rem]"
+                  className="!aspect-auto h-full w-full max-w-full min-w-0"
                 >
                   <PieChart>
                     <ChartTooltip
@@ -378,7 +378,7 @@ export function ChartAreaInteractive() {
               )}
             </div>
             {pieTotal > 0 && visibleKeys.length > 0 ? (
-              <p className="w-full shrink-0 pt-2 text-left text-xs leading-relaxed text-muted-foreground">
+              <p className="max-h-24 w-full shrink-0 overflow-y-auto pt-2 text-left text-xs leading-relaxed text-muted-foreground">
                 <span className="font-medium text-foreground">Summary: </span>
                 {pieInsight}
               </p>
