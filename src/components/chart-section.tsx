@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
@@ -106,6 +107,13 @@ export function ChartSection() {
     <Card className="@container/types-chart">
       <CardHeader className="pt-2">
         <CardTitle>Types of Changes</CardTitle>
+        <CardDescription>
+          <span className="hidden @[540px]/types-chart:block">
+            Required document changes by category—counts, trend over time, and
+            share of total for the reporting period selected above
+          </span>
+          <span className="@[540px]/types-chart:hidden">By change type</span>
+        </CardDescription>
       </CardHeader>
       <CardContent className="px-4 pt-2 pb-2 sm:pt-4 lg:px-6">
         <div className="grid grid-cols-1 gap-4 @xl/types-chart:grid-cols-12 @xl/types-chart:items-stretch">
