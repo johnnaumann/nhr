@@ -90,7 +90,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs"
-import { GripVerticalIcon, CircleCheckIcon, LoaderIcon, EllipsisVerticalIcon, Columns3Icon, ChevronDownIcon, PlusIcon, ChevronsLeftIcon, ChevronLeftIcon, ChevronRightIcon, ChevronsRightIcon, TrendingUpIcon } from "lucide-react"
+import { GripVerticalIcon, CircleCheckIcon, LoaderIcon, EllipsisVerticalIcon, Columns3Icon, ChevronDownIcon, PlusIcon, ChevronsLeftIcon, ChevronLeftIcon, ChevronRightIcon, ChevronsRightIcon } from "lucide-react"
 
 export const schema = z.object({
   id: z.number(),
@@ -147,7 +147,7 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
         <Checkbox
           checked={row.getIsSelected()}
           onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label="Select row"
+          aria-label="Select this document change"
         />
       </div>
     ),
@@ -156,7 +156,7 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
   },
   {
     accessorKey: "header",
-    header: "Header",
+    header: "Change summary",
     cell: ({ row }) => {
       return <TableCellViewer item={row.original} />
     },
@@ -190,20 +190,22 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
   },
   {
     accessorKey: "target",
-    header: () => <div className="w-full text-right">Target</div>,
+    header: () => (
+      <div className="w-full text-right">Target days</div>
+    ),
     cell: ({ row }) => (
       <form
         onSubmit={(e) => {
           e.preventDefault()
           toast.promise(new Promise((resolve) => setTimeout(resolve, 1000)), {
-            loading: `Saving ${row.original.header}`,
+            loading: `Saving “${row.original.header}”`,
             success: "Done",
             error: "Error",
           })
         }}
       >
         <Label htmlFor={`${row.original.id}-target`} className="sr-only">
-          Target
+          Target days to complete this change
         </Label>
         <Input
           className="h-8 w-16 border-transparent bg-transparent text-right shadow-none hover:bg-input/30 focus-visible:border focus-visible:bg-background dark:bg-transparent dark:hover:bg-input/30 dark:focus-visible:bg-input/30"
@@ -215,20 +217,22 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
   },
   {
     accessorKey: "limit",
-    header: () => <div className="w-full text-right">Limit</div>,
+    header: () => (
+      <div className="w-full text-right">Maximum days</div>
+    ),
     cell: ({ row }) => (
       <form
         onSubmit={(e) => {
           e.preventDefault()
           toast.promise(new Promise((resolve) => setTimeout(resolve, 1000)), {
-            loading: `Saving ${row.original.header}`,
+            loading: `Saving “${row.original.header}”`,
             success: "Done",
             error: "Error",
           })
         }}
       >
         <Label htmlFor={`${row.original.id}-limit`} className="sr-only">
-          Limit
+          Maximum days allowed for this change
         </Label>
         <Input
           className="h-8 w-16 border-transparent bg-transparent text-right shadow-none hover:bg-input/30 focus-visible:border focus-visible:bg-background dark:bg-transparent dark:hover:bg-input/30 dark:focus-visible:bg-input/30"
@@ -460,10 +464,10 @@ export function DataTable({
                 })}
             </DropdownMenuContent>
           </DropdownMenu>
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" aria-label="Add document change">
             <PlusIcon
             />
-            <span className="hidden lg:inline">Add Section</span>
+            <span className="hidden lg:inline">Add document change</span>
           </Button>
         </div>
       </div>
@@ -659,7 +663,8 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
         <DrawerHeader className="gap-1">
           <DrawerTitle>{item.header}</DrawerTitle>
           <DrawerDescription>
-            Showing total visitors for the last 6 months
+            Required document change: what needs updating, who is reviewing it,
+            and how long it is expected to take versus the allowed window.
           </DrawerDescription>
         </DrawerHeader>
         <div className="flex flex-col gap-4 overflow-y-auto px-4 text-sm">
@@ -708,13 +713,12 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
               <Separator />
               <div className="grid gap-2">
                 <div className="flex gap-2 leading-none font-medium">
-                  Trending up by 5.2% this month{" "}
-                  <TrendingUpIcon className="size-4" />
+                  Recent activity for this change
                 </div>
                 <div className="text-muted-foreground">
-                  Showing total visitors for the last 6 months. This is just
-                  some random text to test the layout. It spans multiple lines
-                  and should wrap around.
+                  Sample activity for this change: placeholder chart data only.
+                  Replace with real metrics (e.g. revisions or days open) when
+                  wired to your backend.
                 </div>
               </div>
               <Separator />
@@ -722,34 +726,47 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
           )}
           <form className="flex flex-col gap-4">
             <div className="flex flex-col gap-3">
-              <Label htmlFor="header">Header</Label>
+              <Label htmlFor="header">Change summary</Label>
               <Input id="header" defaultValue={item.header} />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col gap-3">
-                <Label htmlFor="type">Type</Label>
+                <Label htmlFor="type">Section type</Label>
                 <Select defaultValue={item.type}>
                   <SelectTrigger id="type" className="w-full">
                     <SelectValue placeholder="Select a type" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectGroup>
-                      <SelectItem value="Table of Contents">
-                        Table of Contents
+                      <SelectItem value="Benefits narrative">
+                        Benefits narrative
                       </SelectItem>
-                      <SelectItem value="Executive Summary">
-                        Executive Summary
+                      <SelectItem value="Claims">Claims</SelectItem>
+                      <SelectItem value="Compliance exhibit">
+                        Compliance exhibit
                       </SelectItem>
-                      <SelectItem value="Technical Approach">
-                        Technical Approach
+                      <SelectItem value="Data & systems">Data & systems</SelectItem>
+                      <SelectItem value="Exhibit">Exhibit</SelectItem>
+                      <SelectItem value="Financial">Financial</SelectItem>
+                      <SelectItem value="Legal & compliance">
+                        Legal & compliance
                       </SelectItem>
-                      <SelectItem value="Design">Design</SelectItem>
-                      <SelectItem value="Capabilities">Capabilities</SelectItem>
-                      <SelectItem value="Focus Documents">
-                        Focus Documents
+                      <SelectItem value="Member communications">
+                        Member communications
                       </SelectItem>
-                      <SelectItem value="Narrative">Narrative</SelectItem>
-                      <SelectItem value="Cover Page">Cover Page</SelectItem>
+                      <SelectItem value="Member guide">Member guide</SelectItem>
+                      <SelectItem value="Network & access">
+                        Network & access
+                      </SelectItem>
+                      <SelectItem value="Operations">Operations</SelectItem>
+                      <SelectItem value="Pharmacy">Pharmacy</SelectItem>
+                      <SelectItem value="Planning">Planning</SelectItem>
+                      <SelectItem value="Policy schedule">Policy schedule</SelectItem>
+                      <SelectItem value="Research">Research</SelectItem>
+                      <SelectItem value="Summary">Summary</SelectItem>
+                      <SelectItem value="Utilization management">
+                        Utilization management
+                      </SelectItem>
                     </SelectGroup>
                   </SelectContent>
                 </Select>
@@ -763,6 +780,7 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
                   <SelectContent>
                     <SelectGroup>
                       <SelectItem value="Done">Done</SelectItem>
+                      <SelectItem value="In Process">In Process</SelectItem>
                       <SelectItem value="In Progress">In Progress</SelectItem>
                       <SelectItem value="Not Started">Not Started</SelectItem>
                     </SelectGroup>
@@ -772,12 +790,28 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col gap-3">
-                <Label htmlFor="target">Target</Label>
-                <Input id="target" defaultValue={item.target} />
+                <Label htmlFor="target">Target days</Label>
+                <Input
+                  id="target"
+                  defaultValue={item.target}
+                  inputMode="numeric"
+                  aria-describedby="target-hint"
+                />
+                <p id="target-hint" className="text-xs text-muted-foreground">
+                  Working goal for completing this change (days).
+                </p>
               </div>
               <div className="flex flex-col gap-3">
-                <Label htmlFor="limit">Limit</Label>
-                <Input id="limit" defaultValue={item.limit} />
+                <Label htmlFor="limit">Maximum days</Label>
+                <Input
+                  id="limit"
+                  defaultValue={item.limit}
+                  inputMode="numeric"
+                  aria-describedby="limit-hint"
+                />
+                <p id="limit-hint" className="text-xs text-muted-foreground">
+                  Policy or SLA ceiling; change should not exceed this many days.
+                </p>
               </div>
             </div>
             <div className="flex flex-col gap-3">
