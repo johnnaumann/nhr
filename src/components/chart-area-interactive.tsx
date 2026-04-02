@@ -14,6 +14,7 @@ import {
 
 import {
   Card,
+  CardAction,
   CardContent,
   CardDescription,
   CardHeader,
@@ -21,12 +22,14 @@ import {
 } from "@/components/ui/card"
 import {
   ChartContainer,
-  ChartLegend,
-  ChartLegendContent,
   ChartTooltip,
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart"
+import {
+  ToggleGroup,
+  ToggleGroupItem,
+} from "@/components/ui/toggle-group"
 import { useDashboardDateRange } from "@/contexts/dashboard-date-range-context"
 
 export const description =
@@ -136,8 +139,13 @@ function buildPieInsight(sorted: PieBreakdownRow[], total: number): string {
   return `${top.label} leads with ${top.pct.toFixed(1)}% of ${total.toLocaleString()} total changes; ${bottom.label} is lowest at ${bottom.pct.toFixed(1)}%.`
 }
 
+const DEFAULT_VISIBLE = [...SERIES_KEYS] as string[]
+
 export function ChartAreaInteractive() {
   const { range } = useDashboardDateRange()
+
+  const [visibleKeys, setVisibleKeys] =
+    React.useState<string[]>(DEFAULT_VISIBLE)
 
   const filteredData = React.useMemo(() => {
     if (!range?.from) {
@@ -151,7 +159,7 @@ export function ChartAreaInteractive() {
     )
   }, [range])
 
-  const { pieData, pieTotal, pieBreakdown, pieInsight } = React.useMemo(() => {
+  const { pieData, pieTotal, pieInsight } = React.useMemo(() => {
     const sums: Record<InstitutionKey, number> = {
       institution1: 0,
       institution2: 0,
@@ -164,9 +172,11 @@ export function ChartAreaInteractive() {
       sums.institution3 += row.institution3
       sums.institution4 += row.institution4
     }
-    const total = SERIES_KEYS.reduce((acc, key) => acc + sums[key], 0)
 
-    const breakdown: PieBreakdownRow[] = SERIES_KEYS.map((key) => {
+    const activeKeys = SERIES_KEYS.filter((key) => visibleKeys.includes(key))
+    const total = activeKeys.reduce((acc, key) => acc + sums[key], 0)
+
+    const breakdown: PieBreakdownRow[] = activeKeys.map((key) => {
       const value = sums[key]
       const pct = total > 0 ? (value / total) * 100 : 0
       const label = String(chartConfig[key].label)
@@ -175,18 +185,17 @@ export function ChartAreaInteractive() {
 
     const pieData = breakdown.map(({ key, label, value, pct }) => ({
       category: key,
-      /** Human-readable name for tooltips and slice context */
       name: label,
       value,
       pct,
       fill: `var(--color-${key})`,
     }))
 
-    const pieBreakdown = [...breakdown].sort((a, b) => b.value - a.value)
-    const pieInsight = buildPieInsight(pieBreakdown, total)
+    const sortedBreakdown = [...breakdown].sort((a, b) => b.value - a.value)
+    const pieInsight = buildPieInsight(sortedBreakdown, total)
 
-    return { pieData, pieTotal: total, pieBreakdown, pieInsight }
-  }, [filteredData])
+    return { pieData, pieTotal: total, pieInsight }
+  }, [filteredData, visibleKeys])
 
   return (
     <Card className="@container/card">
@@ -199,6 +208,40 @@ export function ChartAreaInteractive() {
           </span>
           <span className="@[540px]/card:hidden">By institution</span>
         </CardDescription>
+        <CardAction className="max-w-full shrink-0 justify-self-end overflow-x-auto pb-0.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <ToggleGroup
+            type="multiple"
+            value={visibleKeys}
+            onValueChange={setVisibleKeys}
+            variant="outline"
+            size="sm"
+            spacing={0}
+            className="w-max flex-nowrap gap-0"
+            aria-label="Show or hide institutions on charts"
+          >
+            {SERIES_KEYS.map((key) => (
+              <ToggleGroupItem
+                key={key}
+                value={key}
+                className="shrink-0 gap-1.5 whitespace-nowrap px-2 data-[state=off]:opacity-40"
+              >
+                <span
+                  className="size-2 shrink-0 rounded-sm"
+                  style={{
+                    backgroundColor: chartConfig[key].color,
+                  }}
+                  aria-hidden
+                />
+                <span className="hidden @[400px]/card-header:inline">
+                  {chartConfig[key].label}
+                </span>
+                <span className="@[400px]/card-header:hidden">
+                  {key.replace("institution", "")}
+                </span>
+              </ToggleGroupItem>
+            ))}
+          </ToggleGroup>
+        </CardAction>
       </CardHeader>
       <CardContent className="px-4 pt-2 pb-4 sm:pt-4 lg:px-6">
         {/*
@@ -254,54 +297,33 @@ export function ChartAreaInteractive() {
                     />
                   }
                 />
-                <ChartLegend content={<ChartLegendContent />} />
-                <Line
-                  dataKey="institution1"
-                  type="natural"
-                  stroke="var(--color-institution1)"
-                  strokeWidth={2}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  dot={false}
-                  activeDot={{ r: 4 }}
-                />
-                <Line
-                  dataKey="institution2"
-                  type="natural"
-                  stroke="var(--color-institution2)"
-                  strokeWidth={2}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  dot={false}
-                  activeDot={{ r: 4 }}
-                />
-                <Line
-                  dataKey="institution3"
-                  type="natural"
-                  stroke="var(--color-institution3)"
-                  strokeWidth={2}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  dot={false}
-                  activeDot={{ r: 4 }}
-                />
-                <Line
-                  dataKey="institution4"
-                  type="natural"
-                  stroke="var(--color-institution4)"
-                  strokeWidth={2}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  dot={false}
-                  activeDot={{ r: 4 }}
-                />
+                {SERIES_KEYS.map((key) =>
+                  visibleKeys.includes(key) ? (
+                    <Line
+                      key={key}
+                      dataKey={key}
+                      type="natural"
+                      stroke={`var(--color-${key})`}
+                      strokeWidth={2}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      dot={false}
+                      activeDot={{ r: 4 }}
+                    />
+                  ) : null
+                )}
               </LineChart>
             </ChartContainer>
           </div>
 
           <div className="flex h-full min-h-[240px] min-w-0 flex-col rounded-xl border border-border/60 bg-muted/40 p-3 sm:p-4 @xl/main:col-span-2 @5xl/main:col-span-1 @5xl/main:min-h-[300px] dark:bg-muted/20">
             <div className="flex min-h-0 min-w-0 w-full flex-1 flex-col items-center justify-center">
-              {pieTotal === 0 ? (
+              {visibleKeys.length === 0 ? (
+                <div className="flex w-full flex-1 items-center justify-center px-2 text-center text-sm text-muted-foreground">
+                  Turn on at least one institution in the legend to see the pie
+                  chart.
+                </div>
+              ) : pieTotal === 0 ? (
                 <div className="flex w-full flex-1 items-center justify-center text-center text-sm text-muted-foreground">
                   No worksheet changes in this period
                 </div>
@@ -355,38 +377,11 @@ export function ChartAreaInteractive() {
                 </ChartContainer>
               )}
             </div>
-            {pieTotal > 0 ? (
-              <div className="w-full shrink-0 space-y-2 pt-1">
-                <p className="text-left text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
-                  Breakdown
-                </p>
-                <ul className="space-y-2 text-left text-xs">
-                  {pieBreakdown.map((row) => (
-                    <li key={row.key} className="flex items-start gap-2.5">
-                      <span
-                        className="mt-0.5 size-2.5 shrink-0 rounded-sm"
-                        style={{
-                          backgroundColor: chartConfig[row.key].color,
-                        }}
-                        aria-hidden
-                      />
-                      <span className="min-w-0 leading-snug">
-                        <span className="font-medium text-foreground">
-                          {row.label}
-                        </span>
-                        <span className="mt-0.5 block text-muted-foreground">
-                          {row.value.toLocaleString()} worksheet changes ·{" "}
-                          {row.pct.toFixed(1)}% of period total
-                        </span>
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-                <p className="text-left text-xs leading-relaxed text-muted-foreground">
-                  <span className="font-medium text-foreground">Summary: </span>
-                  {pieInsight}
-                </p>
-              </div>
+            {pieTotal > 0 && visibleKeys.length > 0 ? (
+              <p className="w-full shrink-0 pt-2 text-left text-xs leading-relaxed text-muted-foreground">
+                <span className="font-medium text-foreground">Summary: </span>
+                {pieInsight}
+              </p>
             ) : null}
           </div>
         </div>
