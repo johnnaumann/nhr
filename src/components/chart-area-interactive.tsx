@@ -1,12 +1,19 @@
 "use client"
 
 import * as React from "react"
-import { Area, AreaChart, CartesianGrid, XAxis } from "recharts"
+import { endOfDay, isWithinInterval, startOfDay } from "date-fns"
+import {
+  CartesianGrid,
+  Line,
+  LineChart,
+  Pie,
+  PieChart,
+  XAxis,
+  YAxis,
+} from "recharts"
 
-import { useIsMobile } from "@/hooks/use-mobile"
 import {
   Card,
-  CardAction,
   CardContent,
   CardDescription,
   CardHeader,
@@ -14,277 +21,290 @@ import {
 } from "@/components/ui/card"
 import {
   ChartContainer,
+  ChartLegend,
+  ChartLegendContent,
   ChartTooltip,
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import {
-  ToggleGroup,
-  ToggleGroupItem,
-} from "@/components/ui/toggle-group"
+import { useDashboardDateRange } from "@/contexts/dashboard-date-range-context"
 
-export const description = "An interactive area chart"
+export const description =
+  "Worksheets changed over time by institution with totals"
 
-const chartData = [
-  { date: "2024-04-01", desktop: 222, mobile: 150 },
-  { date: "2024-04-02", desktop: 97, mobile: 180 },
-  { date: "2024-04-03", desktop: 167, mobile: 120 },
-  { date: "2024-04-04", desktop: 242, mobile: 260 },
-  { date: "2024-04-05", desktop: 373, mobile: 290 },
-  { date: "2024-04-06", desktop: 301, mobile: 340 },
-  { date: "2024-04-07", desktop: 245, mobile: 180 },
-  { date: "2024-04-08", desktop: 409, mobile: 320 },
-  { date: "2024-04-09", desktop: 59, mobile: 110 },
-  { date: "2024-04-10", desktop: 261, mobile: 190 },
-  { date: "2024-04-11", desktop: 327, mobile: 350 },
-  { date: "2024-04-12", desktop: 292, mobile: 210 },
-  { date: "2024-04-13", desktop: 342, mobile: 380 },
-  { date: "2024-04-14", desktop: 137, mobile: 220 },
-  { date: "2024-04-15", desktop: 120, mobile: 170 },
-  { date: "2024-04-16", desktop: 138, mobile: 190 },
-  { date: "2024-04-17", desktop: 446, mobile: 360 },
-  { date: "2024-04-18", desktop: 364, mobile: 410 },
-  { date: "2024-04-19", desktop: 243, mobile: 180 },
-  { date: "2024-04-20", desktop: 89, mobile: 150 },
-  { date: "2024-04-21", desktop: 137, mobile: 200 },
-  { date: "2024-04-22", desktop: 224, mobile: 170 },
-  { date: "2024-04-23", desktop: 138, mobile: 230 },
-  { date: "2024-04-24", desktop: 387, mobile: 290 },
-  { date: "2024-04-25", desktop: 215, mobile: 250 },
-  { date: "2024-04-26", desktop: 75, mobile: 130 },
-  { date: "2024-04-27", desktop: 383, mobile: 420 },
-  { date: "2024-04-28", desktop: 122, mobile: 180 },
-  { date: "2024-04-29", desktop: 315, mobile: 240 },
-  { date: "2024-04-30", desktop: 454, mobile: 380 },
-  { date: "2024-05-01", desktop: 165, mobile: 220 },
-  { date: "2024-05-02", desktop: 293, mobile: 310 },
-  { date: "2024-05-03", desktop: 247, mobile: 190 },
-  { date: "2024-05-04", desktop: 385, mobile: 420 },
-  { date: "2024-05-05", desktop: 481, mobile: 390 },
-  { date: "2024-05-06", desktop: 498, mobile: 520 },
-  { date: "2024-05-07", desktop: 388, mobile: 300 },
-  { date: "2024-05-08", desktop: 149, mobile: 210 },
-  { date: "2024-05-09", desktop: 227, mobile: 180 },
-  { date: "2024-05-10", desktop: 293, mobile: 330 },
-  { date: "2024-05-11", desktop: 335, mobile: 270 },
-  { date: "2024-05-12", desktop: 197, mobile: 240 },
-  { date: "2024-05-13", desktop: 197, mobile: 160 },
-  { date: "2024-05-14", desktop: 448, mobile: 490 },
-  { date: "2024-05-15", desktop: 473, mobile: 380 },
-  { date: "2024-05-16", desktop: 338, mobile: 400 },
-  { date: "2024-05-17", desktop: 499, mobile: 420 },
-  { date: "2024-05-18", desktop: 315, mobile: 350 },
-  { date: "2024-05-19", desktop: 235, mobile: 180 },
-  { date: "2024-05-20", desktop: 177, mobile: 230 },
-  { date: "2024-05-21", desktop: 82, mobile: 140 },
-  { date: "2024-05-22", desktop: 81, mobile: 120 },
-  { date: "2024-05-23", desktop: 252, mobile: 290 },
-  { date: "2024-05-24", desktop: 294, mobile: 220 },
-  { date: "2024-05-25", desktop: 201, mobile: 250 },
-  { date: "2024-05-26", desktop: 213, mobile: 170 },
-  { date: "2024-05-27", desktop: 420, mobile: 460 },
-  { date: "2024-05-28", desktop: 233, mobile: 190 },
-  { date: "2024-05-29", desktop: 78, mobile: 130 },
-  { date: "2024-05-30", desktop: 340, mobile: 280 },
-  { date: "2024-05-31", desktop: 178, mobile: 230 },
-  { date: "2024-06-01", desktop: 178, mobile: 200 },
-  { date: "2024-06-02", desktop: 470, mobile: 410 },
-  { date: "2024-06-03", desktop: 103, mobile: 160 },
-  { date: "2024-06-04", desktop: 439, mobile: 380 },
-  { date: "2024-06-05", desktop: 88, mobile: 140 },
-  { date: "2024-06-06", desktop: 294, mobile: 250 },
-  { date: "2024-06-07", desktop: 323, mobile: 370 },
-  { date: "2024-06-08", desktop: 385, mobile: 320 },
-  { date: "2024-06-09", desktop: 438, mobile: 480 },
-  { date: "2024-06-10", desktop: 155, mobile: 200 },
-  { date: "2024-06-11", desktop: 92, mobile: 150 },
-  { date: "2024-06-12", desktop: 492, mobile: 420 },
-  { date: "2024-06-13", desktop: 81, mobile: 130 },
-  { date: "2024-06-14", desktop: 426, mobile: 380 },
-  { date: "2024-06-15", desktop: 307, mobile: 350 },
-  { date: "2024-06-16", desktop: 371, mobile: 310 },
-  { date: "2024-06-17", desktop: 475, mobile: 520 },
-  { date: "2024-06-18", desktop: 107, mobile: 170 },
-  { date: "2024-06-19", desktop: 341, mobile: 290 },
-  { date: "2024-06-20", desktop: 408, mobile: 450 },
-  { date: "2024-06-21", desktop: 169, mobile: 210 },
-  { date: "2024-06-22", desktop: 317, mobile: 270 },
-  { date: "2024-06-23", desktop: 480, mobile: 530 },
-  { date: "2024-06-24", desktop: 132, mobile: 180 },
-  { date: "2024-06-25", desktop: 141, mobile: 190 },
-  { date: "2024-06-26", desktop: 434, mobile: 380 },
-  { date: "2024-06-27", desktop: 448, mobile: 490 },
-  { date: "2024-06-28", desktop: 149, mobile: 200 },
-  { date: "2024-06-29", desktop: 103, mobile: 160 },
-  { date: "2024-06-30", desktop: 446, mobile: 400 },
-]
+const SERIES_KEYS = [
+  "institution1",
+  "institution2",
+  "institution3",
+  "institution4",
+] as const
+
+type InstitutionKey = (typeof SERIES_KEYS)[number]
+
+type WorksheetRow = { date: string } & Record<InstitutionKey, number>
+
+/** Smooth demo series: layered slow waves so lines read as flowing, not stepped. */
+function smoothSeries(
+  dayIndex: number,
+  base: number,
+  amp: number,
+  phase: number,
+  freq: number
+) {
+  const t = dayIndex * freq
+  const v =
+    base +
+    amp * 0.55 * Math.sin(t + phase) +
+    amp * 0.3 * Math.sin(t * 1.7 + phase * 1.3) +
+    amp * 0.15 * Math.sin(t * 0.35 + phase * 0.5)
+  return Math.round(Math.max(3, Math.min(34, v)))
+}
+
+function buildWorksheetChartData(): WorksheetRow[] {
+  const rows: WorksheetRow[] = []
+  const cursor = new Date(2024, 3, 1)
+  const end = new Date(2024, 5, 30)
+  let dayIndex = 0
+  while (cursor <= end) {
+    const y = cursor.getFullYear()
+    const m = String(cursor.getMonth() + 1).padStart(2, "0")
+    const d = String(cursor.getDate()).padStart(2, "0")
+    rows.push({
+      date: `${y}-${m}-${d}`,
+      institution1: smoothSeries(dayIndex, 17, 11, 0.2, 0.11),
+      institution2: smoothSeries(dayIndex, 19, 9, 1.1, 0.095),
+      institution3: smoothSeries(dayIndex, 14, 12, 2.4, 0.13),
+      institution4: smoothSeries(dayIndex, 21, 8, 3.6, 0.088),
+    })
+    dayIndex += 1
+    cursor.setDate(cursor.getDate() + 1)
+  }
+  return rows
+}
+
+const chartData = buildWorksheetChartData()
 
 const chartConfig = {
-  visitors: {
-    label: "Visitors",
-  },
-  desktop: {
-    label: "Desktop",
+  institution1: {
+    label: "Institution 1",
     color: "var(--chart-1)",
   },
-  mobile: {
-    label: "Mobile",
+  institution2: {
+    label: "Institution 2",
     color: "var(--chart-2)",
+  },
+  institution3: {
+    label: "Institution 3",
+    color: "var(--chart-3)",
+  },
+  institution4: {
+    label: "Institution 4",
+    color: "var(--chart-4)",
   },
 } satisfies ChartConfig
 
+function parseDataDate(iso: string) {
+  const [y, m, d] = iso.split("-").map(Number)
+  return new Date(y, m - 1, d)
+}
+
 export function ChartAreaInteractive() {
-  const isMobile = useIsMobile()
-  const [timeRange, setTimeRange] = React.useState("90d")
+  const { range } = useDashboardDateRange()
 
-  React.useEffect(() => {
-    if (isMobile) {
-      setTimeRange("7d")
+  const filteredData = React.useMemo(() => {
+    if (!range?.from) {
+      return chartData
     }
-  }, [isMobile])
+    const from = startOfDay(range.from)
+    const to = endOfDay(range.to ?? range.from)
+    const interval = { start: from, end: to }
+    return chartData.filter((item) =>
+      isWithinInterval(parseDataDate(item.date), interval)
+    )
+  }, [range])
 
-  const filteredData = chartData.filter((item) => {
-    const date = new Date(item.date)
-    const referenceDate = new Date("2024-06-30")
-    let daysToSubtract = 90
-    if (timeRange === "30d") {
-      daysToSubtract = 30
-    } else if (timeRange === "7d") {
-      daysToSubtract = 7
+  const pieData = React.useMemo(() => {
+    const sums: Record<InstitutionKey, number> = {
+      institution1: 0,
+      institution2: 0,
+      institution3: 0,
+      institution4: 0,
     }
-    const startDate = new Date(referenceDate)
-    startDate.setDate(startDate.getDate() - daysToSubtract)
-    return date >= startDate
-  })
+    for (const row of filteredData) {
+      sums.institution1 += row.institution1
+      sums.institution2 += row.institution2
+      sums.institution3 += row.institution3
+      sums.institution4 += row.institution4
+    }
+    return SERIES_KEYS.map((key) => ({
+      category: key,
+      value: sums[key],
+      fill: `var(--color-${key})`,
+    }))
+  }, [filteredData])
+
+  const pieTotal = React.useMemo(
+    () => pieData.reduce((acc, row) => acc + row.value, 0),
+    [pieData]
+  )
 
   return (
     <Card className="@container/card">
       <CardHeader>
-        <CardTitle>Total Visitors</CardTitle>
+        <CardTitle>Worksheets changed</CardTitle>
         <CardDescription>
           <span className="hidden @[540px]/card:block">
-            Total for the last 3 months
+            Worksheet changes by institution for the reporting period selected
+            above
           </span>
-          <span className="@[540px]/card:hidden">Last 3 months</span>
+          <span className="@[540px]/card:hidden">By institution</span>
         </CardDescription>
-        <CardAction>
-          <ToggleGroup
-            type="single"
-            value={timeRange}
-            onValueChange={setTimeRange}
-            variant="outline"
-            className="hidden *:data-[slot=toggle-group-item]:px-4! @[767px]/card:flex"
-          >
-            <ToggleGroupItem value="90d">Last 3 months</ToggleGroupItem>
-            <ToggleGroupItem value="30d">Last 30 days</ToggleGroupItem>
-            <ToggleGroupItem value="7d">Last 7 days</ToggleGroupItem>
-          </ToggleGroup>
-          <Select value={timeRange} onValueChange={setTimeRange}>
-            <SelectTrigger
-              className="flex w-40 **:data-[slot=select-value]:block **:data-[slot=select-value]:truncate @[767px]/card:hidden"
-              size="sm"
-              aria-label="Select a value"
-            >
-              <SelectValue placeholder="Last 3 months" />
-            </SelectTrigger>
-            <SelectContent className="rounded-xl">
-              <SelectItem value="90d" className="rounded-lg">
-                Last 3 months
-              </SelectItem>
-              <SelectItem value="30d" className="rounded-lg">
-                Last 30 days
-              </SelectItem>
-              <SelectItem value="7d" className="rounded-lg">
-                Last 7 days
-              </SelectItem>
-            </SelectContent>
-          </Select>
-        </CardAction>
       </CardHeader>
-      <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
-        <ChartContainer
-          config={chartConfig}
-          className="aspect-auto h-[250px] w-full"
-        >
-          <AreaChart data={filteredData}>
-            <defs>
-              <linearGradient id="fillDesktop" x1="0" y1="0" x2="0" y2="1">
-                <stop
-                  offset="5%"
-                  stopColor="var(--color-desktop)"
-                  stopOpacity={1.0}
-                />
-                <stop
-                  offset="95%"
-                  stopColor="var(--color-desktop)"
-                  stopOpacity={0.1}
-                />
-              </linearGradient>
-              <linearGradient id="fillMobile" x1="0" y1="0" x2="0" y2="1">
-                <stop
-                  offset="5%"
-                  stopColor="var(--color-mobile)"
-                  stopOpacity={0.8}
-                />
-                <stop
-                  offset="95%"
-                  stopColor="var(--color-mobile)"
-                  stopOpacity={0.1}
-                />
-              </linearGradient>
-            </defs>
-            <CartesianGrid vertical={false} />
-            <XAxis
-              dataKey="date"
-              tickLine={false}
-              axisLine={false}
-              tickMargin={8}
-              minTickGap={32}
-              tickFormatter={(value) => {
-                const date = new Date(value)
-                return date.toLocaleDateString("en-US", {
-                  month: "short",
-                  day: "numeric",
-                })
-              }}
-            />
-            <ChartTooltip
-              cursor={false}
-              content={
-                <ChartTooltipContent
-                  labelFormatter={(value) => {
-                    return new Date(value).toLocaleDateString("en-US", {
+      <CardContent className="px-0 pt-2 pb-4 sm:pt-4">
+        {/*
+          Matches SectionCards: same grid columns + gap so vertical rhythm aligns
+          with the four stat cards (line = 3 cols, pie = 1 col at @5xl/main).
+        */}
+        <div className="grid grid-cols-1 items-stretch gap-4 @xl/main:grid-cols-2 @5xl/main:grid-cols-4">
+          <div className="flex h-full min-h-[240px] min-w-0 flex-col gap-2 rounded-xl border border-border/60 bg-muted/40 p-3 sm:p-4 @xl/main:col-span-2 @5xl/main:col-span-3 @5xl/main:min-h-[300px] dark:bg-muted/20">
+            <p className="shrink-0 text-sm font-medium text-muted-foreground">
+              Over time
+            </p>
+            <ChartContainer
+              config={chartConfig}
+              className="!aspect-auto min-h-[12rem] w-full min-w-0 flex-1 md:min-h-[16rem] @5xl/main:min-h-0"
+            >
+              <LineChart
+                accessibilityLayer
+                data={filteredData}
+                margin={{ left: 0, right: 8, top: 8, bottom: 0 }}
+              >
+                <CartesianGrid vertical={false} strokeDasharray="3 3" />
+                <XAxis
+                  dataKey="date"
+                  tickLine={false}
+                  axisLine={false}
+                  tickMargin={8}
+                  minTickGap={28}
+                  tickFormatter={(value) => {
+                    const date = new Date(value)
+                    return date.toLocaleDateString("en-US", {
                       month: "short",
                       day: "numeric",
                     })
                   }}
-                  indicator="dot"
                 />
-              }
-            />
-            <Area
-              dataKey="mobile"
-              type="natural"
-              fill="url(#fillMobile)"
-              stroke="var(--color-mobile)"
-              stackId="a"
-            />
-            <Area
-              dataKey="desktop"
-              type="natural"
-              fill="url(#fillDesktop)"
-              stroke="var(--color-desktop)"
-              stackId="a"
-            />
-          </AreaChart>
-        </ChartContainer>
+                <YAxis
+                  tickLine={false}
+                  axisLine={false}
+                  tickMargin={8}
+                  width={36}
+                  domain={[0, "auto"]}
+                  tickFormatter={(v) => String(Math.round(v))}
+                />
+                <ChartTooltip
+                  cursor={{ stroke: "var(--border)", strokeWidth: 1 }}
+                  content={
+                    <ChartTooltipContent
+                      labelFormatter={(value) =>
+                        new Date(value as string).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        })
+                      }
+                      indicator="line"
+                    />
+                  }
+                />
+                <ChartLegend content={<ChartLegendContent />} />
+                <Line
+                  dataKey="institution1"
+                  type="natural"
+                  stroke="var(--color-institution1)"
+                  strokeWidth={2}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  dot={false}
+                  activeDot={{ r: 4 }}
+                />
+                <Line
+                  dataKey="institution2"
+                  type="natural"
+                  stroke="var(--color-institution2)"
+                  strokeWidth={2}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  dot={false}
+                  activeDot={{ r: 4 }}
+                />
+                <Line
+                  dataKey="institution3"
+                  type="natural"
+                  stroke="var(--color-institution3)"
+                  strokeWidth={2}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  dot={false}
+                  activeDot={{ r: 4 }}
+                />
+                <Line
+                  dataKey="institution4"
+                  type="natural"
+                  stroke="var(--color-institution4)"
+                  strokeWidth={2}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  dot={false}
+                  activeDot={{ r: 4 }}
+                />
+              </LineChart>
+            </ChartContainer>
+          </div>
+
+          <div className="flex h-full min-h-[240px] w-full flex-col gap-2 rounded-xl border border-border/60 bg-muted/40 p-3 sm:p-4 @xl/main:col-span-2 @5xl/main:col-span-1 @5xl/main:min-h-[300px] dark:bg-muted/20">
+            <p className="shrink-0 text-sm font-medium text-muted-foreground @5xl/main:text-center">
+              Total
+            </p>
+            <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-2">
+              {pieTotal === 0 ? (
+                <div className="flex w-full flex-1 items-center justify-center px-2 text-center text-sm text-muted-foreground">
+                  No worksheet changes in this period
+                </div>
+              ) : (
+                <ChartContainer
+                  config={chartConfig}
+                  className="aspect-square h-full max-h-full min-h-[12rem] w-full max-w-[min(100%,280px)] @5xl/main:max-w-full"
+                >
+                  <PieChart>
+                    <ChartTooltip
+                      cursor={false}
+                      content={
+                        <ChartTooltipContent
+                          hideLabel
+                          nameKey="category"
+                          indicator="dot"
+                        />
+                      }
+                    />
+                    <Pie
+                      data={pieData}
+                      dataKey="value"
+                      nameKey="category"
+                      stroke="var(--background)"
+                      strokeWidth={2}
+                    />
+                  </PieChart>
+                </ChartContainer>
+              )}
+            </div>
+            {pieTotal > 0 ? (
+              <p className="shrink-0 text-center text-xs text-muted-foreground tabular-nums">
+                {pieTotal.toLocaleString()} changes in view
+              </p>
+            ) : null}
+          </div>
+        </div>
       </CardContent>
     </Card>
   )

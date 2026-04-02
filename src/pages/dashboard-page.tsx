@@ -4,10 +4,12 @@ import data from '@/app/dashboard/data.json'
 import { AppSidebar } from '@/components/app-sidebar'
 import { ChartAreaInteractive } from '@/components/chart-area-interactive'
 import { ChartSection } from '@/components/chart-section'
+import { DashboardDateRangeToolbar } from '@/components/dashboard-date-range-toolbar'
 import { DataTable } from '@/components/data-table'
 import { SectionCards } from '@/components/section-cards'
 import { SiteHeader } from '@/components/site-header'
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
+import { DashboardDateRangeProvider } from '@/contexts/dashboard-date-range-context'
 
 export function DashboardPage() {
   return (
@@ -23,16 +25,19 @@ export function DashboardPage() {
       <SidebarInset>
         <SiteHeader />
         <div className="flex flex-1 flex-col">
-          <div className="@container/main flex flex-1 flex-col gap-2">
-            <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-              <SectionCards />
-              <div className="px-4 lg:px-6">
-                <ChartAreaInteractive />
+          <DashboardDateRangeProvider>
+            <div className="@container/main flex flex-1 flex-col gap-2">
+              <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+                <DashboardDateRangeToolbar />
+                <SectionCards />
+                <div className="px-4 lg:px-6">
+                  <ChartAreaInteractive />
+                </div>
+                <ChartSection />
+                <DataTable data={data} />
               </div>
-              <ChartSection />
-              <DataTable data={data} />
             </div>
-          </div>
+          </DashboardDateRangeProvider>
         </div>
       </SidebarInset>
     </SidebarProvider>
