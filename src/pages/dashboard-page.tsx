@@ -3,6 +3,7 @@ import type { CSSProperties } from 'react'
 import data from '@/app/dashboard/data.json'
 import { AppSidebar } from '@/components/app-sidebar'
 import { ChartAreaInteractive } from '@/components/chart-area-interactive'
+import { ChartRequiredChanges } from '@/components/chart-required-changes'
 import { ChartSection } from '@/components/chart-section'
 import { DashboardDateRangeToolbar } from '@/components/dashboard-date-range-toolbar'
 import { DataTable } from '@/components/data-table'
@@ -35,6 +36,9 @@ export function DashboardPage() {
                 </div>
                 <div className="px-4 lg:px-6">
                   <ChartSection />
+                </div>
+                <div className="px-4 lg:px-6">
+                  <ChartRequiredChanges />
                 </div>
                 <DataTable data={data} />
               </div>
