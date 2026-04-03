@@ -19,6 +19,8 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart"
+import { RadioGroupItemMulti } from "@/components/ui/radio-group"
+import { cn } from "@/lib/utils"
 
 const TYPE_KEYS = [
   "drg",
@@ -109,8 +111,12 @@ function buildTypesPieInsight(
   return `${top.label} leads with ${top.pct.toFixed(1)}% of ${total.toLocaleString()} total changes; ${bottom.label} is lowest at ${bottom.pct.toFixed(1)}%.`
 }
 
+const DEFAULT_VISIBLE_TYPES = [...TYPE_KEYS] as ChangeTypeKey[]
+
 export function ChartSection() {
   const [sortDesc, setSortDesc] = React.useState(true)
+  const [visibleKeys, setVisibleKeys] =
+    React.useState<ChangeTypeKey[]>(DEFAULT_VISIBLE_TYPES)
 
   const sortedAmounts = React.useMemo(() => {
     const next = [...AMOUNTS]
@@ -119,8 +125,9 @@ export function ChartSection() {
   }, [sortDesc])
 
   const { pieData, pieTotal, pieInsight } = React.useMemo(() => {
-    const total = AMOUNTS.reduce((acc, r) => acc + r.count, 0)
-    const breakdown: TypesPieBreakdownRow[] = AMOUNTS.map(
+    const active = AMOUNTS.filter((r) => visibleKeys.includes(r.key))
+    const total = active.reduce((acc, r) => acc + r.count, 0)
+    const breakdown: TypesPieBreakdownRow[] = active.map(
       ({ key, label, count }) => ({
         key,
         label,
@@ -130,14 +137,14 @@ export function ChartSection() {
     )
     const sortedBreakdown = [...breakdown].sort((a, b) => b.value - a.value)
     const pieInsight = buildTypesPieInsight(sortedBreakdown, total)
-    const pieData = AMOUNTS.map(({ key, label, count }) => ({
+    const pieData = active.map(({ key, label, count }) => ({
       type: key,
       name: label,
       value: count,
       fill: `var(--color-${key})`,
     }))
     return { pieData, pieTotal: total, pieInsight }
-  }, [])
+  }, [visibleKeys])
 
   return (
     <Card className="@container/types-chart">
@@ -175,96 +182,128 @@ export function ChartSection() {
                     <ArrowDownUpIcon className="size-3.5" />
                   </Button>
                 </div>
-                <ul className="flex flex-col gap-3">
-                  {sortedAmounts.map(({ key, label, count }) => (
-                    <li
-                      key={key}
-                      className="flex min-w-0 items-center gap-2.5 text-sm"
-                    >
-                      <span
-                        className="size-3.5 shrink-0 rounded-sm border border-border shadow-none"
-                        style={{
-                          backgroundColor: chartConfig[key].color,
-                        }}
-                        aria-hidden
-                      />
-                      <span className="min-w-0 flex-1 truncate font-medium text-foreground">
-                        {label}
-                      </span>
-                      <Badge
-                        variant="secondary"
-                        className="shrink-0 gap-1 tabular-nums"
+                <ul className="flex flex-col gap-3" aria-label="Filter change types on charts">
+                  {sortedAmounts.map(({ key, label, count }) => {
+                    const filterId = `types-chart-filter-${key}`
+                    const isOn = visibleKeys.includes(key)
+                    return (
+                      <li
+                        key={key}
+                        className={cn(
+                          "flex min-w-0 items-center gap-2.5 text-sm transition-opacity",
+                          !isOn && "opacity-40"
+                        )}
                       >
-                        <span>{count.toLocaleString()}</span>
-                        <SearchIcon
-                          className="size-3 opacity-60"
-                          aria-hidden
+                        <RadioGroupItemMulti
+                          id={filterId}
+                          checked={isOn}
+                          indicatorColor={chartConfig[key].color}
+                          onCheckedChange={(on) => {
+                            setVisibleKeys((prev) => {
+                              if (on) {
+                                if (prev.includes(key)) return prev
+                                const next = new Set(prev)
+                                next.add(key)
+                                return TYPE_KEYS.filter((k) => next.has(k))
+                              }
+                              return prev.filter((k) => k !== key)
+                            })
+                          }}
                         />
-                      </Badge>
-                    </li>
-                  ))}
+                        <label
+                          htmlFor={filterId}
+                          className="min-w-0 flex-1 cursor-pointer truncate font-medium text-foreground"
+                        >
+                          {label}
+                        </label>
+                        <Badge
+                          variant="secondary"
+                          className="shrink-0 gap-1 tabular-nums"
+                        >
+                          <span>{count.toLocaleString()}</span>
+                          <SearchIcon
+                            className="size-3 opacity-60"
+                            aria-hidden
+                          />
+                        </Badge>
+                      </li>
+                    )
+                  })}
                 </ul>
               </div>
             </div>
 
             {/* Stacked bars */}
             <div className="flex min-h-0 min-w-0 flex-col rounded-xl border border-border/60 bg-muted/40 p-3 sm:p-4 @xl/types-chart:col-span-6 dark:bg-muted/20">
-              <ChartContainer
-                config={chartConfig}
-                className="!aspect-auto min-h-[240px] w-full min-w-0 flex-1 md:min-h-[280px]"
-              >
-                <BarChart
-                  accessibilityLayer
-                  data={stackedOverTime}
-                  margin={{ left: 0, right: 8, top: 8, bottom: 0 }}
-                  barCategoryGap="18%"
+              {visibleKeys.length === 0 ? (
+                <div className="flex min-h-[240px] w-full flex-1 items-center justify-center px-2 text-center text-sm text-muted-foreground md:min-h-[280px]">
+                  Select at least one change type in the list to see the stacked
+                  bar chart.
+                </div>
+              ) : (
+                <ChartContainer
+                  config={chartConfig}
+                  className="!aspect-auto min-h-[240px] w-full min-w-0 flex-1 md:min-h-[280px]"
                 >
-                  <CartesianGrid vertical={false} strokeDasharray="3 3" />
-                  <XAxis
-                    dataKey="period"
-                    tickLine={false}
-                    axisLine={false}
-                    tickMargin={8}
-                  />
-                  <YAxis
-                    tickLine={false}
-                    axisLine={false}
-                    tickMargin={8}
-                    width={32}
-                    domain={[0, "auto"]}
-                    tickFormatter={(v) => String(Math.round(Number(v)))}
-                  />
-                  <ChartTooltip
-                    cursor={{ fill: "var(--muted)", opacity: 0.35 }}
-                    content={
-                      <ChartTooltipContent
-                        labelFormatter={(label) => `Period ${String(label)}`}
-                        indicator="dot"
-                      />
-                    }
-                  />
-                  {TYPE_KEYS.map((key) => (
-                    <Bar
-                      key={key}
-                      dataKey={key}
-                      stackId="changes"
-                      fill={`var(--color-${key})`}
-                      stroke="var(--card)"
-                      strokeWidth={1}
-                      radius={0}
+                  <BarChart
+                    accessibilityLayer
+                    data={stackedOverTime}
+                    margin={{ left: 0, right: 8, top: 8, bottom: 0 }}
+                    barCategoryGap="18%"
+                  >
+                    <CartesianGrid vertical={false} strokeDasharray="3 3" />
+                    <XAxis
+                      dataKey="period"
+                      tickLine={false}
+                      axisLine={false}
+                      tickMargin={8}
                     />
-                  ))}
-                </BarChart>
-              </ChartContainer>
+                    <YAxis
+                      tickLine={false}
+                      axisLine={false}
+                      tickMargin={8}
+                      width={32}
+                      domain={[0, "auto"]}
+                      tickFormatter={(v) => String(Math.round(Number(v)))}
+                    />
+                    <ChartTooltip
+                      cursor={{ fill: "var(--muted)", opacity: 0.35 }}
+                      content={
+                        <ChartTooltipContent
+                          labelFormatter={(label) => `Period ${String(label)}`}
+                          indicator="dot"
+                        />
+                      }
+                    />
+                    {TYPE_KEYS.map((key) =>
+                      visibleKeys.includes(key) ? (
+                        <Bar
+                          key={key}
+                          dataKey={key}
+                          stackId="changes"
+                          fill={`var(--color-${key})`}
+                          stroke="var(--card)"
+                          strokeWidth={1}
+                          radius={0}
+                        />
+                      ) : null
+                    )}
+                  </BarChart>
+                </ChartContainer>
+              )}
             </div>
 
             {/* Pie chart */}
             <div className="flex h-full min-h-0 min-w-0 flex-col @xl/types-chart:col-span-3">
               <div className="flex h-full min-h-0 min-w-0 flex-1 flex-col rounded-xl border border-border/60 bg-muted/40 p-3 sm:p-4 dark:bg-muted/20">
                 <div className="flex h-[240px] w-full shrink-0 flex-col items-center justify-center md:h-[280px]">
-                  {pieTotal === 0 ? (
+                  {visibleKeys.length === 0 ? (
+                    <div className="flex h-full w-full items-center justify-center px-2 text-center text-sm text-muted-foreground">
+                      Select at least one change type to see the pie chart.
+                    </div>
+                  ) : pieTotal === 0 ? (
                     <div className="flex h-full w-full items-center justify-center text-center text-sm text-muted-foreground">
-                      No changes in this period
+                      No changes in this selection
                     </div>
                   ) : (
                     <ChartContainer
@@ -316,7 +355,7 @@ export function ChartSection() {
                     </ChartContainer>
                   )}
                 </div>
-                {pieTotal > 0 ? (
+                {pieTotal > 0 && visibleKeys.length > 0 ? (
                   <p className="max-h-24 w-full shrink-0 overflow-y-auto pt-2 text-left text-xs leading-relaxed text-muted-foreground">
                     <span className="font-medium text-foreground">Summary: </span>
                     {pieInsight}
