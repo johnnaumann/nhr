@@ -89,19 +89,19 @@ const chartData = buildWorksheetChartData()
 
 const chartConfig = {
   institution1: {
-    label: "Institution 1",
+    label: "LICH",
     color: "var(--chart-1)",
   },
   institution2: {
-    label: "Institution 2",
+    label: "LTH",
     color: "var(--chart-2)",
   },
   institution3: {
-    label: "Institution 3",
+    label: "NYU",
     color: "var(--chart-3)",
   },
   institution4: {
-    label: "Institution 4",
+    label: "WTH",
     color: "var(--chart-4)",
   },
 } satisfies ChartConfig
@@ -232,11 +232,8 @@ export function ChartAreaInteractive() {
                   }}
                   aria-hidden
                 />
-                <span className="hidden @[400px]/card-header:inline">
+                <span className="truncate @[400px]/card-header:max-w-none">
                   {chartConfig[key].label}
-                </span>
-                <span className="@[400px]/card-header:hidden">
-                  {key.replace("institution", "")}
                 </span>
               </ToggleGroupItem>
             ))}

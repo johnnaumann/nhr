@@ -4,16 +4,20 @@ import * as React from "react"
 import { endOfDay, startOfDay, subDays } from "date-fns"
 import type { DateRange } from "react-day-picker"
 
-/** Last day with demo dashboard data (visitor series). */
+/**
+ * Last day covered by static demo series (e.g. 2024 Q2). Ranges outside this
+ * window may show empty charts until data is wired to live dates.
+ */
 export const DASHBOARD_DATA_REFERENCE = new Date(2024, 5, 30)
 
-/** How far back the default reporting period starts (same convention as before: `subDays(reference, n)`). */
-const DASHBOARD_INITIAL_RANGE_DAYS = 30
+/** Inclusive calendar days in the default reporting period (today is the end). */
+const DASHBOARD_INITIAL_RANGE_DAYS = 7
 
 export function createInitialDashboardDateRange(): DateRange | undefined {
+  const today = new Date()
   return {
-    from: startOfDay(subDays(DASHBOARD_DATA_REFERENCE, DASHBOARD_INITIAL_RANGE_DAYS)),
-    to: endOfDay(DASHBOARD_DATA_REFERENCE),
+    from: startOfDay(subDays(today, DASHBOARD_INITIAL_RANGE_DAYS - 1)),
+    to: endOfDay(today),
   }
 }
 
@@ -35,14 +39,14 @@ export function DashboardDateRangeProvider({
     createInitialDashboardDateRange
   )
 
-  const value = React.useMemo(
-    (): DashboardDateRangeContextValue => ({
+  const value = React.useMemo((): DashboardDateRangeContextValue => {
+    const referenceDate = startOfDay(new Date())
+    return {
       range,
       setRange,
-      referenceDate: DASHBOARD_DATA_REFERENCE,
-    }),
-    [range]
-  )
+      referenceDate,
+    }
+  }, [range])
 
   return (
     <DashboardDateRangeContext.Provider value={value}>

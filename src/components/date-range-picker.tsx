@@ -18,19 +18,20 @@ import {
 export type DateRangePickerProps = {
   value: DateRange | undefined
   onValueChange: (range: DateRange | undefined) => void
-  /** End anchor for quick presets (e.g. last day covered by your data). */
+  /** End anchor for quick presets and calendar cap (`disabled` after this day). Usually today. */
   referenceDate: Date
   className?: string
   align?: "start" | "center" | "end"
   placeholder?: string
 }
 
+/** `dayCount` calendar days inclusive, ending on `referenceDate` (same day as its calendar date). */
 function makePresetRange(
   referenceDate: Date,
-  days: number
+  dayCount: number
 ): DateRange {
   const to = endOfDay(referenceDate)
-  const from = startOfDay(subDays(referenceDate, days))
+  const from = startOfDay(subDays(referenceDate, dayCount - 1))
   return { from, to }
 }
 
