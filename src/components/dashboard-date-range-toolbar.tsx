@@ -7,21 +7,26 @@ export function DashboardDateRangeToolbar() {
   const { range, setRange, referenceDate } = useDashboardDateRange()
 
   return (
-    <div className="flex flex-col gap-3 px-4 sm:flex-row sm:items-center sm:justify-between sm:gap-4 lg:px-6">
-      <div className="min-w-0 space-y-0.5">
-        <p className="text-sm font-medium text-foreground">Reporting period</p>
-        <p className="text-xs text-muted-foreground">
-          Metrics and charts use this date range
-        </p>
+    <div
+      className="sticky top-0 z-30 border-b border-border/60 bg-background/95 py-3 backdrop-blur-sm supports-[backdrop-filter]:bg-background/80"
+      data-slot="dashboard-date-range-sticky"
+    >
+      <div className="flex flex-col gap-3 px-4 sm:flex-row sm:items-center sm:justify-between sm:gap-4 lg:px-6">
+        <div className="min-w-0 space-y-0.5">
+          <p className="text-sm font-medium text-foreground">Reporting period</p>
+          <p className="text-xs text-muted-foreground">
+            Metrics and charts use this date range
+          </p>
+        </div>
+        <DateRangePicker
+          value={range}
+          onValueChange={setRange}
+          referenceDate={referenceDate}
+          align="end"
+          placeholder="Date range"
+          className="w-full shrink-0 sm:w-auto sm:max-w-[min(100%,320px)]"
+        />
       </div>
-      <DateRangePicker
-        value={range}
-        onValueChange={setRange}
-        referenceDate={referenceDate}
-        align="end"
-        placeholder="Date range"
-        className="w-full shrink-0 sm:w-auto sm:max-w-[min(100%,320px)]"
-      />
     </div>
   )
 }
