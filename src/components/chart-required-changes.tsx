@@ -544,6 +544,7 @@ export function ChartRequiredChanges() {
                       content={
                         <ChartTooltipContent
                           indicator="line"
+                          nameKey="key"
                           formatter={(value) => {
                             const v = Number(value)
                             const total = reactionBarData.reduce(
