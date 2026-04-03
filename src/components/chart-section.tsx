@@ -258,7 +258,7 @@ export function ChartSection() {
         </CardDescription>
       </CardHeader>
       <CardContent className={chartContentClass}>
-        <div className="grid grid-cols-1 gap-4 @xl/types-chart:grid-cols-12 @xl/types-chart:items-stretch">
+        <div className="grid grid-cols-1 gap-4 lg:gap-6 @xl/types-chart:grid-cols-12 @xl/types-chart:items-stretch">
             {/* Amounts + legend */}
             <div className="flex min-h-0 min-w-0 flex-col @xl/types-chart:col-span-3">
               <ChartLegendList

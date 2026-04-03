@@ -241,7 +241,7 @@ export function ChartRequiredChanges() {
       </CardHeader>
       <CardContent className={chartContentClass}>
         {/* Panel 1: Top required changes × sites */}
-        <section className="flex flex-col gap-4">
+        <section className="flex flex-col gap-4 lg:gap-6">
           <div className={filterToolbarClass}>
             <span>Displaying</span>
             <Select value={impactScope} onValueChange={setImpactScope}>
@@ -277,7 +277,7 @@ export function ChartRequiredChanges() {
 
           <div
             className={cn(
-              "grid grid-cols-1 gap-4 @xl/required-changes:grid-cols-12 @xl/required-changes:items-stretch"
+              "grid grid-cols-1 gap-4 lg:gap-6 @xl/required-changes:grid-cols-12 @xl/required-changes:items-stretch"
             )}
           >
             <div className="flex min-h-0 min-w-0 flex-col @xl/required-changes:col-span-3">
@@ -360,7 +360,7 @@ export function ChartRequiredChanges() {
         </section>
 
         {/* Panel 2: Hospital reactions (horizontal bars) */}
-        <section className="flex flex-col gap-4">
+        <section className="flex flex-col gap-4 lg:gap-6">
           <div className={filterToolbarClass}>
             <span>Displaying</span>
             <Select value={reactionView} onValueChange={setReactionView}>
@@ -399,7 +399,7 @@ export function ChartRequiredChanges() {
 
           <div
             className={cn(
-              "grid grid-cols-1 gap-4 @xl/required-changes:grid-cols-12 @xl/required-changes:items-stretch"
+              "grid grid-cols-1 gap-4 lg:gap-6 @xl/required-changes:grid-cols-12 @xl/required-changes:items-stretch"
             )}
           >
             <div className="flex min-h-0 min-w-0 flex-col @xl/required-changes:col-span-3">

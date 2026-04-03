@@ -19,7 +19,7 @@ export const filterSelectTriggerClass =
   "h-8 w-fit border-0 border-b border-dashed border-muted-foreground/50 bg-transparent px-1 py-0 font-medium text-foreground shadow-none hover:bg-muted/40 focus:ring-0 focus-visible:ring-0 dark:hover:bg-muted/20"
 
 export const chartContentClass =
-  "flex flex-col gap-8 px-4 pt-2 pb-2 sm:pt-4 lg:px-6"
+  "flex flex-col gap-8 px-4 pt-2 pb-4 sm:pt-4 lg:px-6"
 
 export const pieInsightClass =
   "max-h-24 w-full shrink-0 overflow-y-auto pb-2 text-left text-xs leading-relaxed text-muted-foreground"

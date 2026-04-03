@@ -317,7 +317,7 @@ export function ChartCoderPerformance() {
       </CardHeader>
       <CardContent className={chartContentClass}>
         {/* Top: stacked bars by coder */}
-        <section className="flex flex-col gap-4">
+        <section className="flex flex-col gap-4 lg:gap-6">
           <div className={cn(filterToolbarClass, "items-center")}>
             <span>Displaying</span>
             <Select value={volumeScope} onValueChange={setVolumeScope}>
@@ -353,7 +353,7 @@ export function ChartCoderPerformance() {
             </Select>
           </div>
 
-          <div className="grid min-h-[min(26rem,52vh)] grid-cols-1 gap-4 @xl/coder-performance:grid-cols-12 @xl/coder-performance:items-stretch">
+          <div className="grid min-h-[min(26rem,52vh)] grid-cols-1 gap-4 lg:gap-6 @xl/coder-performance:grid-cols-12 @xl/coder-performance:items-stretch">
             <div className="flex min-h-0 min-w-0 flex-col @xl/coder-performance:col-span-3">
               <ChartLegendList
                 title="Worksheet outcomes"
@@ -435,7 +435,7 @@ export function ChartCoderPerformance() {
         </section>
 
         {/* Bottom: line + pie / legend */}
-        <section className="flex flex-col gap-4">
+        <section className="flex flex-col gap-4 lg:gap-6">
           <div className={filterToolbarClass}>
             <span>View coder details of</span>
             <Select value={detailScope} onValueChange={setDetailScope}>
@@ -455,7 +455,7 @@ export function ChartCoderPerformance() {
             </Select>
           </div>
 
-          <div className="grid grid-cols-1 gap-4 @xl/coder-performance:grid-cols-4 @xl/coder-performance:items-stretch">
+          <div className="grid grid-cols-1 gap-4 lg:gap-6 @xl/coder-performance:grid-cols-4 @xl/coder-performance:items-stretch">
             <div
               className={cn(
                 "flex min-h-0 min-w-0 flex-col @xl/coder-performance:col-span-2",

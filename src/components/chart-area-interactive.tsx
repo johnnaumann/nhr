@@ -216,7 +216,7 @@ export function ChartAreaInteractive() {
           Same horizontal inset as SectionCards / toolbar (px-4 lg:px-6). Grid
           still mirrors four stat columns at @5xl (line 3, pie 1).
         */}
-        <div className="grid grid-cols-1 items-stretch gap-4 @xl/main:grid-cols-2 @5xl/main:grid-cols-4">
+        <div className="grid grid-cols-1 items-stretch gap-4 lg:gap-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-4">
           <div className={`${chartPanelClass} @xl/main:col-span-2 @5xl/main:col-span-3`}>
             <ChartContainer
               config={chartConfig}
