@@ -78,6 +78,37 @@ const stackedOverTime = Array.from({ length: 8 }, (_, periodIndex) => {
   return row
 })
 
+type TypesPieBreakdownRow = {
+  key: ChangeTypeKey
+  label: string
+  value: number
+  pct: number
+}
+
+function buildTypesPieInsight(
+  sorted: TypesPieBreakdownRow[],
+  total: number
+): string {
+  if (sorted.length === 0 || total === 0) {
+    return ""
+  }
+  const top = sorted[0]!
+  const second = sorted[1]
+  const bottom = sorted[sorted.length - 1]!
+  const spread = top.pct - bottom.pct
+
+  if (second && Math.abs(top.pct - second.pct) < 4) {
+    return `${top.label} and ${second.label} are almost tied (${top.pct.toFixed(1)}% vs ${second.pct.toFixed(1)}%). Compare their stacks in the bar chart to see how volumes shift by period.`
+  }
+  if (spread < 12) {
+    return "Change types are fairly balanced this period—no single category dominates the mix."
+  }
+  if (top.pct >= 38) {
+    return `${top.label} accounts for a large share (${top.pct.toFixed(1)}%). Worth confirming whether that reflects real remediation volume or how changes are classified.`
+  }
+  return `${top.label} leads with ${top.pct.toFixed(1)}% of ${total.toLocaleString()} total changes; ${bottom.label} is lowest at ${bottom.pct.toFixed(1)}%.`
+}
+
 export function ChartSection() {
   const [sortDesc, setSortDesc] = React.useState(true)
 
@@ -87,21 +118,26 @@ export function ChartSection() {
     return next
   }, [sortDesc])
 
-  const pieData = React.useMemo(
-    () =>
-      AMOUNTS.map(({ key, label, count }) => ({
-        type: key,
-        name: label,
+  const { pieData, pieTotal, pieInsight } = React.useMemo(() => {
+    const total = AMOUNTS.reduce((acc, r) => acc + r.count, 0)
+    const breakdown: TypesPieBreakdownRow[] = AMOUNTS.map(
+      ({ key, label, count }) => ({
+        key,
+        label,
         value: count,
-        fill: `var(--color-${key})`,
-      })),
-    []
-  )
-
-  const pieTotal = React.useMemo(
-    () => AMOUNTS.reduce((acc, r) => acc + r.count, 0),
-    []
-  )
+        pct: total > 0 ? (count / total) * 100 : 0,
+      })
+    )
+    const sortedBreakdown = [...breakdown].sort((a, b) => b.value - a.value)
+    const pieInsight = buildTypesPieInsight(sortedBreakdown, total)
+    const pieData = AMOUNTS.map(({ key, label, count }) => ({
+      type: key,
+      name: label,
+      value: count,
+      fill: `var(--color-${key})`,
+    }))
+    return { pieData, pieTotal: total, pieInsight }
+  }, [])
 
   return (
     <Card className="@container/types-chart">
@@ -223,44 +259,69 @@ export function ChartSection() {
             </div>
 
             {/* Pie chart */}
-            <div className="flex min-h-0 min-w-0 flex-col @xl/types-chart:col-span-3">
-              <div className="flex h-full min-h-0 min-w-0 flex-1 flex-col items-center justify-center rounded-xl border border-border/60 bg-muted/40 p-3 sm:p-4 dark:bg-muted/20">
-                <ChartContainer
-                  config={chartConfig}
-                  className="!aspect-square h-[200px] w-full max-w-[200px] min-w-0 sm:h-[220px] sm:max-w-[220px]"
-                >
-                  <PieChart>
-                    <ChartTooltip
-                      cursor={false}
-                      content={
-                        <ChartTooltipContent
-                          hideLabel
-                          nameKey="type"
-                          indicator="dot"
-                          formatter={(value) => {
-                            const v = Number(value)
-                            const pct =
-                              pieTotal > 0
-                                ? ((v / pieTotal) * 100).toFixed(1)
-                                : "0.0"
-                            return (
-                              <span className="text-xs tabular-nums">
-                                {v.toLocaleString()} ({pct}%)
-                              </span>
-                            )
-                          }}
+            <div className="flex h-full min-h-0 min-w-0 flex-col @xl/types-chart:col-span-3">
+              <div className="flex h-full min-h-0 min-w-0 flex-1 flex-col rounded-xl border border-border/60 bg-muted/40 p-3 sm:p-4 dark:bg-muted/20">
+                <div className="flex h-[240px] w-full shrink-0 flex-col items-center justify-center md:h-[280px]">
+                  {pieTotal === 0 ? (
+                    <div className="flex h-full w-full items-center justify-center text-center text-sm text-muted-foreground">
+                      No changes in this period
+                    </div>
+                  ) : (
+                    <ChartContainer
+                      config={chartConfig}
+                      className="!aspect-auto h-full w-full max-w-full min-w-0"
+                    >
+                      <PieChart>
+                        <ChartTooltip
+                          cursor={false}
+                          content={
+                            <ChartTooltipContent
+                              hideLabel
+                              nameKey="type"
+                              indicator="dot"
+                              formatter={(value) => {
+                                const v = Number(value)
+                                const pct =
+                                  pieTotal > 0
+                                    ? ((v / pieTotal) * 100).toFixed(1)
+                                    : "0.0"
+                                return (
+                                  <span className="inline-flex flex-wrap items-baseline gap-x-1 text-xs leading-none">
+                                    <span className="font-mono font-medium text-foreground tabular-nums">
+                                      {v.toLocaleString()}
+                                    </span>
+                                    <span className="text-muted-foreground">
+                                      changes
+                                    </span>
+                                    <span className="font-mono font-medium text-foreground tabular-nums">
+                                      ({pct}%)
+                                    </span>
+                                    <span className="text-muted-foreground">
+                                      of total
+                                    </span>
+                                  </span>
+                                )
+                              }}
+                            />
+                          }
                         />
-                      }
-                    />
-                    <Pie
-                      data={pieData}
-                      dataKey="value"
-                      nameKey="type"
-                      stroke="var(--border)"
-                      strokeWidth={1}
-                    />
-                  </PieChart>
-                </ChartContainer>
+                        <Pie
+                          data={pieData}
+                          dataKey="value"
+                          nameKey="type"
+                          stroke="var(--border)"
+                          strokeWidth={1}
+                        />
+                      </PieChart>
+                    </ChartContainer>
+                  )}
+                </div>
+                {pieTotal > 0 ? (
+                  <p className="max-h-24 w-full shrink-0 overflow-y-auto pt-2 text-left text-xs leading-relaxed text-muted-foreground">
+                    <span className="font-medium text-foreground">Summary: </span>
+                    {pieInsight}
+                  </p>
+                ) : null}
               </div>
             </div>
         </div>
