@@ -79,13 +79,9 @@ src/
 
 ## Institution (site) filter
 
-Hospital sites **LICH**, **LTH**, **NYU**, and **WTH** are controlled in one shared React context (`DashboardInstitutionsProvider` on the dashboard). The same multi-select appears in three places:
+Hospital sites **LICH**, **LTH**, **NYU**, and **WTH** are controlled in one shared React context (`DashboardInstitutionsProvider` on the dashboard). The multi-select lives only in the **sticky reporting toolbar** next to the date range (labelled “Reporting period & sites”). **Worksheets changed** and **What most impacted the change** read that filter but do not duplicate the control.
 
-1. **Sticky toolbar** — next to the date range (labelled “Reporting period & sites”).
-2. **Worksheets changed** — header action (still available for convenience).
-3. **What most impacted the change** — top-right of the card header.
-
-Toggling sites updates **all** of them together. Charts that respect the filter:
+Charts that respect the filter:
 
 - **Worksheets changed** — line and pie series per institution.
 - **What most impacted the change** — stacked bars by site; reaction totals scale with the number of selected sites (demo behaviour).

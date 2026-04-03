@@ -13,7 +13,6 @@ import {
 
 import {
   Card,
-  CardAction,
   CardContent,
   CardDescription,
   CardHeader,
@@ -26,7 +25,6 @@ import {
 } from "@/components/ui/chart"
 import { ChartEmptyState } from "@/components/ui/chart-empty-state"
 import { ChartTooltipValue } from "@/components/ui/chart-tooltip-value"
-import { DashboardInstitutionToggle } from "@/components/dashboard-institution-toggle"
 import { useDashboardDateRange } from "@/contexts/dashboard-date-range-context"
 import { useDashboardInstitutions } from "@/contexts/dashboard-institutions-context"
 import {
@@ -151,15 +149,11 @@ export function ChartAreaInteractive() {
         <CardTitle>Worksheets changed</CardTitle>
         <CardDescription>
           <span className="hidden @[540px]/card:block">
-            Worksheet changes by institution for the reporting period. Site
-            selection matches the toolbar and &ldquo;What most impacted the
-            change&rdquo;—all stay in sync.
+            Worksheet changes by institution for the reporting period. Choose
+            sites in the sticky reporting header above.
           </span>
           <span className="@[540px]/card:hidden">By institution</span>
         </CardDescription>
-        <CardAction className="max-w-full shrink-0 justify-self-end overflow-x-auto pb-0.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          <DashboardInstitutionToggle />
-        </CardAction>
       </CardHeader>
       <CardContent className={chartContentClass}>
         <div className="grid grid-cols-1 items-stretch gap-4 lg:gap-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-4">
@@ -244,7 +238,7 @@ export function ChartAreaInteractive() {
             <div className="flex h-[240px] w-full shrink-0 flex-col items-center justify-center md:h-[280px]">
               {visibleInstitutionKeys.length === 0 ? (
                 <ChartEmptyState variant="pie">
-                  Turn on at least one institution in the legend to see the pie
+                  Turn on at least one site in the reporting header to see the pie
                   chart.
                 </ChartEmptyState>
               ) : pieTotal === 0 ? (

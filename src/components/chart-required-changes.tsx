@@ -3,10 +3,8 @@
 import * as React from "react"
 import { Bar, BarChart, Cell, CartesianGrid, XAxis, YAxis } from "recharts"
 
-import { DashboardInstitutionToggle } from "@/components/dashboard-institution-toggle"
 import {
   Card,
-  CardAction,
   CardContent,
   CardDescription,
   CardHeader,
@@ -252,17 +250,13 @@ export function ChartRequiredChanges() {
         <CardTitle>What most impacted the change</CardTitle>
         <CardDescription>
           <span className="hidden @[540px]/required-changes:block">
-            Required-change drivers by site, then how hospitals reacted—filtered
-            by the same site toggles as the reporting toolbar and worksheets
-            chart.
+            Required-change drivers by site, then how hospitals reacted—sites
+            are filtered from the sticky reporting header above.
           </span>
           <span className="@[540px]/required-changes:hidden">
             Impact and reactions
           </span>
         </CardDescription>
-        <CardAction className="max-w-full shrink-0 justify-self-end overflow-x-auto pb-0.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          <DashboardInstitutionToggle />
-        </CardAction>
       </CardHeader>
       <CardContent className={chartContentClass}>
         {/* Panel 1: Top required changes × sites */}
