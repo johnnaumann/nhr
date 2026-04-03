@@ -205,14 +205,16 @@ export function ChartCoderPerformance() {
   )
   const [detailSortDesc, setDetailSortDesc] = React.useState(true)
 
+  const filterMultiplier = addFilter === "drg-cqe" ? 0.72 : addFilter === "all-sheets" ? 1.18 : 1
+
   const coderBarData = React.useMemo((): CoderBarRow[] => {
     const rows = CODER_META.map((m, i) => {
       const base = CODER_BAR_BASE[i]!
       return {
         coder: m.name,
         row: m.row,
-        changed: scaleInt(base.changed, scale),
-        noChanges: scaleInt(base.noChanges, scale),
+        changed: scaleInt(base.changed, scale * filterMultiplier),
+        noChanges: scaleInt(base.noChanges, scale * filterMultiplier),
       }
     })
     const ranked = [...rows].sort(
@@ -226,7 +228,7 @@ export function ChartCoderPerformance() {
       return rows
     }
     return rows
-  }, [scale, volumeScope])
+  }, [scale, volumeScope, filterMultiplier])
 
   const workTotals = React.useMemo(() => {
     const sums = { changed: 0, noChanges: 0 } as Record<WorkKey, number>
@@ -248,16 +250,16 @@ export function ChartCoderPerformance() {
   const detailLineData = React.useMemo(() => {
     const scopeFactor =
       detailScope === "single" ? 0.88 : detailScope === "top5" ? 0.94 : 1
-    return buildDetailLineSeries(rangeIsoDays, scale * scopeFactor)
-  }, [detailScope, rangeIsoDays, scale])
+    return buildDetailLineSeries(rangeIsoDays, scale * scopeFactor * filterMultiplier)
+  }, [detailScope, rangeIsoDays, scale, filterMultiplier])
 
   const detailCounts = React.useMemo(() => {
     const next = {} as Record<DetailKey, number>
     DETAIL_KEYS.forEach((k) => {
-      next[k] = scaleInt(DETAIL_BASE[k], scale)
+      next[k] = scaleInt(DETAIL_BASE[k], scale * filterMultiplier)
     })
     return next
-  }, [scale])
+  }, [scale, filterMultiplier])
 
   const detailLegendRows = React.useMemo(() => {
     const rows = DETAIL_KEYS.map((key) => ({

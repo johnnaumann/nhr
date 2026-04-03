@@ -78,13 +78,22 @@ const reactionChartConfig = {
   medRecsDisagree: { label: "Med Recs Disagree", color: "var(--chart-7)" },
 } satisfies ChartConfig
 
-const REACTION_BASE: Record<ReactionKey, number> = {
+const REACTION_BASE_HOSPITAL: Record<ReactionKey, number> = {
   agrees: 274,
   cdiDisagrees: 96,
   mdDisagrees: 58,
   hospitalModDrg: 72,
   acknowledgeCqe: 348,
   medRecsDisagree: 128,
+}
+
+const REACTION_BASE_PAYER: Record<ReactionKey, number> = {
+  agrees: 185,
+  cdiDisagrees: 142,
+  mdDisagrees: 112,
+  hospitalModDrg: 38,
+  acknowledgeCqe: 210,
+  medRecsDisagree: 94,
 }
 
 const DEFAULT_VISIBLE_IMPACTS = [...IMPACT_KEYS] as ImpactKey[]
@@ -126,6 +135,18 @@ export function ChartRequiredChanges() {
   const [worksheetScopeBottom, setWorksheetScopeBottom] =
     React.useState("drg-cqe")
 
+  const worksheetBoostTop = worksheetScopeTop === "all-sheets" ? 1.35 : 1
+
+  const activeImpactKeys = React.useMemo(() => {
+    if (impactScope === "all") return [...IMPACT_KEYS]
+    const ranked = [...IMPACT_KEYS].sort((a, b) => {
+      const sumA = SITE_IMPACT_BASE.reduce((s, r) => s + r[a], 0)
+      const sumB = SITE_IMPACT_BASE.reduce((s, r) => s + r[b], 0)
+      return sumB - sumA
+    })
+    return ranked.slice(0, 3)
+  }, [impactScope])
+
   const impactTotals = React.useMemo(() => {
     const sums = {} as Record<ImpactKey, number>
     IMPACT_KEYS.forEach((k) => {
@@ -140,14 +161,14 @@ export function ChartRequiredChanges() {
   }, [])
 
   const impactLegendRows = React.useMemo(() => {
-    const rows = IMPACT_KEYS.map((key) => ({
+    const rows = activeImpactKeys.map((key) => ({
       key,
       label: String(impactChartConfig[key].label),
-      count: scaleInt(impactTotals[key], scale),
+      count: scaleInt(impactTotals[key], scale * worksheetBoostTop),
     }))
     rows.sort((a, b) => (impactSortDesc ? b.count - a.count : a.count - b.count))
     return rows
-  }, [impactSortDesc, impactTotals, scale])
+  }, [impactSortDesc, impactTotals, scale, activeImpactKeys, worksheetBoostTop])
 
   const siteBarData = React.useMemo(
     () =>
@@ -155,21 +176,25 @@ export function ChartRequiredChanges() {
         const next: Record<string, string | number> = {
           site: row.short,
         }
-        IMPACT_KEYS.forEach((k) => {
-          next[k] = scaleInt(row[k], scale)
+        activeImpactKeys.forEach((k) => {
+          next[k] = scaleInt(row[k], scale * worksheetBoostTop)
         })
         return next
       }),
-    [scale]
+    [scale, activeImpactKeys, worksheetBoostTop]
   )
+
+  const worksheetBoostBottom = worksheetScopeBottom === "all-sheets" ? 1.35 : 1
+  const reactionBase =
+    reactionView === "payer" ? REACTION_BASE_PAYER : REACTION_BASE_HOSPITAL
 
   const reactionCounts = React.useMemo(() => {
     const next = {} as Record<ReactionKey, number>
     REACTION_KEYS.forEach((k) => {
-      next[k] = scaleInt(REACTION_BASE[k], scale)
+      next[k] = scaleInt(reactionBase[k], scale * worksheetBoostBottom)
     })
     return next
-  }, [scale])
+  }, [scale, reactionBase, worksheetBoostBottom])
 
   const reactionLegendRows = React.useMemo(() => {
     const rows = REACTION_KEYS.map((key) => ({
@@ -372,7 +397,7 @@ export function ChartRequiredChanges() {
                         <ChartTooltipContent indicator="dot" labelKey="site" showTotal />
                       }
                     />
-                    {IMPACT_KEYS.filter((key) =>
+                    {activeImpactKeys.filter((key) =>
                       visibleImpacts.includes(key)
                     ).map((key) => (
                       <Bar
