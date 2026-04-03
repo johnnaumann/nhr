@@ -425,7 +425,6 @@ export function ChartCoderPerformance() {
                         stroke="var(--card)"
                         strokeWidth={1}
                         radius={0}
-                        isAnimationActive={false}
                       />
                     ))}
                   </BarChart>
