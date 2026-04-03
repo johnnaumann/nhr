@@ -2,7 +2,6 @@
 
 import * as React from "react"
 import { format } from "date-fns"
-import { ArrowDownUpIcon, SearchIcon } from "lucide-react"
 import {
   Bar,
   BarChart,
@@ -15,8 +14,6 @@ import {
   YAxis,
 } from "recharts"
 
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
 import {
   Card,
   CardContent,
@@ -30,7 +27,9 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart"
-import { RadioGroupItemMulti } from "@/components/ui/radio-group"
+import { ChartEmptyState } from "@/components/ui/chart-empty-state"
+import { ChartLegendList } from "@/components/ui/chart-legend-list"
+import { ChartTooltipValue } from "@/components/ui/chart-tooltip-value"
 import {
   Select,
   SelectContent,
@@ -41,15 +40,25 @@ import {
 } from "@/components/ui/select"
 import { useDashboardDateRange } from "@/contexts/dashboard-date-range-context"
 import {
+  buildPieInsight,
+  parseIsoDate,
+  scaleInt,
+  toggleVisibleKey,
+  type PieInsightRow,
+} from "@/lib/chart-helpers"
+import {
+  chartContentClass,
+  chartPanelClass,
+  filterSelectTriggerClass,
+  filterToolbarClass,
+  legendPanelClass,
+  pieInsightClass,
+} from "@/lib/chart-layout"
+import {
   DEMO_SCALE_REFERENCE_DAYS,
   eachIsoDateInDashboardRange,
 } from "@/lib/dashboard-demo-range"
 import { cn } from "@/lib/utils"
-
-function parseIsoDate(iso: string) {
-  const [y, mo, d] = iso.split("-").map(Number)
-  return new Date(y, mo - 1, d)
-}
 
 const WORK_KEYS = ["changed", "noChanges"] as const
 type WorkKey = (typeof WORK_KEYS)[number]
@@ -89,21 +98,19 @@ const DETAIL_BASE: Record<DetailKey, number> = {
 
 type CoderBarRow = {
   coder: string
-  row: 0 | 1
 } & Record<WorkKey, number>
 
-/** Ten coders; `row` drives staggered axis labels (Figma layout). */
-const CODER_META: { name: string; row: 0 | 1 }[] = [
-  { name: "Sarah Chen", row: 0 },
-  { name: "David Ruiz", row: 0 },
-  { name: "Priya Patel", row: 0 },
-  { name: "James Wilson", row: 0 },
-  { name: "Emily Foster", row: 0 },
-  { name: "Michael Tran", row: 1 },
-  { name: "Rachel Kim", row: 1 },
-  { name: "Carlos Diaz", row: 1 },
-  { name: "Aisha Brown", row: 1 },
-  { name: "Tom Nguyen", row: 1 },
+const CODER_NAMES = [
+  "Sarah Chen",
+  "David Ruiz",
+  "Priya Patel",
+  "James Wilson",
+  "Emily Foster",
+  "Michael Tran",
+  "Rachel Kim",
+  "Carlos Diaz",
+  "Aisha Brown",
+  "Tom Nguyen",
 ]
 
 /** Dramatically varied stacks — top coders stand out, clear performance tiers. */
@@ -123,9 +130,6 @@ const CODER_BAR_BASE: Record<WorkKey, number>[] = [
 const DEFAULT_VISIBLE_WORK = [...WORK_KEYS] as WorkKey[]
 const DEFAULT_VISIBLE_DETAIL = [...DETAIL_KEYS] as DetailKey[]
 
-function scaleInt(n: number, factor: number) {
-  return Math.max(1, Math.round(n * factor))
-}
 
 type DetailLineRow = { period: string; iso: string } & Record<DetailKey, number>
 
@@ -160,22 +164,11 @@ function buildDetailLineSeries(
   })
 }
 
-type PieBreakdownRow = {
-  key: DetailKey
-  label: string
-  value: number
-  pct: number
-}
-
-function buildDetailPieInsight(sorted: PieBreakdownRow[], total: number): string {
-  if (sorted.length === 0 || total === 0) return ""
-  const top = sorted[0]!
-  const bottom = sorted[sorted.length - 1]!
-  if (top.pct >= 42) {
-    return `${top.label} represents ${top.pct.toFixed(1)}% of coder-attributed changes in this slice—compare the line trend to see whether that holds across the period.`
-  }
-  return `${top.label} leads at ${top.pct.toFixed(1)}% of ${total.toLocaleString()} total; ${bottom.label} is smallest at ${bottom.pct.toFixed(1)}%.`
-}
+const DETAIL_PIE_COPY = {
+  dominantThreshold: 42,
+  dominantSuffix:
+    "Compare the line trend to see whether that holds across the period.",
+} as const
 
 export function ChartCoderPerformance() {
   const { range } = useDashboardDateRange()
@@ -208,11 +201,10 @@ export function ChartCoderPerformance() {
   const filterMultiplier = addFilter === "drg-cqe" ? 0.72 : addFilter === "all-sheets" ? 1.18 : 1
 
   const coderBarData = React.useMemo((): CoderBarRow[] => {
-    const rows = CODER_META.map((m, i) => {
+    const rows = CODER_NAMES.map((name, i) => {
       const base = CODER_BAR_BASE[i]!
       return {
-        coder: m.name,
-        row: m.row,
+        coder: name,
         changed: scaleInt(base.changed, scale * filterMultiplier),
         noChanges: scaleInt(base.noChanges, scale * filterMultiplier),
       }
@@ -224,8 +216,9 @@ export function ChartCoderPerformance() {
       const top = new Set(ranked.slice(0, 5).map((r) => r.coder))
       return rows.filter((r) => top.has(r.coder))
     }
-    if (volumeScope === "all") {
-      return rows
+    if (volumeScope === "top10") {
+      const top = new Set(ranked.slice(0, 10).map((r) => r.coder))
+      return rows.filter((r) => top.has(r.coder))
     }
     return rows
   }, [scale, volumeScope, filterMultiplier])
@@ -244,6 +237,7 @@ export function ChartCoderPerformance() {
       key,
       label: String(workStackConfig[key].label),
       count: workTotals[key],
+      color: workStackConfig[key].color!,
     }))
   }, [workTotals])
 
@@ -266,6 +260,7 @@ export function ChartCoderPerformance() {
       key,
       label: String(detailChartConfig[key].label),
       count: detailCounts[key],
+      color: detailChartConfig[key].color!,
     }))
     rows.sort((a, b) =>
       detailSortDesc ? b.count - a.count : a.count - b.count
@@ -276,7 +271,7 @@ export function ChartCoderPerformance() {
   const { pieData, pieTotal, pieInsight } = React.useMemo(() => {
     const active = DETAIL_KEYS.filter((k) => visibleDetail.includes(k))
     const total = active.reduce((acc, k) => acc + detailCounts[k], 0)
-    const breakdown: PieBreakdownRow[] = active.map((key) => {
+    const breakdown: PieInsightRow[] = active.map((key) => {
       const value = detailCounts[key]
       const pct = total > 0 ? (value / total) * 100 : 0
       return {
@@ -297,18 +292,9 @@ export function ChartCoderPerformance() {
     return {
       pieData,
       pieTotal: total,
-      pieInsight: buildDetailPieInsight(sorted, total),
+      pieInsight: buildPieInsight(sorted, total, DETAIL_PIE_COPY),
     }
   }, [detailCounts, visibleDetail])
-
-  const filterToolbarClass =
-    "flex flex-wrap items-baseline gap-x-1 gap-y-2 text-sm text-muted-foreground"
-
-  const legendPanelClass =
-    "flex h-full min-h-0 flex-1 flex-col gap-3 rounded-xl border border-border/60 bg-muted/40 p-3 sm:p-4 dark:bg-muted/20"
-
-  const chartPanelClass =
-    "flex min-h-0 min-w-0 flex-col rounded-xl border border-border/60 bg-muted/40 p-3 sm:p-4 dark:bg-muted/20"
 
   const mergedDetailConfig = React.useMemo(
     () => ({ ...workStackConfig, ...detailChartConfig }),
@@ -329,7 +315,7 @@ export function ChartCoderPerformance() {
           </span>
         </CardDescription>
       </CardHeader>
-      <CardContent className="flex flex-col gap-8 px-4 pt-2 pb-2 sm:pt-4 lg:px-6">
+      <CardContent className={chartContentClass}>
         {/* Top: stacked bars by coder */}
         <section className="flex flex-col gap-4">
           <div className={cn(filterToolbarClass, "items-center")}>
@@ -337,7 +323,7 @@ export function ChartCoderPerformance() {
             <Select value={volumeScope} onValueChange={setVolumeScope}>
               <SelectTrigger
                 size="sm"
-                className="h-8 w-fit min-w-[12rem] border-0 border-b border-dashed border-muted-foreground/50 bg-transparent px-1 py-0 font-medium text-foreground shadow-none hover:bg-muted/40 focus:ring-0 focus-visible:ring-0 dark:hover:bg-muted/20"
+                className={cn(filterSelectTriggerClass, "min-w-[12rem]")}
               >
                 <SelectValue />
               </SelectTrigger>
@@ -353,7 +339,7 @@ export function ChartCoderPerformance() {
             <Select value={addFilter} onValueChange={setAddFilter}>
               <SelectTrigger
                 size="sm"
-                className="h-8 w-fit min-w-[9rem] border-0 border-b border-dashed border-muted-foreground/50 bg-transparent px-1 py-0 font-medium text-foreground shadow-none hover:bg-muted/40 focus:ring-0 focus-visible:ring-0 dark:hover:bg-muted/20"
+                className={cn(filterSelectTriggerClass, "min-w-[9rem]")}
               >
                 <SelectValue placeholder="Add filter" />
               </SelectTrigger>
@@ -369,61 +355,18 @@ export function ChartCoderPerformance() {
 
           <div className="grid min-h-[min(26rem,52vh)] grid-cols-1 gap-4 @xl/coder-performance:grid-cols-12 @xl/coder-performance:items-stretch">
             <div className="flex min-h-0 min-w-0 flex-col @xl/coder-performance:col-span-3">
-              <div className={legendPanelClass}>
-                <div className="flex items-start justify-between gap-2">
-                  <p className="text-sm text-muted-foreground">
-                    Worksheet outcomes
-                  </p>
-                </div>
-                <ul
-                  className="flex flex-col gap-3"
-                  aria-label="Filter stacks on coder chart"
-                >
-                  {workLegendRows.map(({ key, label, count }) => {
-                    const filterId = `coder-work-${key}`
-                    const isOn = visibleWork.includes(key)
-                    return (
-                      <li
-                        key={key}
-                        className={cn(
-                          "flex min-w-0 items-center gap-2.5 text-sm transition-opacity",
-                          !isOn && "opacity-40"
-                        )}
-                      >
-                        <RadioGroupItemMulti
-                          id={filterId}
-                          checked={isOn}
-                          indicatorColor={workStackConfig[key].color}
-                          onCheckedChange={(on) => {
-                            setVisibleWork((prev) => {
-                              if (on) {
-                                if (prev.includes(key)) return prev
-                                const next = new Set(prev)
-                                next.add(key)
-                                return WORK_KEYS.filter((k) => next.has(k))
-                              }
-                              return prev.filter((k) => k !== key)
-                            })
-                          }}
-                        />
-                        <label
-                          htmlFor={filterId}
-                          className="min-w-0 flex-1 cursor-pointer truncate font-medium text-foreground"
-                        >
-                          {label}
-                        </label>
-                        <Badge
-                          variant="secondary"
-                          className="shrink-0 gap-1 tabular-nums"
-                        >
-                          <span>{count.toLocaleString()}</span>
-                          <SearchIcon className="size-3 opacity-60" aria-hidden />
-                        </Badge>
-                      </li>
-                    )
-                  })}
-                </ul>
-              </div>
+              <ChartLegendList
+                title="Worksheet outcomes"
+                items={workLegendRows}
+                visibleKeys={visibleWork}
+                onToggle={(key, on) =>
+                  setVisibleWork((prev) =>
+                    toggleVisibleKey(prev, key as WorkKey, on, WORK_KEYS)
+                  )
+                }
+                idPrefix="coder-work"
+                ariaLabel="Filter stacks on coder chart"
+              />
             </div>
 
             <div
@@ -433,13 +376,13 @@ export function ChartCoderPerformance() {
               )}
             >
               {visibleWork.length === 0 ? (
-                <div className="flex min-h-[240px] flex-1 items-center justify-center px-2 text-center text-sm text-muted-foreground md:min-h-[320px]">
+                <ChartEmptyState variant="chart-tall">
                   Select at least one outcome to see the stacked bars.
-                </div>
+                </ChartEmptyState>
               ) : coderBarData.length === 0 ? (
-                <div className="flex min-h-[240px] flex-1 items-center justify-center px-2 text-center text-sm text-muted-foreground md:min-h-[320px]">
+                <ChartEmptyState variant="chart-tall">
                   No coders match this filter.
-                </div>
+                </ChartEmptyState>
               ) : (
                 <ChartContainer
                   config={workStackConfig}
@@ -448,7 +391,7 @@ export function ChartCoderPerformance() {
                   <BarChart
                     accessibilityLayer
                     data={coderBarData}
-                    margin={{ left: 4, right: 8, top: 12, bottom: 8 }}
+                    margin={{ left: 4, right: 8, top: 8, bottom: 4 }}
                     barCategoryGap="14%"
                   >
                     <CartesianGrid vertical={false} strokeDasharray="3 3" />
@@ -499,7 +442,7 @@ export function ChartCoderPerformance() {
             <Select value={detailScope} onValueChange={setDetailScope}>
               <SelectTrigger
                 size="sm"
-                className="h-8 w-fit min-w-[10rem] border-0 border-b border-dashed border-muted-foreground/50 bg-transparent px-1 py-0 font-medium text-foreground shadow-none hover:bg-muted/40 focus:ring-0 focus-visible:ring-0 dark:hover:bg-muted/20"
+                className={cn(filterSelectTriggerClass, "min-w-[10rem]")}
               >
                 <SelectValue />
               </SelectTrigger>
@@ -521,13 +464,13 @@ export function ChartCoderPerformance() {
               )}
             >
               {visibleDetail.length === 0 ? (
-                <div className="flex min-h-[240px] flex-1 items-center justify-center px-2 text-center text-sm text-muted-foreground md:min-h-[280px]">
+                <ChartEmptyState>
                   Select at least one category in the legend to see trends.
-                </div>
+                </ChartEmptyState>
               ) : detailLineData.length === 0 ? (
-                <div className="flex min-h-[240px] flex-1 items-center justify-center px-2 text-center text-sm text-muted-foreground md:min-h-[280px]">
+                <ChartEmptyState>
                   Not enough days in range for a trend.
-                </div>
+                </ChartEmptyState>
               ) : (
                 <ChartContainer
                   config={detailChartConfig}
@@ -598,18 +541,18 @@ export function ChartCoderPerformance() {
               )}
             >
               {pieTotal > 0 && visibleDetail.length > 0 && pieInsight ? (
-                <p className="max-h-24 w-full shrink-0 overflow-y-auto pb-2 text-left text-xs leading-relaxed text-muted-foreground">
+                <p className={pieInsightClass}>
                   <span className="font-medium text-foreground">Summary: </span>
                   {pieInsight}
                 </p>
               ) : null}
               <div className="flex h-[240px] w-full shrink-0 flex-col items-center justify-center md:h-[280px]">
                 {visibleDetail.length === 0 ? (
-                  <div className="flex h-full w-full items-center justify-center px-2 text-center text-sm text-muted-foreground">
+                  <ChartEmptyState variant="pie">
                     No slice to show
-                  </div>
+                  </ChartEmptyState>
                 ) : pieTotal === 0 ? (
-                  <div className="flex h-full w-full items-center justify-center text-sm text-muted-foreground">No data</div>
+                  <ChartEmptyState variant="pie">No data</ChartEmptyState>
                 ) : (
                   <ChartContainer
                     config={mergedDetailConfig}
@@ -623,26 +566,12 @@ export function ChartCoderPerformance() {
                             hideLabel
                             nameKey="category"
                             indicator="dot"
-                            formatter={(value) => {
-                              const v = Number(value)
-                              const pct =
-                                pieTotal > 0
-                                  ? ((v / pieTotal) * 100).toFixed(1)
-                                  : "0.0"
-                              return (
-                                <span className="inline-flex items-baseline gap-x-1.5 text-xs leading-none">
-                                  <span className="font-mono font-medium text-foreground tabular-nums">
-                                    {v.toLocaleString()}
-                                  </span>
-                                  <span className="text-muted-foreground">
-                                    changes
-                                  </span>
-                                  <span className="font-mono text-muted-foreground tabular-nums">
-                                    ({pct}%)
-                                  </span>
-                                </span>
-                              )
-                            }}
+                            formatter={(value) => (
+                              <ChartTooltipValue
+                                value={Number(value)}
+                                total={pieTotal}
+                              />
+                            )}
                           />
                         }
                       />
@@ -660,78 +589,21 @@ export function ChartCoderPerformance() {
             </div>
 
             <div className="flex min-h-0 min-w-0 flex-col">
-              <div className={legendPanelClass}>
-                  <div className="flex items-start justify-between gap-2">
-                    <p className="text-sm text-muted-foreground">
-                      Change-type totals
-                    </p>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon-xs"
-                      className="shrink-0 text-muted-foreground"
-                      aria-label={
-                        detailSortDesc
-                          ? "Sort ascending by count"
-                          : "Sort descending by count"
-                      }
-                      onClick={() => setDetailSortDesc((d) => !d)}
-                    >
-                      <ArrowDownUpIcon className="size-3.5" />
-                    </Button>
-                  </div>
-                  <ul
-                    className="flex flex-col gap-3"
-                    aria-label="Filter categories on line and pie charts"
-                  >
-                    {detailLegendRows.map(({ key, label, count }) => {
-                      const filterId = `coder-detail-${key}`
-                      const isOn = visibleDetail.includes(key)
-                      return (
-                        <li
-                          key={key}
-                          className={cn(
-                            "flex min-w-0 items-center gap-2.5 text-sm transition-opacity",
-                            !isOn && "opacity-40"
-                          )}
-                        >
-                          <RadioGroupItemMulti
-                            id={filterId}
-                            checked={isOn}
-                            indicatorColor={detailChartConfig[key].color}
-                            onCheckedChange={(on) => {
-                              setVisibleDetail((prev) => {
-                                if (on) {
-                                  if (prev.includes(key)) return prev
-                                  const next = new Set(prev)
-                                  next.add(key)
-                                  return DETAIL_KEYS.filter((k) => next.has(k))
-                                }
-                                return prev.filter((k) => k !== key)
-                              })
-                            }}
-                          />
-                          <label
-                            htmlFor={filterId}
-                            className="min-w-0 flex-1 cursor-pointer text-left font-medium text-foreground @[480px]/coder-performance:truncate"
-                          >
-                            {label}
-                          </label>
-                          <Badge
-                            variant="secondary"
-                            className="shrink-0 gap-1 tabular-nums"
-                          >
-                            <span>{count.toLocaleString()}</span>
-                            <SearchIcon
-                              className="size-3 opacity-60"
-                              aria-hidden
-                            />
-                          </Badge>
-                        </li>
-                      )
-                    })}
-                  </ul>
-                </div>
+              <ChartLegendList
+                title="Change-type totals"
+                items={detailLegendRows}
+                visibleKeys={visibleDetail}
+                onToggle={(key, on) =>
+                  setVisibleDetail((prev) =>
+                    toggleVisibleKey(prev, key as DetailKey, on, DETAIL_KEYS)
+                  )
+                }
+                sortDesc={detailSortDesc}
+                onToggleSort={() => setDetailSortDesc((d) => !d)}
+                idPrefix="coder-detail"
+                ariaLabel="Filter categories on line and pie charts"
+                labelClassName="text-left @[480px]/coder-performance:truncate"
+              />
             </div>
           </div>
         </section>

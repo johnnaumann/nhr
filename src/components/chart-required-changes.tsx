@@ -1,11 +1,8 @@
 "use client"
 
 import * as React from "react"
-import { ArrowDownUpIcon, SearchIcon } from "lucide-react"
 import { Bar, BarChart, Cell, CartesianGrid, XAxis, YAxis } from "recharts"
 
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
 import {
   Card,
   CardContent,
@@ -19,7 +16,9 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart"
-import { RadioGroupItemMulti } from "@/components/ui/radio-group"
+import { ChartEmptyState } from "@/components/ui/chart-empty-state"
+import { ChartLegendList } from "@/components/ui/chart-legend-list"
+import { ChartTooltipValue } from "@/components/ui/chart-tooltip-value"
 import {
   Select,
   SelectContent,
@@ -29,6 +28,14 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { useDashboardDateRange } from "@/contexts/dashboard-date-range-context"
+import { scaleInt, toggleVisibleKey } from "@/lib/chart-helpers"
+import {
+  chartContentClass,
+  chartPanelClass,
+  filterSelectTriggerClass,
+  filterToolbarClass,
+  legendPanelClass,
+} from "@/lib/chart-layout"
 import {
   DEMO_SCALE_REFERENCE_DAYS,
   dashboardRangeDayCount,
@@ -99,9 +106,6 @@ const REACTION_BASE_PAYER: Record<ReactionKey, number> = {
 const DEFAULT_VISIBLE_IMPACTS = [...IMPACT_KEYS] as ImpactKey[]
 const DEFAULT_VISIBLE_REACTIONS = [...REACTION_KEYS] as ReactionKey[]
 
-function scaleInt(n: number, factor: number) {
-  return Math.max(1, Math.round(n * factor))
-}
 
 export function ChartRequiredChanges() {
   const { range } = useDashboardDateRange()
@@ -165,6 +169,7 @@ export function ChartRequiredChanges() {
       key,
       label: String(impactChartConfig[key].label),
       count: scaleInt(impactTotals[key], scale * worksheetBoostTop),
+      color: impactChartConfig[key].color!,
     }))
     rows.sort((a, b) => (impactSortDesc ? b.count - a.count : a.count - b.count))
     return rows
@@ -201,6 +206,7 @@ export function ChartRequiredChanges() {
       key,
       label: String(reactionChartConfig[key].label),
       count: reactionCounts[key],
+      color: reactionChartConfig[key].color!,
     }))
     rows.sort((a, b) =>
       reactionSortDesc ? b.count - a.count : a.count - b.count
@@ -219,15 +225,6 @@ export function ChartRequiredChanges() {
       .sort((a, b) => b.value - a.value)
   }, [reactionCounts, visibleReactions])
 
-  const filterToolbarClass =
-    "flex flex-wrap items-baseline gap-x-1 gap-y-2 text-sm text-muted-foreground"
-
-  const legendPanelClass =
-    "flex h-full min-h-0 flex-1 flex-col gap-3 rounded-xl border border-border/60 bg-muted/40 p-3 sm:p-4 dark:bg-muted/20"
-
-  const chartPanelClass =
-    "flex min-h-0 min-w-0 flex-col rounded-xl border border-border/60 bg-muted/40 p-3 sm:p-4 dark:bg-muted/20"
-
   return (
     <Card className="@container/required-changes">
       <CardHeader className="pt-2">
@@ -242,7 +239,7 @@ export function ChartRequiredChanges() {
           </span>
         </CardDescription>
       </CardHeader>
-      <CardContent className="flex flex-col gap-8 px-4 pt-2 pb-2 sm:pt-4 lg:px-6">
+      <CardContent className={chartContentClass}>
         {/* Panel 1: Top required changes × sites */}
         <section className="flex flex-col gap-4">
           <div className={filterToolbarClass}>
@@ -250,13 +247,13 @@ export function ChartRequiredChanges() {
             <Select value={impactScope} onValueChange={setImpactScope}>
               <SelectTrigger
                 size="sm"
-                className="h-8 w-fit min-w-[10rem] border-0 border-b border-dashed border-muted-foreground/50 bg-transparent px-1 py-0 font-medium text-foreground shadow-none hover:bg-muted/40 focus:ring-0 focus-visible:ring-0 dark:hover:bg-muted/20"
+                className={cn(filterSelectTriggerClass, "min-w-[10rem]")}
               >
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 <SelectGroup>
-                  <SelectItem value="top5">Top 5 required changes</SelectItem>
+                  <SelectItem value="top5">Top 3 required changes</SelectItem>
                   <SelectItem value="all">All required changes</SelectItem>
                 </SelectGroup>
               </SelectContent>
@@ -265,7 +262,7 @@ export function ChartRequiredChanges() {
             <Select value={worksheetScopeTop} onValueChange={setWorksheetScopeTop}>
               <SelectTrigger
                 size="sm"
-                className="h-8 w-fit min-w-[11rem] border-0 border-b border-dashed border-muted-foreground/50 bg-transparent px-1 py-0 font-medium text-foreground shadow-none hover:bg-muted/40 focus:ring-0 focus-visible:ring-0 dark:hover:bg-muted/20"
+                className={cn(filterSelectTriggerClass, "min-w-[11rem]")}
               >
                 <SelectValue />
               </SelectTrigger>
@@ -284,75 +281,20 @@ export function ChartRequiredChanges() {
             )}
           >
             <div className="flex min-h-0 min-w-0 flex-col @xl/required-changes:col-span-3">
-              <div className={legendPanelClass}>
-                <div className="flex items-start justify-between gap-2">
-                  <p className="text-sm text-muted-foreground">
-                    Amount by impact category
-                  </p>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon-xs"
-                    className="shrink-0 text-muted-foreground"
-                    aria-label={
-                      impactSortDesc
-                        ? "Sort ascending by count"
-                        : "Sort descending by count"
-                    }
-                    onClick={() => setImpactSortDesc((d) => !d)}
-                  >
-                    <ArrowDownUpIcon className="size-3.5" />
-                  </Button>
-                </div>
-                <ul
-                  className="flex flex-col gap-3"
-                  aria-label="Filter impact categories on chart"
-                >
-                  {impactLegendRows.map(({ key, label, count }) => {
-                    const filterId = `impact-chart-filter-${key}`
-                    const isOn = visibleImpacts.includes(key)
-                    return (
-                      <li
-                        key={key}
-                        className={cn(
-                          "flex min-w-0 items-center gap-2.5 text-sm transition-opacity",
-                          !isOn && "opacity-40"
-                        )}
-                      >
-                        <RadioGroupItemMulti
-                          id={filterId}
-                          checked={isOn}
-                          indicatorColor={impactChartConfig[key].color}
-                          onCheckedChange={(on) => {
-                            setVisibleImpacts((prev) => {
-                              if (on) {
-                                if (prev.includes(key)) return prev
-                                const next = new Set(prev)
-                                next.add(key)
-                                return IMPACT_KEYS.filter((k) => next.has(k))
-                              }
-                              return prev.filter((k) => k !== key)
-                            })
-                          }}
-                        />
-                        <label
-                          htmlFor={filterId}
-                          className="min-w-0 flex-1 cursor-pointer truncate font-medium text-foreground"
-                        >
-                          {label}
-                        </label>
-                        <Badge
-                          variant="secondary"
-                          className="shrink-0 gap-1 tabular-nums"
-                        >
-                          <span>{count.toLocaleString()}</span>
-                          <SearchIcon className="size-3 opacity-60" aria-hidden />
-                        </Badge>
-                      </li>
-                    )
-                  })}
-                </ul>
-              </div>
+              <ChartLegendList
+                title="Amount by impact category"
+                items={impactLegendRows}
+                visibleKeys={visibleImpacts}
+                onToggle={(key, on) =>
+                  setVisibleImpacts((prev) =>
+                    toggleVisibleKey(prev, key as ImpactKey, on, IMPACT_KEYS)
+                  )
+                }
+                sortDesc={impactSortDesc}
+                onToggleSort={() => setImpactSortDesc((d) => !d)}
+                idPrefix="impact-chart-filter"
+                ariaLabel="Filter impact categories on chart"
+              />
             </div>
 
             <div
@@ -362,10 +304,10 @@ export function ChartRequiredChanges() {
               )}
             >
               {visibleImpacts.length === 0 ? (
-                <div className="flex min-h-[240px] flex-1 items-center justify-center px-2 text-center text-sm text-muted-foreground md:min-h-[280px]">
+                <ChartEmptyState>
                   Select at least one impact category to see the stacked bar
                   chart.
-                </div>
+                </ChartEmptyState>
               ) : (
                 <ChartContainer
                   config={impactChartConfig}
@@ -424,7 +366,7 @@ export function ChartRequiredChanges() {
             <Select value={reactionView} onValueChange={setReactionView}>
               <SelectTrigger
                 size="sm"
-                className="h-8 w-fit min-w-[10rem] border-0 border-b border-dashed border-muted-foreground/50 bg-transparent px-1 py-0 font-medium text-foreground shadow-none hover:bg-muted/40 focus:ring-0 focus-visible:ring-0 dark:hover:bg-muted/20"
+                className={cn(filterSelectTriggerClass, "min-w-[10rem]")}
               >
                 <SelectValue />
               </SelectTrigger>
@@ -442,7 +384,7 @@ export function ChartRequiredChanges() {
             >
               <SelectTrigger
                 size="sm"
-                className="h-8 w-fit min-w-[11rem] border-0 border-b border-dashed border-muted-foreground/50 bg-transparent px-1 py-0 font-medium text-foreground shadow-none hover:bg-muted/40 focus:ring-0 focus-visible:ring-0 dark:hover:bg-muted/20"
+                className={cn(filterSelectTriggerClass, "min-w-[11rem]")}
               >
                 <SelectValue />
               </SelectTrigger>
@@ -461,75 +403,20 @@ export function ChartRequiredChanges() {
             )}
           >
             <div className="flex min-h-0 min-w-0 flex-col @xl/required-changes:col-span-3">
-              <div className={legendPanelClass}>
-                <div className="flex items-start justify-between gap-2">
-                  <p className="text-sm text-muted-foreground">
-                    Amount by reaction type
-                  </p>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon-xs"
-                    className="shrink-0 text-muted-foreground"
-                    aria-label={
-                      reactionSortDesc
-                        ? "Sort ascending by count"
-                        : "Sort descending by count"
-                    }
-                    onClick={() => setReactionSortDesc((d) => !d)}
-                  >
-                    <ArrowDownUpIcon className="size-3.5" />
-                  </Button>
-                </div>
-                <ul
-                  className="flex flex-col gap-3"
-                  aria-label="Filter reaction types on chart"
-                >
-                  {reactionLegendRows.map(({ key, label, count }) => {
-                    const filterId = `reaction-filter-${key}`
-                    const isOn = visibleReactions.includes(key)
-                    return (
-                      <li
-                        key={key}
-                        className={cn(
-                          "flex min-w-0 items-center gap-2.5 text-sm transition-opacity",
-                          !isOn && "opacity-40"
-                        )}
-                      >
-                        <RadioGroupItemMulti
-                          id={filterId}
-                          checked={isOn}
-                          indicatorColor={reactionChartConfig[key].color}
-                          onCheckedChange={(on) => {
-                            setVisibleReactions((prev) => {
-                              if (on) {
-                                if (prev.includes(key)) return prev
-                                const next = new Set(prev)
-                                next.add(key)
-                                return REACTION_KEYS.filter((k) => next.has(k))
-                              }
-                              return prev.filter((k) => k !== key)
-                            })
-                          }}
-                        />
-                        <label
-                          htmlFor={filterId}
-                          className="min-w-0 flex-1 cursor-pointer truncate font-medium text-foreground"
-                        >
-                          {label}
-                        </label>
-                        <Badge
-                          variant="secondary"
-                          className="shrink-0 gap-1 tabular-nums"
-                        >
-                          <span>{count.toLocaleString()}</span>
-                          <SearchIcon className="size-3 opacity-60" aria-hidden />
-                        </Badge>
-                      </li>
-                    )
-                  })}
-                </ul>
-              </div>
+              <ChartLegendList
+                title="Amount by reaction type"
+                items={reactionLegendRows}
+                visibleKeys={visibleReactions}
+                onToggle={(key, on) =>
+                  setVisibleReactions((prev) =>
+                    toggleVisibleKey(prev, key as ReactionKey, on, REACTION_KEYS)
+                  )
+                }
+                sortDesc={reactionSortDesc}
+                onToggleSort={() => setReactionSortDesc((d) => !d)}
+                idPrefix="reaction-filter"
+                ariaLabel="Filter reaction types on chart"
+              />
             </div>
 
             <div
@@ -539,9 +426,9 @@ export function ChartRequiredChanges() {
               )}
             >
               {visibleReactions.length === 0 ? (
-                <div className="flex min-h-[240px] flex-1 items-center justify-center px-2 text-center text-sm text-muted-foreground md:min-h-[280px]">
+                <ChartEmptyState>
                   Select at least one reaction type to see the chart.
-                </div>
+                </ChartEmptyState>
               ) : (
                 <ChartContainer
                   config={reactionChartConfig}
@@ -571,27 +458,16 @@ export function ChartRequiredChanges() {
                           indicator="line"
                           nameKey="key"
                           formatter={(value) => {
-                            const v = Number(value)
                             const total = reactionBarData.reduce(
                               (s, r) => s + r.value,
                               0
                             )
-                            const pct =
-                              total > 0
-                                ? ((v / total) * 100).toFixed(1)
-                                : "0.0"
                             return (
-                              <span className="inline-flex items-baseline gap-x-1.5 text-xs leading-none">
-                                <span className="font-mono font-medium text-foreground tabular-nums">
-                                  {v.toLocaleString()}
-                                </span>
-                                <span className="text-muted-foreground">
-                                  reactions
-                                </span>
-                                <span className="font-mono text-muted-foreground tabular-nums">
-                                  ({pct}%)
-                                </span>
-                              </span>
+                              <ChartTooltipValue
+                                value={Number(value)}
+                                total={total}
+                                unit="reactions"
+                              />
                             )
                           }}
                         />

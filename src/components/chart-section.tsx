@@ -2,11 +2,8 @@
 
 import * as React from "react"
 import { format, startOfWeek } from "date-fns"
-import { ArrowDownUpIcon, SearchIcon } from "lucide-react"
 import { Bar, BarChart, CartesianGrid, Pie, PieChart, XAxis, YAxis } from "recharts"
 
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
 import {
   Card,
   CardContent,
@@ -20,8 +17,22 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart"
-import { RadioGroupItemMulti } from "@/components/ui/radio-group"
+import { ChartEmptyState } from "@/components/ui/chart-empty-state"
+import { ChartLegendList } from "@/components/ui/chart-legend-list"
+import { ChartTooltipValue } from "@/components/ui/chart-tooltip-value"
 import { useDashboardDateRange } from "@/contexts/dashboard-date-range-context"
+import {
+  buildPieInsight,
+  parseIsoDate,
+  toggleVisibleKey,
+  type PieInsightRow,
+} from "@/lib/chart-helpers"
+import {
+  chartContentClass,
+  chartPanelClass,
+  legendPanelClass,
+  pieInsightClass,
+} from "@/lib/chart-layout"
 import { eachIsoDateInDashboardRange } from "@/lib/dashboard-demo-range"
 import { cn } from "@/lib/utils"
 
@@ -68,7 +79,7 @@ function stackValue(dayIndex: number, keyIndex: number, key: ChangeTypeKey) {
 
 function buildChangeRowsForIsos(isos: string[]): ChangeDayRow[] {
   return isos.map((date) => {
-    const dayIndex = Math.floor(parseDataDate(date).getTime() / 86400000)
+    const dayIndex = Math.floor(parseIsoDate(date).getTime() / 86400000)
     const row = { date } as ChangeDayRow
     TYPE_KEYS.forEach((key, keyIndex) => {
       row[key] = stackValue(dayIndex, keyIndex, key)
@@ -77,10 +88,6 @@ function buildChangeRowsForIsos(isos: string[]): ChangeDayRow[] {
   })
 }
 
-function parseDataDate(iso: string) {
-  const [y, mo, d] = iso.split("-").map(Number)
-  return new Date(y, mo - 1, d)
-}
 
 const DAILY_BAR_POINT_MAX = 31
 
@@ -97,7 +104,7 @@ function toBarChartRows(filteredDays: ChangeDayRow[]): BarRow[] {
         values[k] = r[k]
       })
       return {
-        period: format(parseDataDate(r.date), "MMM d"),
+        period: format(parseIsoDate(r.date), "MMM d"),
         iso: r.date,
         ...values,
       } satisfies BarRow
@@ -109,7 +116,7 @@ function toBarChartRows(filteredDays: ChangeDayRow[]): BarRow[] {
     { weekStart: Date; sums: Record<ChangeTypeKey, number>; dayCount: number }
   >()
   for (const r of filteredDays) {
-    const d = parseDataDate(r.date)
+    const d = parseIsoDate(r.date)
     const ws = startOfWeek(d, { weekStartsOn: 1 })
     const key = format(ws, "yyyy-MM-dd")
     let agg = map.get(key)
@@ -173,36 +180,14 @@ function sumsByType(rows: ChangeDayRow[]): Record<ChangeTypeKey, number> {
   return sums
 }
 
-type TypesPieBreakdownRow = {
-  key: ChangeTypeKey
-  label: string
-  value: number
-  pct: number
-}
-
-function buildTypesPieInsight(
-  sorted: TypesPieBreakdownRow[],
-  total: number
-): string {
-  if (sorted.length === 0 || total === 0) {
-    return ""
-  }
-  const top = sorted[0]!
-  const second = sorted[1]
-  const bottom = sorted[sorted.length - 1]!
-  const spread = top.pct - bottom.pct
-
-  if (second && Math.abs(top.pct - second.pct) < 4) {
-    return `${top.label} and ${second.label} are almost tied (${top.pct.toFixed(1)}% vs ${second.pct.toFixed(1)}%). Compare their stacks in the bar chart to see how volumes shift by period.`
-  }
-  if (spread < 12) {
-    return "Change types are fairly balanced this period—no single category dominates the mix."
-  }
-  if (top.pct >= 38) {
-    return `${top.label} accounts for a large share (${top.pct.toFixed(1)}%). Worth confirming whether that reflects real remediation volume or how changes are classified.`
-  }
-  return `${top.label} leads with ${top.pct.toFixed(1)}% of ${total.toLocaleString()} total changes; ${bottom.label} is lowest at ${bottom.pct.toFixed(1)}%.`
-}
+const TYPES_PIE_COPY = {
+  tiedSuffix:
+    "Compare their stacks in the bar chart to see how volumes shift by period.",
+  balancedText:
+    "Change types are fairly balanced this period\u2014no single category dominates the mix.",
+  dominantSuffix:
+    "Worth confirming whether that reflects real remediation volume or how changes are classified.",
+} as const
 
 const DEFAULT_VISIBLE_TYPES = [...TYPE_KEYS] as ChangeTypeKey[]
 
@@ -228,6 +213,7 @@ export function ChartSection() {
       key,
       label: String(chartConfig[key].label),
       count: sums[key],
+      color: chartConfig[key].color!,
     }))
   }, [filteredDays])
 
@@ -240,7 +226,7 @@ export function ChartSection() {
   const { pieData, pieTotal, pieInsight } = React.useMemo(() => {
     const active = amountRows.filter((r) => visibleKeys.includes(r.key))
     const total = active.reduce((acc, r) => acc + r.count, 0)
-    const breakdown: TypesPieBreakdownRow[] = active.map(
+    const breakdown: PieInsightRow[] = active.map(
       ({ key, label, count }) => ({
         key,
         label,
@@ -249,7 +235,7 @@ export function ChartSection() {
       })
     )
     const sortedBreakdown = [...breakdown].sort((a, b) => b.value - a.value)
-    const pieInsight = buildTypesPieInsight(sortedBreakdown, total)
+    const pieInsight = buildPieInsight(sortedBreakdown, total, TYPES_PIE_COPY)
     const pieData = active.map(({ key, label, count }) => ({
       type: key,
       name: label,
@@ -271,92 +257,37 @@ export function ChartSection() {
           <span className="@[540px]/types-chart:hidden">By change type</span>
         </CardDescription>
       </CardHeader>
-      <CardContent className="px-4 pt-2 pb-2 sm:pt-4 lg:px-6">
+      <CardContent className={chartContentClass}>
         <div className="grid grid-cols-1 gap-4 @xl/types-chart:grid-cols-12 @xl/types-chart:items-stretch">
             {/* Amounts + legend */}
             <div className="flex min-h-0 min-w-0 flex-col @xl/types-chart:col-span-3">
-              <div className="flex h-full min-h-0 flex-1 flex-col gap-3 rounded-xl border border-border/60 bg-muted/40 p-3 sm:p-4 dark:bg-muted/20">
-                <div className="flex items-start justify-between gap-2">
-                  <p className="text-sm text-muted-foreground">
-                    Amount of Types of Changes
-                  </p>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon-xs"
-                    className="shrink-0 text-muted-foreground"
-                    aria-label={
-                      sortDesc
-                        ? "Sort ascending by count"
-                        : "Sort descending by count"
-                    }
-                    onClick={() => setSortDesc((d) => !d)}
-                  >
-                    <ArrowDownUpIcon className="size-3.5" />
-                  </Button>
-                </div>
-                <ul className="flex flex-col gap-3" aria-label="Filter change types on charts">
-                  {sortedAmounts.map(({ key, label, count }) => {
-                    const filterId = `types-chart-filter-${key}`
-                    const isOn = visibleKeys.includes(key)
-                    return (
-                      <li
-                        key={key}
-                        className={cn(
-                          "flex min-w-0 items-center gap-2.5 text-sm transition-opacity",
-                          !isOn && "opacity-40"
-                        )}
-                      >
-                        <RadioGroupItemMulti
-                          id={filterId}
-                          checked={isOn}
-                          indicatorColor={chartConfig[key].color}
-                          onCheckedChange={(on) => {
-                            setVisibleKeys((prev) => {
-                              if (on) {
-                                if (prev.includes(key)) return prev
-                                const next = new Set(prev)
-                                next.add(key)
-                                return TYPE_KEYS.filter((k) => next.has(k))
-                              }
-                              return prev.filter((k) => k !== key)
-                            })
-                          }}
-                        />
-                        <label
-                          htmlFor={filterId}
-                          className="min-w-0 flex-1 cursor-pointer truncate font-medium text-foreground"
-                        >
-                          {label}
-                        </label>
-                        <Badge
-                          variant="secondary"
-                          className="shrink-0 gap-1 tabular-nums"
-                        >
-                          <span>{count.toLocaleString()}</span>
-                          <SearchIcon
-                            className="size-3 opacity-60"
-                            aria-hidden
-                          />
-                        </Badge>
-                      </li>
-                    )
-                  })}
-                </ul>
-              </div>
+              <ChartLegendList
+                title="Amount of Types of Changes"
+                items={sortedAmounts}
+                visibleKeys={visibleKeys}
+                onToggle={(key, on) =>
+                  setVisibleKeys((prev) =>
+                    toggleVisibleKey(prev, key as ChangeTypeKey, on, TYPE_KEYS)
+                  )
+                }
+                sortDesc={sortDesc}
+                onToggleSort={() => setSortDesc((d) => !d)}
+                idPrefix="types-chart-filter"
+                ariaLabel="Filter change types on charts"
+              />
             </div>
 
             {/* Stacked bars */}
-            <div className="flex min-h-0 min-w-0 flex-col rounded-xl border border-border/60 bg-muted/40 p-3 sm:p-4 @xl/types-chart:col-span-6 dark:bg-muted/20">
+            <div className={cn(chartPanelClass, "@xl/types-chart:col-span-6")}>
               {visibleKeys.length === 0 ? (
-                <div className="flex min-h-[240px] w-full flex-1 items-center justify-center px-2 text-center text-sm text-muted-foreground md:min-h-[280px]">
+                <ChartEmptyState>
                   Select at least one change type in the list to see the stacked
                   bar chart.
-                </div>
+                </ChartEmptyState>
               ) : barChartData.length === 0 ? (
-                <div className="flex min-h-[240px] w-full flex-1 items-center justify-center px-2 text-center text-sm text-muted-foreground md:min-h-[280px]">
+                <ChartEmptyState>
                   No bar data for this selection.
-                </div>
+                </ChartEmptyState>
               ) : (
                 <ChartContainer
                   config={chartConfig}
@@ -365,7 +296,7 @@ export function ChartSection() {
                   <BarChart
                     accessibilityLayer
                     data={barChartData}
-                    margin={{ left: 0, right: 8, top: 8, bottom: 0 }}
+                    margin={{ left: 4, right: 8, top: 8, bottom: 4 }}
                     barCategoryGap="18%"
                   >
                     <CartesianGrid vertical={false} strokeDasharray="3 3" />
@@ -394,7 +325,7 @@ export function ChartSection() {
                               | undefined
                             if (row?.iso) {
                               return format(
-                                parseDataDate(row.iso.slice(0, 10)),
+                                parseIsoDate(row.iso.slice(0, 10)),
                                 "MMM d, yyyy"
                               )
                             }
@@ -425,22 +356,22 @@ export function ChartSection() {
 
             {/* Pie chart */}
             <div className="flex h-full min-h-0 min-w-0 flex-col @xl/types-chart:col-span-3">
-              <div className="flex h-full min-h-0 min-w-0 flex-1 flex-col rounded-xl border border-border/60 bg-muted/40 p-3 sm:p-4 dark:bg-muted/20">
+              <div className={legendPanelClass}>
                 {pieTotal > 0 && visibleKeys.length > 0 ? (
-                  <p className="max-h-24 w-full shrink-0 overflow-y-auto pb-2 text-left text-xs leading-relaxed text-muted-foreground">
+                  <p className={pieInsightClass}>
                     <span className="font-medium text-foreground">Summary: </span>
                     {pieInsight}
                   </p>
                 ) : null}
                 <div className="flex h-[240px] w-full shrink-0 flex-col items-center justify-center md:h-[280px]">
                   {visibleKeys.length === 0 ? (
-                    <div className="flex h-full w-full items-center justify-center px-2 text-center text-sm text-muted-foreground">
+                    <ChartEmptyState variant="pie">
                       Select at least one change type to see the pie chart.
-                    </div>
+                    </ChartEmptyState>
                   ) : pieTotal === 0 ? (
-                    <div className="flex h-full w-full items-center justify-center text-center text-sm text-muted-foreground">
+                    <ChartEmptyState variant="pie">
                       No changes in this selection
-                    </div>
+                    </ChartEmptyState>
                   ) : (
                     <ChartContainer
                       config={chartConfig}
@@ -454,26 +385,12 @@ export function ChartSection() {
                               hideLabel
                               nameKey="type"
                               indicator="dot"
-                              formatter={(value) => {
-                                const v = Number(value)
-                                const pct =
-                                  pieTotal > 0
-                                    ? ((v / pieTotal) * 100).toFixed(1)
-                                    : "0.0"
-                                return (
-                                  <span className="inline-flex items-baseline gap-x-1.5 text-xs leading-none">
-                                    <span className="font-mono font-medium text-foreground tabular-nums">
-                                      {v.toLocaleString()}
-                                    </span>
-                                    <span className="text-muted-foreground">
-                                      changes
-                                    </span>
-                                    <span className="font-mono text-muted-foreground tabular-nums">
-                                      ({pct}%)
-                                    </span>
-                                  </span>
-                                )
-                              }}
+                              formatter={(value) => (
+                                <ChartTooltipValue
+                                  value={Number(value)}
+                                  total={pieTotal}
+                                />
+                              )}
                             />
                           }
                         />

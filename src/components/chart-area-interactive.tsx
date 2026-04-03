@@ -25,11 +25,19 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart"
+import { ChartEmptyState } from "@/components/ui/chart-empty-state"
+import { ChartTooltipValue } from "@/components/ui/chart-tooltip-value"
 import {
   ToggleGroup,
   ToggleGroupItem,
 } from "@/components/ui/toggle-group"
 import { useDashboardDateRange } from "@/contexts/dashboard-date-range-context"
+import {
+  buildPieInsight,
+  parseIsoDate,
+  type PieInsightRow,
+} from "@/lib/chart-helpers"
+import { chartContentClass, chartPanelClass, pieInsightClass } from "@/lib/chart-layout"
 import { eachIsoDateInDashboardRange } from "@/lib/dashboard-demo-range"
 
 export const description =
@@ -82,13 +90,9 @@ const chartConfig = {
   },
 } satisfies ChartConfig
 
-function parseDataDate(iso: string) {
-  const [y, m, d] = iso.split("-").map(Number)
-  return new Date(y, m - 1, d)
-}
 
 function daySeedFromIso(iso: string) {
-  return Math.floor(parseDataDate(iso).getTime() / 86400000)
+  return Math.floor(parseIsoDate(iso).getTime() / 86400000)
 }
 
 function buildWorksheetRowsForRange(isos: string[]): WorksheetRow[] {
@@ -104,33 +108,14 @@ function buildWorksheetRowsForRange(isos: string[]): WorksheetRow[] {
   })
 }
 
-type PieBreakdownRow = {
-  key: InstitutionKey
-  label: string
-  value: number
-  pct: number
-}
-
-function buildPieInsight(sorted: PieBreakdownRow[], total: number): string {
-  if (sorted.length === 0 || total === 0) {
-    return ""
-  }
-  const top = sorted[0]!
-  const second = sorted[1]
-  const bottom = sorted[sorted.length - 1]!
-  const spread = top.pct - bottom.pct
-
-  if (second && Math.abs(top.pct - second.pct) < 4) {
-    return `${top.label} and ${second.label} are almost tied (${top.pct.toFixed(1)}% vs ${second.pct.toFixed(1)}%). Compare their curves in the line chart to see timing.`
-  }
-  if (spread < 12) {
-    return "Workload is fairly even across institutions this period—no single site dominates."
-  }
-  if (top.pct >= 38) {
-    return `${top.label} accounts for a large share (${top.pct.toFixed(1)}%). Worth confirming whether that reflects real volume or documentation habits at that site.`
-  }
-  return `${top.label} leads with ${top.pct.toFixed(1)}% of ${total.toLocaleString()} total changes; ${bottom.label} is lowest at ${bottom.pct.toFixed(1)}%.`
-}
+const WORKSHEET_PIE_COPY = {
+  tiedSuffix:
+    "Compare their curves in the line chart to see timing.",
+  balancedText:
+    "Workload is fairly even across institutions this period\u2014no single site dominates.",
+  dominantSuffix:
+    "Worth confirming whether that reflects real volume or documentation habits at that site.",
+} as const
 
 const DEFAULT_VISIBLE = [...SERIES_KEYS] as string[]
 
@@ -162,7 +147,7 @@ export function ChartAreaInteractive() {
     const activeKeys = SERIES_KEYS.filter((key) => visibleKeys.includes(key))
     const total = activeKeys.reduce((acc, key) => acc + sums[key], 0)
 
-    const breakdown: PieBreakdownRow[] = activeKeys.map((key) => {
+    const breakdown: PieInsightRow[] = activeKeys.map((key) => {
       const value = sums[key]
       const pct = total > 0 ? (value / total) * 100 : 0
       const label = String(chartConfig[key].label)
@@ -178,7 +163,7 @@ export function ChartAreaInteractive() {
     }))
 
     const sortedBreakdown = [...breakdown].sort((a, b) => b.value - a.value)
-    const pieInsight = buildPieInsight(sortedBreakdown, total)
+    const pieInsight = buildPieInsight(sortedBreakdown, total, WORKSHEET_PIE_COPY)
 
     return { pieData, pieTotal: total, pieInsight }
   }, [filteredData, visibleKeys])
@@ -226,13 +211,13 @@ export function ChartAreaInteractive() {
           </ToggleGroup>
         </CardAction>
       </CardHeader>
-      <CardContent className="px-4 pt-2 pb-2 sm:pt-4 lg:px-6">
+      <CardContent className={chartContentClass}>
         {/*
           Same horizontal inset as SectionCards / toolbar (px-4 lg:px-6). Grid
           still mirrors four stat columns at @5xl (line 3, pie 1).
         */}
         <div className="grid grid-cols-1 items-stretch gap-4 @xl/main:grid-cols-2 @5xl/main:grid-cols-4">
-          <div className="flex h-full min-h-0 min-w-0 flex-col rounded-xl border border-border/60 bg-muted/40 p-3 sm:p-4 @xl/main:col-span-2 @5xl/main:col-span-3 dark:bg-muted/20">
+          <div className={`${chartPanelClass} @xl/main:col-span-2 @5xl/main:col-span-3`}>
             <ChartContainer
               config={chartConfig}
               className="!aspect-auto min-h-[240px] w-full min-w-0 flex-1 md:min-h-[280px]"
@@ -270,7 +255,7 @@ export function ChartAreaInteractive() {
                   content={
                     <ChartTooltipContent
                       labelFormatter={(value) => {
-                        const d = parseDataDate(
+                        const d = parseIsoDate(
                           String(value).slice(0, 10)
                         )
                         return d.toLocaleDateString("en-US", {
@@ -303,23 +288,23 @@ export function ChartAreaInteractive() {
             </ChartContainer>
           </div>
 
-          <div className="flex h-full min-h-0 min-w-0 flex-col rounded-xl border border-border/60 bg-muted/40 p-3 sm:p-4 @xl/main:col-span-2 @5xl/main:col-span-1 dark:bg-muted/20">
+          <div className={`${chartPanelClass} @xl/main:col-span-2 @5xl/main:col-span-1`}>
             {pieTotal > 0 && visibleKeys.length > 0 ? (
-              <p className="max-h-24 w-full shrink-0 overflow-y-auto pb-2 text-left text-xs leading-relaxed text-muted-foreground">
+              <p className={pieInsightClass}>
                 <span className="font-medium text-foreground">Summary: </span>
                 {pieInsight}
               </p>
             ) : null}
             <div className="flex h-[240px] w-full shrink-0 flex-col items-center justify-center md:h-[280px]">
               {visibleKeys.length === 0 ? (
-                <div className="flex h-full w-full items-center justify-center px-2 text-center text-sm text-muted-foreground">
+                <ChartEmptyState variant="pie">
                   Turn on at least one institution in the legend to see the pie
                   chart.
-                </div>
+                </ChartEmptyState>
               ) : pieTotal === 0 ? (
-                <div className="flex h-full w-full items-center justify-center text-center text-sm text-muted-foreground">
+                <ChartEmptyState variant="pie">
                   No worksheet changes in this period
-                </div>
+                </ChartEmptyState>
               ) : (
                 <ChartContainer
                   config={chartConfig}
@@ -333,26 +318,12 @@ export function ChartAreaInteractive() {
                           hideLabel
                           nameKey="category"
                           indicator="dot"
-                          formatter={(value) => {
-                            const v = Number(value)
-                            const pct =
-                              pieTotal > 0
-                                ? ((v / pieTotal) * 100).toFixed(1)
-                                : "0.0"
-                            return (
-                              <span className="inline-flex items-baseline gap-x-1.5 text-xs leading-none">
-                                <span className="font-mono font-medium text-foreground tabular-nums">
-                                  {v.toLocaleString()}
-                                </span>
-                                <span className="text-muted-foreground">
-                                  changes
-                                </span>
-                                <span className="font-mono text-muted-foreground tabular-nums">
-                                  ({pct}%)
-                                </span>
-                              </span>
-                            )
-                          }}
+                          formatter={(value) => (
+                            <ChartTooltipValue
+                              value={Number(value)}
+                              total={pieTotal}
+                            />
+                          )}
                         />
                       }
                     />
