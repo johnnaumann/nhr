@@ -23,15 +23,12 @@ import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-  type ChartConfig,
 } from "@/components/ui/chart"
 import { ChartEmptyState } from "@/components/ui/chart-empty-state"
 import { ChartTooltipValue } from "@/components/ui/chart-tooltip-value"
-import {
-  ToggleGroup,
-  ToggleGroupItem,
-} from "@/components/ui/toggle-group"
+import { DashboardInstitutionToggle } from "@/components/dashboard-institution-toggle"
 import { useDashboardDateRange } from "@/contexts/dashboard-date-range-context"
+import { useDashboardInstitutions } from "@/contexts/dashboard-institutions-context"
 import {
   buildPieInsight,
   parseIsoDate,
@@ -39,20 +36,16 @@ import {
 } from "@/lib/chart-helpers"
 import { chartContentClass, chartPanelClass, pieInsightClass } from "@/lib/chart-layout"
 import { eachIsoDateInDashboardRange } from "@/lib/dashboard-demo-range"
+import {
+  INSTITUTION_SERIES_KEYS,
+  type InstitutionSeriesKey,
+  institutionChartConfig,
+} from "@/lib/dashboard-institutions"
 
 export const description =
   "Worksheets changed over time by institution with totals"
 
-const SERIES_KEYS = [
-  "institution1",
-  "institution2",
-  "institution3",
-  "institution4",
-] as const
-
-type InstitutionKey = (typeof SERIES_KEYS)[number]
-
-type WorksheetRow = { date: string } & Record<InstitutionKey, number>
+type WorksheetRow = { date: string } & Record<InstitutionSeriesKey, number>
 
 /** Smooth demo series: layered slow waves so lines read as flowing, not stepped. */
 function smoothSeries(
@@ -70,26 +63,6 @@ function smoothSeries(
     amp * 0.15 * Math.sin(t * 0.35 + phase * 0.5)
   return Math.round(Math.max(3, Math.min(34, v)))
 }
-
-const chartConfig = {
-  institution1: {
-    label: "LICH",
-    color: "var(--chart-1)",
-  },
-  institution2: {
-    label: "LTH",
-    color: "var(--chart-2)",
-  },
-  institution3: {
-    label: "NYU",
-    color: "var(--chart-3)",
-  },
-  institution4: {
-    label: "WTH",
-    color: "var(--chart-4)",
-  },
-} satisfies ChartConfig
-
 
 function daySeedFromIso(iso: string) {
   return Math.floor(parseIsoDate(iso).getTime() / 86400000)
@@ -117,13 +90,9 @@ const WORKSHEET_PIE_COPY = {
     "Worth confirming whether that reflects real volume or documentation habits at that site.",
 } as const
 
-const DEFAULT_VISIBLE = [...SERIES_KEYS] as string[]
-
 export function ChartAreaInteractive() {
   const { range } = useDashboardDateRange()
-
-  const [visibleKeys, setVisibleKeys] =
-    React.useState<string[]>(DEFAULT_VISIBLE)
+  const { visibleInstitutionKeys } = useDashboardInstitutions()
 
   const filteredData = React.useMemo(
     () => buildWorksheetRowsForRange(eachIsoDateInDashboardRange(range)),
@@ -131,7 +100,7 @@ export function ChartAreaInteractive() {
   )
 
   const { pieData, pieTotal, pieInsight } = React.useMemo(() => {
-    const sums: Record<InstitutionKey, number> = {
+    const sums: Record<InstitutionSeriesKey, number> = {
       institution1: 0,
       institution2: 0,
       institution3: 0,
@@ -144,17 +113,25 @@ export function ChartAreaInteractive() {
       sums.institution4 += row.institution4
     }
 
-    const activeKeys = SERIES_KEYS.filter((key) => visibleKeys.includes(key))
+    const activeKeys = INSTITUTION_SERIES_KEYS.filter((key) =>
+      visibleInstitutionKeys.includes(key)
+    )
     const total = activeKeys.reduce((acc, key) => acc + sums[key], 0)
 
-    const breakdown: PieInsightRow[] = activeKeys.map((key) => {
+    const rows = activeKeys.map((key) => {
       const value = sums[key]
       const pct = total > 0 ? (value / total) * 100 : 0
-      const label = String(chartConfig[key].label)
+      const label = String(institutionChartConfig[key].label)
       return { key, label, value, pct }
     })
 
-    const pieData = breakdown.map(({ key, label, value, pct }) => ({
+    const breakdown: PieInsightRow[] = rows.map(({ label, value, pct }) => ({
+      label,
+      value,
+      pct,
+    }))
+
+    const pieData = rows.map(({ key, label, value, pct }) => ({
       category: key,
       name: label,
       value,
@@ -166,7 +143,7 @@ export function ChartAreaInteractive() {
     const pieInsight = buildPieInsight(sortedBreakdown, total, WORKSHEET_PIE_COPY)
 
     return { pieData, pieTotal: total, pieInsight }
-  }, [filteredData, visibleKeys])
+  }, [filteredData, visibleInstitutionKeys])
 
   return (
     <Card className="@container/card">
@@ -174,52 +151,21 @@ export function ChartAreaInteractive() {
         <CardTitle>Worksheets changed</CardTitle>
         <CardDescription>
           <span className="hidden @[540px]/card:block">
-            Worksheet changes by institution for the reporting period selected
-            above
+            Worksheet changes by institution for the reporting period. Site
+            selection matches the toolbar and &ldquo;What most impacted the
+            change&rdquo;—all stay in sync.
           </span>
           <span className="@[540px]/card:hidden">By institution</span>
         </CardDescription>
         <CardAction className="max-w-full shrink-0 justify-self-end overflow-x-auto pb-0.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          <ToggleGroup
-            type="multiple"
-            value={visibleKeys}
-            onValueChange={setVisibleKeys}
-            variant="outline"
-            size="sm"
-            spacing={0}
-            className="w-max flex-nowrap gap-0"
-            aria-label="Show or hide institutions on charts"
-          >
-            {SERIES_KEYS.map((key) => (
-              <ToggleGroupItem
-                key={key}
-                value={key}
-                className="shrink-0 gap-1.5 whitespace-nowrap px-2 data-[state=off]:opacity-40"
-              >
-                <span
-                  className="size-2 shrink-0 rounded-sm"
-                  style={{
-                    backgroundColor: chartConfig[key].color,
-                  }}
-                  aria-hidden
-                />
-                <span className="truncate @[400px]/card-header:max-w-none">
-                  {chartConfig[key].label}
-                </span>
-              </ToggleGroupItem>
-            ))}
-          </ToggleGroup>
+          <DashboardInstitutionToggle />
         </CardAction>
       </CardHeader>
       <CardContent className={chartContentClass}>
-        {/*
-          Same horizontal inset as SectionCards / toolbar (px-4 lg:px-6). Grid
-          still mirrors four stat columns at @5xl (line 3, pie 1).
-        */}
         <div className="grid grid-cols-1 items-stretch gap-4 lg:gap-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-4">
           <div className={`${chartPanelClass} @xl/main:col-span-2 @5xl/main:col-span-3`}>
             <ChartContainer
-              config={chartConfig}
+              config={institutionChartConfig}
               className="!aspect-auto min-h-[240px] w-full min-w-0 flex-1 md:min-h-[280px]"
             >
               <LineChart
@@ -269,8 +215,8 @@ export function ChartAreaInteractive() {
                     />
                   }
                 />
-                {SERIES_KEYS.map((key) =>
-                  visibleKeys.includes(key) ? (
+                {INSTITUTION_SERIES_KEYS.map((key) =>
+                  visibleInstitutionKeys.includes(key) ? (
                     <Line
                       key={key}
                       dataKey={key}
@@ -289,14 +235,14 @@ export function ChartAreaInteractive() {
           </div>
 
           <div className={`${chartPanelClass} @xl/main:col-span-2 @5xl/main:col-span-1`}>
-            {pieTotal > 0 && visibleKeys.length > 0 ? (
+            {pieTotal > 0 && visibleInstitutionKeys.length > 0 ? (
               <p className={pieInsightClass}>
                 <span className="font-medium text-foreground">Summary: </span>
                 {pieInsight}
               </p>
             ) : null}
             <div className="flex h-[240px] w-full shrink-0 flex-col items-center justify-center md:h-[280px]">
-              {visibleKeys.length === 0 ? (
+              {visibleInstitutionKeys.length === 0 ? (
                 <ChartEmptyState variant="pie">
                   Turn on at least one institution in the legend to see the pie
                   chart.
@@ -307,7 +253,7 @@ export function ChartAreaInteractive() {
                 </ChartEmptyState>
               ) : (
                 <ChartContainer
-                  config={chartConfig}
+                  config={institutionChartConfig}
                   className="!aspect-auto h-full w-full max-w-full min-w-0"
                 >
                   <PieChart>

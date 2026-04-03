@@ -41,7 +41,8 @@ src/
 
   components/
     site-header.tsx             Sticky header (title, theme toggle, sidebar trigger)
-    dashboard-date-range-toolbar.tsx   Sticky date-range picker toolbar
+    dashboard-date-range-toolbar.tsx   Sticky toolbar: date range + global site toggles
+    dashboard-institution-toggle.tsx   LICH / LTH / NYU / WTH multi-select (shared UI)
     section-cards.tsx            Overview stat cards (top of dashboard)
     chart-area-interactive.tsx   "Worksheets changed" line + pie chart
     chart-section.tsx            "Types of Changes" stacked bar + pie
@@ -63,9 +64,11 @@ src/
     chart-helpers.ts             scaleInt, parseIsoDate, toggleVisibleKey, buildPieInsight
     chart-layout.ts              Shared Tailwind class tokens for chart panels
     dashboard-demo-range.ts      Date-range helpers and demo scale reference
+    dashboard-institutions.ts    Institution keys, chart config, site short-code map
 
   contexts/
-    dashboard-date-range-context.tsx   Date-range state provider + useDashboardDateRange hook
+    dashboard-date-range-context.tsx   Date-range state + useDashboardDateRange
+    dashboard-institutions-context.tsx   Visible sites (LICH, LTH, NYU, WTH) + useDashboardInstitutions
 
   hooks/
     use-mobile.ts                Viewport breakpoint hook
@@ -73,6 +76,21 @@ src/
   app/dashboard/
     data.json                    Demo data for the document table
 ```
+
+## Institution (site) filter
+
+Hospital sites **LICH**, **LTH**, **NYU**, and **WTH** are controlled in one shared React context (`DashboardInstitutionsProvider` on the dashboard). The same multi-select appears in three places:
+
+1. **Sticky toolbar** — next to the date range (labelled “Reporting period & sites”).
+2. **Worksheets changed** — header action (still available for convenience).
+3. **What most impacted the change** — top-right of the card header.
+
+Toggling sites updates **all** of them together. Charts that respect the filter:
+
+- **Worksheets changed** — line and pie series per institution.
+- **What most impacted the change** — stacked bars by site; reaction totals scale with the number of selected sites (demo behaviour).
+
+At least one site must stay selected (empty selection is ignored).
 
 ## Chart architecture
 

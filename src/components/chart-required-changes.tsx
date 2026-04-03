@@ -3,8 +3,10 @@
 import * as React from "react"
 import { Bar, BarChart, Cell, CartesianGrid, XAxis, YAxis } from "recharts"
 
+import { DashboardInstitutionToggle } from "@/components/dashboard-institution-toggle"
 import {
   Card,
+  CardAction,
   CardContent,
   CardDescription,
   CardHeader,
@@ -28,6 +30,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { useDashboardDateRange } from "@/contexts/dashboard-date-range-context"
+import { useDashboardInstitutions } from "@/contexts/dashboard-institutions-context"
 import { scaleInt, toggleVisibleKey } from "@/lib/chart-helpers"
 import {
   chartContentClass,
@@ -40,6 +43,10 @@ import {
   DEMO_SCALE_REFERENCE_DAYS,
   dashboardRangeDayCount,
 } from "@/lib/dashboard-demo-range"
+import {
+  INSTITUTION_COUNT,
+  SITE_SHORT_TO_INSTITUTION_KEY,
+} from "@/lib/dashboard-institutions"
 import { cn } from "@/lib/utils"
 
 const IMPACT_KEYS = ["pdx", "proc", "sdx", "cc", "mcc"] as const
@@ -109,6 +116,18 @@ const DEFAULT_VISIBLE_REACTIONS = [...REACTION_KEYS] as ReactionKey[]
 
 export function ChartRequiredChanges() {
   const { range } = useDashboardDateRange()
+  const { visibleInstitutionKeys } = useDashboardInstitutions()
+
+  const siteRowsForCharts = React.useMemo(() => {
+    const rows = SITE_IMPACT_BASE.filter((row) => {
+      const id = SITE_SHORT_TO_INSTITUTION_KEY[row.short]
+      return id != null && visibleInstitutionKeys.includes(id)
+    })
+    return rows.length > 0 ? rows : SITE_IMPACT_BASE
+  }, [visibleInstitutionKeys])
+
+  const siteSelectionFactor =
+    visibleInstitutionKeys.length / Math.max(1, INSTITUTION_COUNT)
 
   const filteredDayCount = React.useMemo(
     () => dashboardRangeDayCount(range),
@@ -144,25 +163,25 @@ export function ChartRequiredChanges() {
   const activeImpactKeys = React.useMemo(() => {
     if (impactScope === "all") return [...IMPACT_KEYS]
     const ranked = [...IMPACT_KEYS].sort((a, b) => {
-      const sumA = SITE_IMPACT_BASE.reduce((s, r) => s + r[a], 0)
-      const sumB = SITE_IMPACT_BASE.reduce((s, r) => s + r[b], 0)
+      const sumA = siteRowsForCharts.reduce((s, r) => s + r[a], 0)
+      const sumB = siteRowsForCharts.reduce((s, r) => s + r[b], 0)
       return sumB - sumA
     })
     return ranked.slice(0, 3)
-  }, [impactScope])
+  }, [impactScope, siteRowsForCharts])
 
   const impactTotals = React.useMemo(() => {
     const sums = {} as Record<ImpactKey, number>
     IMPACT_KEYS.forEach((k) => {
       sums[k] = 0
     })
-    for (const row of SITE_IMPACT_BASE) {
+    for (const row of siteRowsForCharts) {
       IMPACT_KEYS.forEach((k) => {
         sums[k] += row[k]
       })
     }
     return sums
-  }, [])
+  }, [siteRowsForCharts])
 
   const impactLegendRows = React.useMemo(() => {
     const rows = activeImpactKeys.map((key) => ({
@@ -177,7 +196,7 @@ export function ChartRequiredChanges() {
 
   const siteBarData = React.useMemo(
     () =>
-      SITE_IMPACT_BASE.map((row) => {
+      siteRowsForCharts.map((row) => {
         const next: Record<string, string | number> = {
           site: row.short,
         }
@@ -186,7 +205,7 @@ export function ChartRequiredChanges() {
         })
         return next
       }),
-    [scale, activeImpactKeys, worksheetBoostTop]
+    [scale, activeImpactKeys, worksheetBoostTop, siteRowsForCharts]
   )
 
   const worksheetBoostBottom = worksheetScopeBottom === "all-sheets" ? 1.35 : 1
@@ -196,10 +215,13 @@ export function ChartRequiredChanges() {
   const reactionCounts = React.useMemo(() => {
     const next = {} as Record<ReactionKey, number>
     REACTION_KEYS.forEach((k) => {
-      next[k] = scaleInt(reactionBase[k], scale * worksheetBoostBottom)
+      next[k] = scaleInt(
+        reactionBase[k],
+        scale * worksheetBoostBottom * siteSelectionFactor
+      )
     })
     return next
-  }, [scale, reactionBase, worksheetBoostBottom])
+  }, [scale, reactionBase, worksheetBoostBottom, siteSelectionFactor])
 
   const reactionLegendRows = React.useMemo(() => {
     const rows = REACTION_KEYS.map((key) => ({
@@ -231,13 +253,17 @@ export function ChartRequiredChanges() {
         <CardTitle>What most impacted the change</CardTitle>
         <CardDescription>
           <span className="hidden @[540px]/required-changes:block">
-            Required-change drivers by site, then how hospitals reacted—scoped
-            to the reporting period selected above
+            Required-change drivers by site, then how hospitals reacted—filtered
+            by the same site toggles as the reporting toolbar and worksheets
+            chart.
           </span>
           <span className="@[540px]/required-changes:hidden">
             Impact and reactions
           </span>
         </CardDescription>
+        <CardAction className="max-w-full shrink-0 justify-self-end overflow-x-auto pb-0.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <DashboardInstitutionToggle />
+        </CardAction>
       </CardHeader>
       <CardContent className={chartContentClass}>
         {/* Panel 1: Top required changes × sites */}
