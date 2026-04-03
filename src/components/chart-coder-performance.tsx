@@ -507,10 +507,10 @@ export function ChartCoderPerformance() {
             </Select>
           </div>
 
-          <div className="grid grid-cols-1 gap-4 @xl/coder-performance:grid-cols-12 @xl/coder-performance:items-stretch">
+          <div className="grid grid-cols-1 gap-4 @xl/coder-performance:grid-cols-4 @xl/coder-performance:items-stretch">
             <div
               className={cn(
-                "flex min-h-0 min-w-0 flex-col @xl/coder-performance:col-span-7",
+                "flex min-h-0 min-w-0 flex-col @xl/coder-performance:col-span-2",
                 chartPanelClass
               )}
             >
@@ -584,48 +584,44 @@ export function ChartCoderPerformance() {
               )}
             </div>
 
-            <div className="flex min-h-0 min-w-0 flex-col gap-4 @xl/coder-performance:col-span-5 @xl/coder-performance:flex-row @xl/coder-performance:items-stretch">
-              <div
-                className={cn(
-                  "flex min-h-[200px] min-w-0 flex-1 flex-col items-center justify-center rounded-xl border border-border/60 bg-muted/40 p-3 sm:min-h-[240px] sm:p-4 dark:bg-muted/20",
-                  "@xl/coder-performance:max-w-[min(100%,220px)]"
-                )}
-              >
-                <p className="mb-1 text-center text-xs font-medium text-muted-foreground">
-                  Total
-                </p>
-                {visibleDetail.length === 0 ? (
-                  <div className="flex flex-1 items-center px-2 text-center text-sm text-muted-foreground">
-                    No slice to show
-                  </div>
-                ) : pieTotal === 0 ? (
-                  <div className="text-sm text-muted-foreground">No data</div>
-                ) : (
-                  <ChartContainer
-                    config={mergedDetailConfig}
-                    className="mx-auto aspect-square h-full max-h-[200px] w-full max-w-[200px]"
-                  >
-                    <PieChart>
-                      <ChartTooltip
-                        cursor={false}
-                        content={<ChartTooltipContent hideLabel />}
-                      />
-                      <Pie
-                        data={pieData}
-                        dataKey="value"
-                        nameKey="name"
-                        innerRadius={44}
-                        outerRadius={72}
-                        stroke="var(--background)"
-                        strokeWidth={2}
-                      />
-                    </PieChart>
-                  </ChartContainer>
-                )}
-              </div>
+            <div
+              className={cn(
+                "flex min-h-[200px] min-w-0 flex-col items-center justify-center",
+                chartPanelClass
+              )}
+            >
+              {visibleDetail.length === 0 ? (
+                <div className="flex flex-1 items-center px-2 text-center text-sm text-muted-foreground">
+                  No slice to show
+                </div>
+              ) : pieTotal === 0 ? (
+                <div className="text-sm text-muted-foreground">No data</div>
+              ) : (
+                <ChartContainer
+                  config={mergedDetailConfig}
+                  className="mx-auto aspect-square h-full max-h-[200px] w-full max-w-[200px]"
+                >
+                  <PieChart>
+                    <ChartTooltip
+                      cursor={false}
+                      content={<ChartTooltipContent hideLabel />}
+                    />
+                    <Pie
+                      data={pieData}
+                      dataKey="value"
+                      nameKey="name"
+                      innerRadius={44}
+                      outerRadius={72}
+                      stroke="var(--background)"
+                      strokeWidth={2}
+                    />
+                  </PieChart>
+                </ChartContainer>
+              )}
+            </div>
 
-              <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-                <div className={legendPanelClass}>
+            <div className="flex min-h-0 min-w-0 flex-col">
+              <div className={legendPanelClass}>
                   <div className="flex items-start justify-between gap-2">
                     <p className="text-sm text-muted-foreground">
                       Change-type totals
@@ -702,7 +698,6 @@ export function ChartCoderPerformance() {
                     </p>
                   ) : null}
                 </div>
-              </div>
             </div>
           </div>
         </section>
