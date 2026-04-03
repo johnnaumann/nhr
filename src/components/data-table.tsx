@@ -1007,23 +1007,23 @@ export function DataTable({
   )
 }
 
-const chartData = [
-  { month: "January", desktop: 186, mobile: 80 },
-  { month: "February", desktop: 305, mobile: 200 },
-  { month: "March", desktop: 237, mobile: 120 },
-  { month: "April", desktop: 73, mobile: 190 },
-  { month: "May", desktop: 209, mobile: 130 },
-  { month: "June", desktop: 214, mobile: 140 },
+const drawerChartData = [
+  { week: "Week 1", revisions: 4, reviewComments: 12 },
+  { week: "Week 2", revisions: 7, reviewComments: 18 },
+  { week: "Week 3", revisions: 5, reviewComments: 9 },
+  { week: "Week 4", revisions: 2, reviewComments: 14 },
+  { week: "Week 5", revisions: 6, reviewComments: 8 },
+  { week: "Week 6", revisions: 3, reviewComments: 5 },
 ]
 
-const chartConfig = {
-  desktop: {
-    label: "Desktop",
-    color: "var(--primary)",
+const drawerChartConfig = {
+  revisions: {
+    label: "Revisions",
+    color: "var(--chart-1)",
   },
-  mobile: {
-    label: "Mobile",
-    color: "var(--primary)",
+  reviewComments: {
+    label: "Review comments",
+    color: "var(--chart-5)",
   },
 } satisfies ChartConfig
 
@@ -1227,10 +1227,10 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
         <div className="flex flex-col gap-4 overflow-y-auto px-4 text-sm">
           {!isMobile && (
             <>
-              <ChartContainer config={chartConfig}>
+              <ChartContainer config={drawerChartConfig}>
                 <AreaChart
                   accessibilityLayer
-                  data={chartData}
+                  data={drawerChartData}
                   margin={{
                     left: 0,
                     right: 10,
@@ -1238,31 +1238,34 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
                 >
                   <CartesianGrid vertical={false} />
                   <XAxis
-                    dataKey="month"
+                    dataKey="week"
                     tickLine={false}
                     axisLine={false}
                     tickMargin={8}
-                    tickFormatter={(value) => value.slice(0, 3)}
-                    hide
+                    tickFormatter={(value) =>
+                      (value as string).replace("Week ", "W")
+                    }
                   />
                   <ChartTooltip
                     cursor={false}
-                    content={<ChartTooltipContent indicator="dot" />}
+                    content={
+                      <ChartTooltipContent indicator="dot" showTotal />
+                    }
                   />
                   <Area
-                    dataKey="mobile"
+                    dataKey="reviewComments"
                     type="natural"
-                    fill="var(--color-mobile)"
+                    fill="var(--color-reviewComments)"
                     fillOpacity={0.6}
-                    stroke="var(--color-mobile)"
+                    stroke="var(--color-reviewComments)"
                     stackId="a"
                   />
                   <Area
-                    dataKey="desktop"
+                    dataKey="revisions"
                     type="natural"
-                    fill="var(--color-desktop)"
+                    fill="var(--color-revisions)"
                     fillOpacity={0.4}
-                    stroke="var(--color-desktop)"
+                    stroke="var(--color-revisions)"
                     stackId="a"
                   />
                 </AreaChart>
@@ -1270,12 +1273,12 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
               <Separator />
               <div className="grid gap-2">
                 <div className="flex gap-2 leading-none font-medium">
-                  Recent activity for this change
+                  Review activity over the last 6 weeks
                 </div>
                 <div className="text-muted-foreground">
-                  Sample activity for this change: placeholder chart data only.
-                  Replace with real metrics (e.g. revisions or days open) when
-                  wired to your backend.
+                  Tracks document revisions and reviewer comments for this
+                  change. Higher comment volume may indicate sections that need
+                  additional clarification before sign-off.
                 </div>
               </div>
               <Separator />
