@@ -103,6 +103,7 @@ const REACTION_BASE: Record<ReactionKey, number> = {
   medRecsDisagree: 10,
 }
 
+const DEFAULT_VISIBLE_IMPACTS = [...IMPACT_KEYS] as ImpactKey[]
 const DEFAULT_VISIBLE_REACTIONS = [...REACTION_KEYS] as ReactionKey[]
 
 function scaleInt(n: number, factor: number) {
@@ -135,6 +136,9 @@ export function ChartRequiredChanges() {
 
   const [impactSortDesc, setImpactSortDesc] = React.useState(true)
   const [reactionSortDesc, setReactionSortDesc] = React.useState(true)
+  const [visibleImpacts, setVisibleImpacts] = React.useState<ImpactKey[]>(
+    DEFAULT_VISIBLE_IMPACTS
+  )
   const [visibleReactions, setVisibleReactions] = React.useState<ReactionKey[]>(
     DEFAULT_VISIBLE_REACTIONS
   )
@@ -216,8 +220,11 @@ export function ChartRequiredChanges() {
   const filterToolbarClass =
     "flex flex-wrap items-baseline gap-x-1 gap-y-2 text-sm text-muted-foreground"
 
-  const panelShell =
-    "rounded-xl border border-border/60 bg-muted/40 p-3 sm:p-4 dark:bg-muted/20"
+  const legendPanelClass =
+    "flex h-full min-h-0 flex-1 flex-col gap-3 rounded-xl border border-border/60 bg-muted/40 p-3 sm:p-4 dark:bg-muted/20"
+
+  const chartPanelClass =
+    "flex min-h-0 min-w-0 flex-col rounded-xl border border-border/60 bg-muted/40 p-3 sm:p-4 dark:bg-muted/20"
 
   return (
     <Card className="@container/required-changes">
@@ -274,14 +281,12 @@ export function ChartRequiredChanges() {
               "grid grid-cols-1 gap-4 @xl/required-changes:grid-cols-12 @xl/required-changes:items-stretch"
             )}
           >
-            <div className="flex min-h-0 flex-col @xl/required-changes:col-span-4">
-              <div
-                className={cn(
-                  "flex h-full min-h-0 flex-1 flex-col gap-3",
-                  panelShell
-                )}
-              >
-                <div className="flex items-start justify-end gap-2">
+            <div className="flex min-h-0 min-w-0 flex-col @xl/required-changes:col-span-3">
+              <div className={legendPanelClass}>
+                <div className="flex items-start justify-between gap-2">
+                  <p className="text-sm text-muted-foreground">
+                    Amount by impact category
+                  </p>
                   <Button
                     type="button"
                     variant="ghost"
@@ -289,57 +294,84 @@ export function ChartRequiredChanges() {
                     className="shrink-0 text-muted-foreground"
                     aria-label={
                       impactSortDesc
-                        ? "Sort impact categories ascending"
-                        : "Sort impact categories descending"
+                        ? "Sort ascending by count"
+                        : "Sort descending by count"
                     }
                     onClick={() => setImpactSortDesc((d) => !d)}
                   >
                     <ArrowDownUpIcon className="size-3.5" />
                   </Button>
                 </div>
-                <ul className="flex flex-col gap-3">
-                  {impactLegendRows.map(({ key, label, count }) => (
-                    <li
-                      key={key}
-                      className="flex min-w-0 items-center gap-2.5 text-sm"
-                    >
-                      <span
-                        className="size-3.5 shrink-0 rounded-sm border border-border"
-                        style={{
-                          backgroundColor: impactChartConfig[key].color,
-                        }}
-                        aria-hidden
-                      />
-                      <span className="min-w-0 flex-1 truncate font-medium text-foreground">
-                        {label}
-                      </span>
-                      <Badge
-                        variant="secondary"
-                        className="shrink-0 gap-1 tabular-nums"
+                <ul
+                  className="flex flex-col gap-3"
+                  aria-label="Filter impact categories on chart"
+                >
+                  {impactLegendRows.map(({ key, label, count }) => {
+                    const filterId = `impact-chart-filter-${key}`
+                    const isOn = visibleImpacts.includes(key)
+                    return (
+                      <li
+                        key={key}
+                        className={cn(
+                          "flex min-w-0 items-center gap-2.5 text-sm transition-opacity",
+                          !isOn && "opacity-40"
+                        )}
                       >
-                        <span>{count.toLocaleString()}</span>
-                        <SearchIcon className="size-3 opacity-60" aria-hidden />
-                      </Badge>
-                    </li>
-                  ))}
+                        <RadioGroupItemMulti
+                          id={filterId}
+                          checked={isOn}
+                          indicatorColor={impactChartConfig[key].color}
+                          onCheckedChange={(on) => {
+                            setVisibleImpacts((prev) => {
+                              if (on) {
+                                if (prev.includes(key)) return prev
+                                const next = new Set(prev)
+                                next.add(key)
+                                return IMPACT_KEYS.filter((k) => next.has(k))
+                              }
+                              return prev.filter((k) => k !== key)
+                            })
+                          }}
+                        />
+                        <label
+                          htmlFor={filterId}
+                          className="min-w-0 flex-1 cursor-pointer truncate font-medium text-foreground"
+                        >
+                          {label}
+                        </label>
+                        <Badge
+                          variant="secondary"
+                          className="shrink-0 gap-1 tabular-nums"
+                        >
+                          <span>{count.toLocaleString()}</span>
+                          <SearchIcon className="size-3 opacity-60" aria-hidden />
+                        </Badge>
+                      </li>
+                    )
+                  })}
                 </ul>
               </div>
             </div>
 
             <div
               className={cn(
-                "flex min-h-0 min-w-0 flex-col @xl/required-changes:col-span-8",
-                panelShell
+                "flex min-h-0 min-w-0 flex-col @xl/required-changes:col-span-9",
+                chartPanelClass
               )}
             >
               {filteredDayCount === 0 ? (
-                <div className="flex min-h-[220px] flex-1 items-center justify-center px-2 text-center text-sm text-muted-foreground">
+                <div className="flex min-h-[240px] flex-1 items-center justify-center px-2 text-center text-sm text-muted-foreground md:min-h-[280px]">
                   No demo days in this reporting period. Adjust the range above.
+                </div>
+              ) : visibleImpacts.length === 0 ? (
+                <div className="flex min-h-[240px] flex-1 items-center justify-center px-2 text-center text-sm text-muted-foreground md:min-h-[280px]">
+                  Select at least one impact category to see the stacked bar
+                  chart.
                 </div>
               ) : (
                 <ChartContainer
                   config={impactChartConfig}
-                  className="!aspect-auto min-h-[220px] w-full min-w-0 flex-1 md:min-h-[260px]"
+                  className="!aspect-auto min-h-[240px] w-full min-w-0 flex-1 md:min-h-[280px]"
                 >
                   <BarChart
                     accessibilityLayer
@@ -367,7 +399,9 @@ export function ChartRequiredChanges() {
                         <ChartTooltipContent indicator="dot" labelKey="site" />
                       }
                     />
-                    {IMPACT_KEYS.map((key) => (
+                    {IMPACT_KEYS.filter((key) =>
+                      visibleImpacts.includes(key)
+                    ).map((key) => (
                       <Bar
                         key={key}
                         dataKey={key}
@@ -428,14 +462,12 @@ export function ChartRequiredChanges() {
               "grid grid-cols-1 gap-4 @xl/required-changes:grid-cols-12 @xl/required-changes:items-stretch"
             )}
           >
-            <div className="flex min-h-0 flex-col @xl/required-changes:col-span-4">
-              <div
-                className={cn(
-                  "flex h-full min-h-0 flex-1 flex-col gap-3",
-                  panelShell
-                )}
-              >
-                <div className="flex items-start justify-end gap-2">
+            <div className="flex min-h-0 min-w-0 flex-col @xl/required-changes:col-span-3">
+              <div className={legendPanelClass}>
+                <div className="flex items-start justify-between gap-2">
+                  <p className="text-sm text-muted-foreground">
+                    Amount by reaction type
+                  </p>
                   <Button
                     type="button"
                     variant="ghost"
@@ -443,8 +475,8 @@ export function ChartRequiredChanges() {
                     className="shrink-0 text-muted-foreground"
                     aria-label={
                       reactionSortDesc
-                        ? "Sort reactions ascending"
-                        : "Sort reactions descending"
+                        ? "Sort ascending by count"
+                        : "Sort descending by count"
                     }
                     onClick={() => setReactionSortDesc((d) => !d)}
                   >
@@ -453,7 +485,7 @@ export function ChartRequiredChanges() {
                 </div>
                 <ul
                   className="flex flex-col gap-3"
-                  aria-label="Filter reactions on chart"
+                  aria-label="Filter reaction types on chart"
                 >
                   {reactionLegendRows.map(({ key, label, count }) => {
                     const filterId = `reaction-filter-${key}`
@@ -504,17 +536,17 @@ export function ChartRequiredChanges() {
 
             <div
               className={cn(
-                "flex min-h-0 min-w-0 flex-col @xl/required-changes:col-span-8",
-                panelShell
+                "flex min-h-0 min-w-0 flex-col @xl/required-changes:col-span-9",
+                chartPanelClass
               )}
             >
               {filteredDayCount === 0 ? (
-                <div className="flex min-h-[220px] flex-1 items-center justify-center px-2 text-center text-sm text-muted-foreground">
+                <div className="flex min-h-[240px] flex-1 items-center justify-center px-2 text-center text-sm text-muted-foreground md:min-h-[280px]">
                   No demo days in this reporting period.
                 </div>
               ) : visibleReactions.length === 0 ? (
-                <div className="flex min-h-[220px] flex-1 items-center justify-center px-2 text-center text-sm text-muted-foreground">
-                  Select at least one reaction to see the chart.
+                <div className="flex min-h-[240px] flex-1 items-center justify-center px-2 text-center text-sm text-muted-foreground md:min-h-[280px]">
+                  Select at least one reaction type to see the chart.
                 </div>
               ) : (
                 <ChartContainer
