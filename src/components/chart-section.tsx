@@ -1,6 +1,13 @@
 "use client"
 
 import * as React from "react"
+import {
+  endOfDay,
+  format,
+  isWithinInterval,
+  startOfDay,
+  startOfWeek,
+} from "date-fns"
 import { ArrowDownUpIcon, SearchIcon } from "lucide-react"
 import { Bar, BarChart, CartesianGrid, Pie, PieChart, XAxis, YAxis } from "recharts"
 
@@ -20,6 +27,7 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart"
 import { RadioGroupItemMulti } from "@/components/ui/radio-group"
+import { useDashboardDateRange } from "@/contexts/dashboard-date-range-context"
 import { cn } from "@/lib/utils"
 
 const TYPE_KEYS = [
@@ -33,14 +41,7 @@ const TYPE_KEYS = [
 
 type ChangeTypeKey = (typeof TYPE_KEYS)[number]
 
-const AMOUNTS: { key: ChangeTypeKey; label: string; count: number }[] = [
-  { key: "drg", label: "DRG Changes", count: 118 },
-  { key: "cqe", label: "CQE", count: 95 },
-  { key: "hospitalMod", label: "Hospital Mod", count: 72 },
-  { key: "needsAddDoc", label: "Needs Add Doc", count: 88 },
-  { key: "noChange", label: "No Change", count: 142 },
-  { key: "noDecision", label: "No Decision", count: 85 },
-]
+type ChangeDayRow = { date: string } & Record<ChangeTypeKey, number>
 
 const chartConfig = {
   drg: { label: "DRG Changes", color: "var(--chart-1)" },
@@ -51,9 +52,9 @@ const chartConfig = {
   noDecision: { label: "No Decision", color: "var(--muted)" },
 } satisfies ChartConfig
 
-/** Deterministic demo volumes per period so bars stay stable between renders. */
-function stackValue(periodIndex: number, keyIndex: number, key: ChangeTypeKey) {
-  const n = periodIndex * 17 + keyIndex * 31 + key.charCodeAt(2)
+/** Deterministic demo volumes per day (same day index as worksheets chart). */
+function stackValue(dayIndex: number, keyIndex: number, key: ChangeTypeKey) {
+  const n = dayIndex * 17 + keyIndex * 31 + key.charCodeAt(2)
   const wave = Math.sin(n * 0.35) * 0.35 + 0.65
   const base =
     key === "noChange"
@@ -70,15 +71,104 @@ function stackValue(periodIndex: number, keyIndex: number, key: ChangeTypeKey) {
   return Math.max(2, Math.round(base * wave + (n % 7)))
 }
 
-const stackedOverTime = Array.from({ length: 8 }, (_, periodIndex) => {
-  const row: Record<string, number | string> = {
-    period: `W${periodIndex + 1}`,
+/** Same calendar span as worksheets chart (demo data through Jun 30, 2024). */
+function buildTypesChangeDailyData(): ChangeDayRow[] {
+  const rows: ChangeDayRow[] = []
+  const cursor = new Date(2024, 3, 1)
+  const end = new Date(2024, 5, 30)
+  let dayIndex = 0
+  while (cursor <= end) {
+    const y = cursor.getFullYear()
+    const m = String(cursor.getMonth() + 1).padStart(2, "0")
+    const d = String(cursor.getDate()).padStart(2, "0")
+    const row = { date: `${y}-${m}-${d}` } as ChangeDayRow
+    TYPE_KEYS.forEach((key, keyIndex) => {
+      row[key] = stackValue(dayIndex, keyIndex, key)
+    })
+    rows.push(row)
+    dayIndex += 1
+    cursor.setDate(cursor.getDate() + 1)
   }
-  TYPE_KEYS.forEach((key, keyIndex) => {
-    row[key] = stackValue(periodIndex, keyIndex, key)
+  return rows
+}
+
+const typesChangeDailyData = buildTypesChangeDailyData()
+
+function parseDataDate(iso: string) {
+  const [y, mo, d] = iso.split("-").map(Number)
+  return new Date(y, mo - 1, d)
+}
+
+const DAILY_BAR_POINT_MAX = 31
+
+type BarRow = { period: string; iso?: string } & Record<ChangeTypeKey, number>
+
+function toBarChartRows(filteredDays: ChangeDayRow[]): BarRow[] {
+  if (filteredDays.length === 0) {
+    return []
+  }
+  if (filteredDays.length <= DAILY_BAR_POINT_MAX) {
+    return filteredDays.map((r) => {
+      const values = {} as Record<ChangeTypeKey, number>
+      TYPE_KEYS.forEach((k) => {
+        values[k] = r[k]
+      })
+      return {
+        period: format(parseDataDate(r.date), "MMM d"),
+        iso: r.date,
+        ...values,
+      } satisfies BarRow
+    })
+  }
+
+  const map = new Map<
+    string,
+    { weekStart: Date; sums: Record<ChangeTypeKey, number> }
+  >()
+  for (const r of filteredDays) {
+    const d = parseDataDate(r.date)
+    const ws = startOfWeek(d, { weekStartsOn: 1 })
+    const key = format(ws, "yyyy-MM-dd")
+    let agg = map.get(key)
+    if (!agg) {
+      const sums = {} as Record<ChangeTypeKey, number>
+      TYPE_KEYS.forEach((k) => {
+        sums[k] = 0
+      })
+      agg = { weekStart: ws, sums }
+      map.set(key, agg)
+    }
+    TYPE_KEYS.forEach((k) => {
+      agg!.sums[k] += r[k]
+    })
+  }
+  return [...map.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([, agg]) => {
+      const values = {} as Record<ChangeTypeKey, number>
+      TYPE_KEYS.forEach((k) => {
+        values[k] = agg.sums[k]
+      })
+      return {
+        period: `Week of ${format(agg.weekStart, "MMM d")}`,
+        iso: format(agg.weekStart, "yyyy-MM-dd"),
+        ...values,
+      } satisfies BarRow
+    })
+}
+
+function sumsByType(rows: ChangeDayRow[]): Record<ChangeTypeKey, number> {
+  const sums = {} as Record<ChangeTypeKey, number>
+  TYPE_KEYS.forEach((k) => {
+    sums[k] = 0
   })
-  return row
-})
+  for (const r of rows) {
+    TYPE_KEYS.forEach((k) => {
+      sums[k] += r[k]
+    })
+  }
+  return sums
+}
 
 type TypesPieBreakdownRow = {
   key: ChangeTypeKey
@@ -114,18 +204,45 @@ function buildTypesPieInsight(
 const DEFAULT_VISIBLE_TYPES = [...TYPE_KEYS] as ChangeTypeKey[]
 
 export function ChartSection() {
+  const { range } = useDashboardDateRange()
   const [sortDesc, setSortDesc] = React.useState(true)
   const [visibleKeys, setVisibleKeys] =
     React.useState<ChangeTypeKey[]>(DEFAULT_VISIBLE_TYPES)
 
+  const filteredDays = React.useMemo(() => {
+    if (!range?.from) {
+      return typesChangeDailyData
+    }
+    const from = startOfDay(range.from)
+    const to = endOfDay(range.to ?? range.from)
+    const interval = { start: from, end: to }
+    return typesChangeDailyData.filter((row) =>
+      isWithinInterval(parseDataDate(row.date), interval)
+    )
+  }, [range])
+
+  const barChartData = React.useMemo(
+    () => toBarChartRows(filteredDays),
+    [filteredDays]
+  )
+
+  const amountRows = React.useMemo(() => {
+    const sums = sumsByType(filteredDays)
+    return TYPE_KEYS.map((key) => ({
+      key,
+      label: String(chartConfig[key].label),
+      count: sums[key],
+    }))
+  }, [filteredDays])
+
   const sortedAmounts = React.useMemo(() => {
-    const next = [...AMOUNTS]
+    const next = [...amountRows]
     next.sort((a, b) => (sortDesc ? b.count - a.count : a.count - b.count))
     return next
-  }, [sortDesc])
+  }, [amountRows, sortDesc])
 
   const { pieData, pieTotal, pieInsight } = React.useMemo(() => {
-    const active = AMOUNTS.filter((r) => visibleKeys.includes(r.key))
+    const active = amountRows.filter((r) => visibleKeys.includes(r.key))
     const total = active.reduce((acc, r) => acc + r.count, 0)
     const breakdown: TypesPieBreakdownRow[] = active.map(
       ({ key, label, count }) => ({
@@ -144,7 +261,7 @@ export function ChartSection() {
       fill: `var(--color-${key})`,
     }))
     return { pieData, pieTotal: total, pieInsight }
-  }, [visibleKeys])
+  }, [amountRows, visibleKeys])
 
   return (
     <Card className="@container/types-chart">
@@ -235,10 +352,19 @@ export function ChartSection() {
 
             {/* Stacked bars */}
             <div className="flex min-h-0 min-w-0 flex-col rounded-xl border border-border/60 bg-muted/40 p-3 sm:p-4 @xl/types-chart:col-span-6 dark:bg-muted/20">
-              {visibleKeys.length === 0 ? (
+              {filteredDays.length === 0 ? (
+                <div className="flex min-h-[240px] w-full flex-1 items-center justify-center px-2 text-center text-sm text-muted-foreground md:min-h-[280px]">
+                  No days in this reporting period match the demo dataset (Apr
+                  1–Jun 30, 2024). Adjust the range above.
+                </div>
+              ) : visibleKeys.length === 0 ? (
                 <div className="flex min-h-[240px] w-full flex-1 items-center justify-center px-2 text-center text-sm text-muted-foreground md:min-h-[280px]">
                   Select at least one change type in the list to see the stacked
                   bar chart.
+                </div>
+              ) : barChartData.length === 0 ? (
+                <div className="flex min-h-[240px] w-full flex-1 items-center justify-center px-2 text-center text-sm text-muted-foreground md:min-h-[280px]">
+                  No bar data for this selection.
                 </div>
               ) : (
                 <ChartContainer
@@ -247,7 +373,7 @@ export function ChartSection() {
                 >
                   <BarChart
                     accessibilityLayer
-                    data={stackedOverTime}
+                    data={barChartData}
                     margin={{ left: 0, right: 8, top: 8, bottom: 0 }}
                     barCategoryGap="18%"
                   >
@@ -257,6 +383,7 @@ export function ChartSection() {
                       tickLine={false}
                       axisLine={false}
                       tickMargin={8}
+                      minTickGap={filteredDays.length <= DAILY_BAR_POINT_MAX ? 8 : 4}
                     />
                     <YAxis
                       tickLine={false}
@@ -270,7 +397,18 @@ export function ChartSection() {
                       cursor={{ fill: "var(--muted)", opacity: 0.35 }}
                       content={
                         <ChartTooltipContent
-                          labelFormatter={(label) => `Period ${String(label)}`}
+                          labelFormatter={(label, payload) => {
+                            const row = payload?.[0]?.payload as
+                              | BarRow
+                              | undefined
+                            if (row?.iso) {
+                              return format(
+                                parseDataDate(row.iso.slice(0, 10)),
+                                "MMM d, yyyy"
+                              )
+                            }
+                            return String(label)
+                          }}
                           indicator="dot"
                         />
                       }
@@ -297,7 +435,11 @@ export function ChartSection() {
             <div className="flex h-full min-h-0 min-w-0 flex-col @xl/types-chart:col-span-3">
               <div className="flex h-full min-h-0 min-w-0 flex-1 flex-col rounded-xl border border-border/60 bg-muted/40 p-3 sm:p-4 dark:bg-muted/20">
                 <div className="flex h-[240px] w-full shrink-0 flex-col items-center justify-center md:h-[280px]">
-                  {visibleKeys.length === 0 ? (
+                  {filteredDays.length === 0 ? (
+                    <div className="flex h-full w-full items-center justify-center px-2 text-center text-sm text-muted-foreground">
+                      No data for this reporting period in the demo range.
+                    </div>
+                  ) : visibleKeys.length === 0 ? (
                     <div className="flex h-full w-full items-center justify-center px-2 text-center text-sm text-muted-foreground">
                       Select at least one change type to see the pie chart.
                     </div>

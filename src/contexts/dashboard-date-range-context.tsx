@@ -7,9 +7,12 @@ import type { DateRange } from "react-day-picker"
 /** Last day with demo dashboard data (visitor series). */
 export const DASHBOARD_DATA_REFERENCE = new Date(2024, 5, 30)
 
+/** How far back the default reporting period starts (same convention as before: `subDays(reference, n)`). */
+const DASHBOARD_INITIAL_RANGE_DAYS = 30
+
 export function createInitialDashboardDateRange(): DateRange | undefined {
   return {
-    from: startOfDay(subDays(DASHBOARD_DATA_REFERENCE, 90)),
+    from: startOfDay(subDays(DASHBOARD_DATA_REFERENCE, DASHBOARD_INITIAL_RANGE_DAYS)),
     to: endOfDay(DASHBOARD_DATA_REFERENCE),
   }
 }
