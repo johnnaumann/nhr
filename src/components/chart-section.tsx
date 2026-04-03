@@ -401,6 +401,7 @@ export function ChartSection() {
                             return String(label)
                           }}
                           indicator="dot"
+                          showTotal
                         />
                       }
                     />
@@ -460,18 +461,15 @@ export function ChartSection() {
                                     ? ((v / pieTotal) * 100).toFixed(1)
                                     : "0.0"
                                 return (
-                                  <span className="inline-flex flex-wrap items-baseline gap-x-1 text-xs leading-none">
+                                  <span className="inline-flex items-baseline gap-x-1.5 text-xs leading-none">
                                     <span className="font-mono font-medium text-foreground tabular-nums">
                                       {v.toLocaleString()}
                                     </span>
                                     <span className="text-muted-foreground">
                                       changes
                                     </span>
-                                    <span className="font-mono font-medium text-foreground tabular-nums">
+                                    <span className="font-mono text-muted-foreground tabular-nums">
                                       ({pct}%)
-                                    </span>
-                                    <span className="text-muted-foreground">
-                                      of total
                                     </span>
                                   </span>
                                 )

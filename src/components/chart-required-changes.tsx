@@ -369,7 +369,7 @@ export function ChartRequiredChanges() {
                     <ChartTooltip
                       cursor={{ fill: "var(--muted)", opacity: 0.35 }}
                       content={
-                        <ChartTooltipContent indicator="dot" labelKey="site" />
+                        <ChartTooltipContent indicator="dot" labelKey="site" showTotal />
                       }
                     />
                     {IMPACT_KEYS.filter((key) =>
@@ -544,11 +544,30 @@ export function ChartRequiredChanges() {
                       content={
                         <ChartTooltipContent
                           indicator="line"
-                          formatter={(value) => (
-                            <span className="font-mono tabular-nums">
-                              {Number(value).toLocaleString()}
-                            </span>
-                          )}
+                          formatter={(value) => {
+                            const v = Number(value)
+                            const total = reactionBarData.reduce(
+                              (s, r) => s + r.value,
+                              0
+                            )
+                            const pct =
+                              total > 0
+                                ? ((v / total) * 100).toFixed(1)
+                                : "0.0"
+                            return (
+                              <span className="inline-flex items-baseline gap-x-1.5 text-xs leading-none">
+                                <span className="font-mono font-medium text-foreground tabular-nums">
+                                  {v.toLocaleString()}
+                                </span>
+                                <span className="text-muted-foreground">
+                                  reactions
+                                </span>
+                                <span className="font-mono text-muted-foreground tabular-nums">
+                                  ({pct}%)
+                                </span>
+                              </span>
+                            )
+                          }}
                         />
                       }
                     />

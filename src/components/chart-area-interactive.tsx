@@ -269,14 +269,18 @@ export function ChartAreaInteractive() {
                   cursor={{ stroke: "var(--border)", strokeWidth: 1 }}
                   content={
                     <ChartTooltipContent
-                      labelFormatter={(value) =>
-                        new Date(value as string).toLocaleDateString("en-US", {
+                      labelFormatter={(value) => {
+                        const d = parseDataDate(
+                          String(value).slice(0, 10)
+                        )
+                        return d.toLocaleDateString("en-US", {
                           month: "short",
                           day: "numeric",
                           year: "numeric",
                         })
-                      }
+                      }}
                       indicator="line"
+                      showTotal
                     />
                   }
                 />
@@ -336,18 +340,15 @@ export function ChartAreaInteractive() {
                                 ? ((v / pieTotal) * 100).toFixed(1)
                                 : "0.0"
                             return (
-                              <span className="inline-flex flex-wrap items-baseline gap-x-1 text-xs leading-none">
+                              <span className="inline-flex items-baseline gap-x-1.5 text-xs leading-none">
                                 <span className="font-mono font-medium text-foreground tabular-nums">
                                   {v.toLocaleString()}
                                 </span>
                                 <span className="text-muted-foreground">
-                                  worksheet changes
+                                  changes
                                 </span>
-                                <span className="font-mono font-medium text-foreground tabular-nums">
+                                <span className="font-mono text-muted-foreground tabular-nums">
                                   ({pct}%)
-                                </span>
-                                <span className="text-muted-foreground">
-                                  of period total
                                 </span>
                               </span>
                             )

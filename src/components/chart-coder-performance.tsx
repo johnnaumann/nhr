@@ -468,7 +468,7 @@ export function ChartCoderPerformance() {
                     <ChartTooltip
                       cursor={{ fill: "var(--muted)", opacity: 0.35 }}
                       content={
-                        <ChartTooltipContent indicator="dot" labelKey="coder" />
+                        <ChartTooltipContent indicator="dot" labelKey="coder" showTotal />
                       }
                     />
                     {WORK_KEYS.filter((k) => visibleWork.includes(k)).map((key) => (
@@ -566,6 +566,7 @@ export function ChartCoderPerformance() {
                             return ""
                           }}
                           indicator="line"
+                          showTotal
                         />
                       }
                     />
@@ -615,7 +616,33 @@ export function ChartCoderPerformance() {
                     <PieChart>
                       <ChartTooltip
                         cursor={false}
-                        content={<ChartTooltipContent hideLabel />}
+                        content={
+                          <ChartTooltipContent
+                            hideLabel
+                            nameKey="category"
+                            indicator="dot"
+                            formatter={(value) => {
+                              const v = Number(value)
+                              const pct =
+                                pieTotal > 0
+                                  ? ((v / pieTotal) * 100).toFixed(1)
+                                  : "0.0"
+                              return (
+                                <span className="inline-flex items-baseline gap-x-1.5 text-xs leading-none">
+                                  <span className="font-mono font-medium text-foreground tabular-nums">
+                                    {v.toLocaleString()}
+                                  </span>
+                                  <span className="text-muted-foreground">
+                                    changes
+                                  </span>
+                                  <span className="font-mono text-muted-foreground tabular-nums">
+                                    ({pct}%)
+                                  </span>
+                                </span>
+                              )
+                            }}
+                          />
+                        }
                       />
                       <Pie
                         data={pieData}
