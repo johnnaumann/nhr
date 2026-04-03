@@ -74,8 +74,8 @@ const reactionChartConfig = {
   cdiDisagrees: { label: "CDI disagrees", color: "var(--chart-5)" },
   mdDisagrees: { label: "MD disagrees", color: "var(--chart-3)" },
   hospitalModDrg: { label: "Hospital Mod DRG", color: "var(--chart-2)" },
-  acknowledgeCqe: { label: "Acknowledge CQE", color: "var(--muted)" },
-  medRecsDisagree: { label: "Med Recs Disagree", color: "var(--border)" },
+  acknowledgeCqe: { label: "Acknowledge CQE", color: "var(--chart-6)" },
+  medRecsDisagree: { label: "Med Recs Disagree", color: "var(--chart-7)" },
 } satisfies ChartConfig
 
 const REACTION_BASE: Record<ReactionKey, number> = {

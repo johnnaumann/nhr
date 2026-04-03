@@ -80,11 +80,11 @@ const detailChartConfig = {
 } satisfies ChartConfig
 
 const DETAIL_BASE: Record<DetailKey, number> = {
-  principleDxProc: 4,
-  procedures: 63,
-  ccMcc: 58,
-  dispositions: 2,
-  demographics: 97,
+  principleDxProc: 18,
+  procedures: 45,
+  ccMcc: 32,
+  dispositions: 8,
+  demographics: 56,
 }
 
 type CoderBarRow = {
@@ -94,30 +94,30 @@ type CoderBarRow = {
 
 /** Ten coders; `row` drives staggered axis labels (Figma layout). */
 const CODER_META: { name: string; row: 0 | 1 }[] = [
-  { name: "John Doe", row: 0 },
-  { name: "Janet Montrell", row: 0 },
-  { name: "Peter Quill", row: 0 },
-  { name: "Frank Caliendo", row: 0 },
-  { name: "Marc Fellon", row: 0 },
-  { name: "Michael Felps", row: 1 },
-  { name: "Gabriel Tahoe", row: 1 },
-  { name: "Simon Baker", row: 1 },
-  { name: "Andy Truffel", row: 1 },
-  { name: "Roger Gross", row: 1 },
+  { name: "Sarah Chen", row: 0 },
+  { name: "David Ruiz", row: 0 },
+  { name: "Priya Patel", row: 0 },
+  { name: "James Wilson", row: 0 },
+  { name: "Emily Foster", row: 0 },
+  { name: "Michael Tran", row: 1 },
+  { name: "Rachel Kim", row: 1 },
+  { name: "Carlos Diaz", row: 1 },
+  { name: "Aisha Brown", row: 1 },
+  { name: "Tom Nguyen", row: 1 },
 ]
 
-/** Base stacks approximating Figma proportions; sums ≈ 285 / 300. */
+/** Dramatically varied stacks — top coders stand out, clear performance tiers. */
 const CODER_BAR_BASE: Record<WorkKey, number>[] = [
-  { changed: 30, noChanges: 32 },
-  { changed: 26, noChanges: 28 },
-  { changed: 29, noChanges: 31 },
-  { changed: 24, noChanges: 26 },
-  { changed: 31, noChanges: 29 },
-  { changed: 27, noChanges: 33 },
-  { changed: 25, noChanges: 27 },
-  { changed: 28, noChanges: 30 },
-  { changed: 22, noChanges: 24 },
-  { changed: 33, noChanges: 30 },
+  { changed: 68, noChanges: 24 },
+  { changed: 54, noChanges: 32 },
+  { changed: 47, noChanges: 38 },
+  { changed: 42, noChanges: 28 },
+  { changed: 36, noChanges: 44 },
+  { changed: 31, noChanges: 18 },
+  { changed: 28, noChanges: 35 },
+  { changed: 22, noChanges: 14 },
+  { changed: 18, noChanges: 26 },
+  { changed: 12, noChanges: 10 },
 ]
 
 const DEFAULT_VISIBLE_WORK = [...WORK_KEYS] as WorkKey[]
@@ -142,14 +142,18 @@ function buildDetailLineSeries(
 
   return tail.map((iso, i) => {
     const row = { period: format(parseIsoDate(iso), "MMM d"), iso } as DetailLineRow
+    const t = i / Math.max(1, tail.length - 1)
     DETAIL_KEYS.forEach((key, ki) => {
+      const trendSlopes = [0.35, 0.2, -0.25, 0.15, -0.1]
+      const bases = [32, 26, 22, 16, 12]
+      const trend = trendSlopes[ki]! * t * 20
       const wave =
-        0.55 * Math.sin(i * 0.9 + ki * 1.2) +
-        0.35 * Math.sin(i * 0.4 + ki * 0.7)
-      const base = DETAIL_BASE[key] * 0.08 + 8 + ki * 3
+        Math.sin(i * 1.3 + ki * 1.8) * 4 +
+        Math.sin(i * 0.7 + ki * 2.5) * 2.5
+      const scaleBoost = Math.max(1, 1.2 / Math.max(0.15, scale))
       row[key] = Math.max(
-        2,
-        Math.min(36, Math.round(scale * (base + wave * 6)))
+        3,
+        Math.min(45, Math.round((bases[ki]! + trend + wave) * Math.min(scaleBoost, 1.8)))
       )
     })
     return row
@@ -545,7 +549,7 @@ export function ChartCoderPerformance() {
                       axisLine={false}
                       tickMargin={8}
                       width={32}
-                      domain={[0, 40]}
+                      domain={[0, 50]}
                       tickFormatter={(v) => String(Math.round(Number(v)))}
                     />
                     <ChartTooltip
@@ -618,6 +622,12 @@ export function ChartCoderPerformance() {
                   </PieChart>
                 </ChartContainer>
               )}
+              {pieTotal > 0 && visibleDetail.length > 0 && pieInsight ? (
+                <p className="max-h-24 w-full shrink-0 overflow-y-auto pt-2 text-left text-xs leading-relaxed text-muted-foreground">
+                  <span className="font-medium text-foreground">Summary: </span>
+                  {pieInsight}
+                </p>
+              ) : null}
             </div>
 
             <div className="flex min-h-0 min-w-0 flex-col">
@@ -692,11 +702,6 @@ export function ChartCoderPerformance() {
                       )
                     })}
                   </ul>
-                  {pieInsight ? (
-                    <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-                      {pieInsight}
-                    </p>
-                  ) : null}
                 </div>
             </div>
           </div>
