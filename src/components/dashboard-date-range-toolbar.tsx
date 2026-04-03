@@ -8,7 +8,7 @@ export function DashboardDateRangeToolbar() {
 
   return (
     <div
-      className="sticky top-0 z-30 border-b border-border/60 bg-background/95 py-3 backdrop-blur-sm supports-[backdrop-filter]:bg-background/80"
+      className="sticky top-(--header-height) z-30 border-b border-border/60 bg-background/95 py-3 backdrop-blur-sm supports-[backdrop-filter]:bg-background/80"
       data-slot="dashboard-date-range-sticky"
     >
       <div className="flex flex-col gap-3 px-4 sm:flex-row sm:items-center sm:justify-between sm:gap-4 lg:px-6">
