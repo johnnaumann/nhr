@@ -37,7 +37,6 @@ import {
   chartPanelClass,
   filterSelectTriggerClass,
   filterToolbarClass,
-  legendPanelClass,
 } from "@/lib/chart-layout"
 import {
   DEMO_SCALE_REFERENCE_DAYS,

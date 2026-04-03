@@ -51,7 +51,6 @@ import {
   chartPanelClass,
   filterSelectTriggerClass,
   filterToolbarClass,
-  legendPanelClass,
   pieInsightClass,
 } from "@/lib/chart-layout"
 import {
@@ -271,7 +270,7 @@ export function ChartCoderPerformance() {
   const { pieData, pieTotal, pieInsight } = React.useMemo(() => {
     const active = DETAIL_KEYS.filter((k) => visibleDetail.includes(k))
     const total = active.reduce((acc, k) => acc + detailCounts[k], 0)
-    const breakdown: PieInsightRow[] = active.map((key) => {
+    const rows = active.map((key) => {
       const value = detailCounts[key]
       const pct = total > 0 ? (value / total) * 100 : 0
       return {
@@ -281,7 +280,12 @@ export function ChartCoderPerformance() {
         pct,
       }
     })
-    const pieData = breakdown.map(({ key, label, value, pct }) => ({
+    const breakdown: PieInsightRow[] = rows.map(({ label, value, pct }) => ({
+      label,
+      value,
+      pct,
+    }))
+    const pieData = rows.map(({ key, label, value, pct }) => ({
       category: key,
       name: label,
       value,
