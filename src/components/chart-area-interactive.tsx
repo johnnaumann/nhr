@@ -300,6 +300,12 @@ export function ChartAreaInteractive() {
           </div>
 
           <div className="flex h-full min-h-0 min-w-0 flex-col rounded-xl border border-border/60 bg-muted/40 p-3 sm:p-4 @xl/main:col-span-2 @5xl/main:col-span-1 dark:bg-muted/20">
+            {pieTotal > 0 && visibleKeys.length > 0 ? (
+              <p className="max-h-24 w-full shrink-0 overflow-y-auto pb-2 text-left text-xs leading-relaxed text-muted-foreground">
+                <span className="font-medium text-foreground">Summary: </span>
+                {pieInsight}
+              </p>
+            ) : null}
             <div className="flex h-[240px] w-full shrink-0 flex-col items-center justify-center md:h-[280px]">
               {visibleKeys.length === 0 ? (
                 <div className="flex h-full w-full items-center justify-center px-2 text-center text-sm text-muted-foreground">
@@ -360,12 +366,6 @@ export function ChartAreaInteractive() {
                 </ChartContainer>
               )}
             </div>
-            {pieTotal > 0 && visibleKeys.length > 0 ? (
-              <p className="max-h-24 w-full shrink-0 overflow-y-auto pt-2 text-left text-xs leading-relaxed text-muted-foreground">
-                <span className="font-medium text-foreground">Summary: </span>
-                {pieInsight}
-              </p>
-            ) : null}
           </div>
         </div>
       </CardContent>

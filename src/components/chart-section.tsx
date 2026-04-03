@@ -360,7 +360,7 @@ export function ChartSection() {
                       tickLine={false}
                       axisLine={false}
                       tickMargin={8}
-                      width={32}
+                      width={44}
                       domain={[0, "auto"]}
                       tickFormatter={(v) => String(Math.round(Number(v)))}
                     />
@@ -405,6 +405,12 @@ export function ChartSection() {
             {/* Pie chart */}
             <div className="flex h-full min-h-0 min-w-0 flex-col @xl/types-chart:col-span-3">
               <div className="flex h-full min-h-0 min-w-0 flex-1 flex-col rounded-xl border border-border/60 bg-muted/40 p-3 sm:p-4 dark:bg-muted/20">
+                {pieTotal > 0 && visibleKeys.length > 0 ? (
+                  <p className="max-h-24 w-full shrink-0 overflow-y-auto pb-2 text-left text-xs leading-relaxed text-muted-foreground">
+                    <span className="font-medium text-foreground">Summary: </span>
+                    {pieInsight}
+                  </p>
+                ) : null}
                 <div className="flex h-[240px] w-full shrink-0 flex-col items-center justify-center md:h-[280px]">
                   {visibleKeys.length === 0 ? (
                     <div className="flex h-full w-full items-center justify-center px-2 text-center text-sm text-muted-foreground">
@@ -464,12 +470,6 @@ export function ChartSection() {
                     </ChartContainer>
                   )}
                 </div>
-                {pieTotal > 0 && visibleKeys.length > 0 ? (
-                  <p className="max-h-24 w-full shrink-0 overflow-y-auto pt-2 text-left text-xs leading-relaxed text-muted-foreground">
-                    <span className="font-medium text-foreground">Summary: </span>
-                    {pieInsight}
-                  </p>
-                ) : null}
               </div>
             </div>
         </div>

@@ -590,44 +590,44 @@ export function ChartCoderPerformance() {
 
             <div
               className={cn(
-                "flex min-h-[200px] min-w-0 flex-col items-center justify-center",
+                "flex min-h-[200px] min-w-0 flex-col",
                 chartPanelClass
               )}
             >
-              {visibleDetail.length === 0 ? (
-                <div className="flex flex-1 items-center px-2 text-center text-sm text-muted-foreground">
-                  No slice to show
-                </div>
-              ) : pieTotal === 0 ? (
-                <div className="text-sm text-muted-foreground">No data</div>
-              ) : (
-                <ChartContainer
-                  config={mergedDetailConfig}
-                  className="mx-auto aspect-square h-full max-h-[200px] w-full max-w-[200px]"
-                >
-                  <PieChart>
-                    <ChartTooltip
-                      cursor={false}
-                      content={<ChartTooltipContent hideLabel />}
-                    />
-                    <Pie
-                      data={pieData}
-                      dataKey="value"
-                      nameKey="name"
-                      innerRadius={44}
-                      outerRadius={72}
-                      stroke="var(--background)"
-                      strokeWidth={2}
-                    />
-                  </PieChart>
-                </ChartContainer>
-              )}
               {pieTotal > 0 && visibleDetail.length > 0 && pieInsight ? (
-                <p className="max-h-24 w-full shrink-0 overflow-y-auto pt-2 text-left text-xs leading-relaxed text-muted-foreground">
+                <p className="max-h-24 w-full shrink-0 overflow-y-auto pb-2 text-left text-xs leading-relaxed text-muted-foreground">
                   <span className="font-medium text-foreground">Summary: </span>
                   {pieInsight}
                 </p>
               ) : null}
+              <div className="flex h-[240px] w-full shrink-0 flex-col items-center justify-center md:h-[280px]">
+                {visibleDetail.length === 0 ? (
+                  <div className="flex h-full w-full items-center justify-center px-2 text-center text-sm text-muted-foreground">
+                    No slice to show
+                  </div>
+                ) : pieTotal === 0 ? (
+                  <div className="flex h-full w-full items-center justify-center text-sm text-muted-foreground">No data</div>
+                ) : (
+                  <ChartContainer
+                    config={mergedDetailConfig}
+                    className="!aspect-auto h-full w-full max-w-full min-w-0"
+                  >
+                    <PieChart>
+                      <ChartTooltip
+                        cursor={false}
+                        content={<ChartTooltipContent hideLabel />}
+                      />
+                      <Pie
+                        data={pieData}
+                        dataKey="value"
+                        nameKey="name"
+                        stroke="var(--border)"
+                        strokeWidth={1}
+                      />
+                    </PieChart>
+                  </ChartContainer>
+                )}
+              </div>
             </div>
 
             <div className="flex min-h-0 min-w-0 flex-col">
