@@ -1,13 +1,7 @@
 "use client"
 
 import * as React from "react"
-import {
-  endOfDay,
-  format,
-  isWithinInterval,
-  startOfDay,
-  startOfWeek,
-} from "date-fns"
+import { format, startOfWeek } from "date-fns"
 import { ArrowDownUpIcon, SearchIcon } from "lucide-react"
 import { Bar, BarChart, CartesianGrid, Pie, PieChart, XAxis, YAxis } from "recharts"
 
@@ -28,6 +22,7 @@ import {
 } from "@/components/ui/chart"
 import { RadioGroupItemMulti } from "@/components/ui/radio-group"
 import { useDashboardDateRange } from "@/contexts/dashboard-date-range-context"
+import { eachIsoDateInDashboardRange } from "@/lib/dashboard-demo-range"
 import { cn } from "@/lib/utils"
 
 const TYPE_KEYS = [
@@ -71,28 +66,16 @@ function stackValue(dayIndex: number, keyIndex: number, key: ChangeTypeKey) {
   return Math.max(2, Math.round(base * wave + (n % 7)))
 }
 
-/** Same calendar span as worksheets chart (demo data through Jun 30, 2024). */
-function buildTypesChangeDailyData(): ChangeDayRow[] {
-  const rows: ChangeDayRow[] = []
-  const cursor = new Date(2024, 3, 1)
-  const end = new Date(2024, 5, 30)
-  let dayIndex = 0
-  while (cursor <= end) {
-    const y = cursor.getFullYear()
-    const m = String(cursor.getMonth() + 1).padStart(2, "0")
-    const d = String(cursor.getDate()).padStart(2, "0")
-    const row = { date: `${y}-${m}-${d}` } as ChangeDayRow
+function buildChangeRowsForIsos(isos: string[]): ChangeDayRow[] {
+  return isos.map((date) => {
+    const dayIndex = Math.floor(parseDataDate(date).getTime() / 86400000)
+    const row = { date } as ChangeDayRow
     TYPE_KEYS.forEach((key, keyIndex) => {
       row[key] = stackValue(dayIndex, keyIndex, key)
     })
-    rows.push(row)
-    dayIndex += 1
-    cursor.setDate(cursor.getDate() + 1)
-  }
-  return rows
+    return row
+  })
 }
-
-const typesChangeDailyData = buildTypesChangeDailyData()
 
 function parseDataDate(iso: string) {
   const [y, mo, d] = iso.split("-").map(Number)
@@ -209,17 +192,10 @@ export function ChartSection() {
   const [visibleKeys, setVisibleKeys] =
     React.useState<ChangeTypeKey[]>(DEFAULT_VISIBLE_TYPES)
 
-  const filteredDays = React.useMemo(() => {
-    if (!range?.from) {
-      return typesChangeDailyData
-    }
-    const from = startOfDay(range.from)
-    const to = endOfDay(range.to ?? range.from)
-    const interval = { start: from, end: to }
-    return typesChangeDailyData.filter((row) =>
-      isWithinInterval(parseDataDate(row.date), interval)
-    )
-  }, [range])
+  const filteredDays = React.useMemo(
+    () => buildChangeRowsForIsos(eachIsoDateInDashboardRange(range)),
+    [range]
+  )
 
   const barChartData = React.useMemo(
     () => toBarChartRows(filteredDays),
@@ -352,12 +328,7 @@ export function ChartSection() {
 
             {/* Stacked bars */}
             <div className="flex min-h-0 min-w-0 flex-col rounded-xl border border-border/60 bg-muted/40 p-3 sm:p-4 @xl/types-chart:col-span-6 dark:bg-muted/20">
-              {filteredDays.length === 0 ? (
-                <div className="flex min-h-[240px] w-full flex-1 items-center justify-center px-2 text-center text-sm text-muted-foreground md:min-h-[280px]">
-                  No days in this reporting period match the demo dataset (Apr
-                  1–Jun 30, 2024). Adjust the range above.
-                </div>
-              ) : visibleKeys.length === 0 ? (
+              {visibleKeys.length === 0 ? (
                 <div className="flex min-h-[240px] w-full flex-1 items-center justify-center px-2 text-center text-sm text-muted-foreground md:min-h-[280px]">
                   Select at least one change type in the list to see the stacked
                   bar chart.
@@ -435,11 +406,7 @@ export function ChartSection() {
             <div className="flex h-full min-h-0 min-w-0 flex-col @xl/types-chart:col-span-3">
               <div className="flex h-full min-h-0 min-w-0 flex-1 flex-col rounded-xl border border-border/60 bg-muted/40 p-3 sm:p-4 dark:bg-muted/20">
                 <div className="flex h-[240px] w-full shrink-0 flex-col items-center justify-center md:h-[280px]">
-                  {filteredDays.length === 0 ? (
-                    <div className="flex h-full w-full items-center justify-center px-2 text-center text-sm text-muted-foreground">
-                      No data for this reporting period in the demo range.
-                    </div>
-                  ) : visibleKeys.length === 0 ? (
+                  {visibleKeys.length === 0 ? (
                     <div className="flex h-full w-full items-center justify-center px-2 text-center text-sm text-muted-foreground">
                       Select at least one change type to see the pie chart.
                     </div>

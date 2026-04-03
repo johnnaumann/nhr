@@ -1,7 +1,6 @@
 "use client"
 
 import * as React from "react"
-import { endOfDay, isWithinInterval, startOfDay } from "date-fns"
 import {
   CartesianGrid,
   Line,
@@ -31,6 +30,7 @@ import {
   ToggleGroupItem,
 } from "@/components/ui/toggle-group"
 import { useDashboardDateRange } from "@/contexts/dashboard-date-range-context"
+import { eachIsoDateInDashboardRange } from "@/lib/dashboard-demo-range"
 
 export const description =
   "Worksheets changed over time by institution with totals"
@@ -63,30 +63,6 @@ function smoothSeries(
   return Math.round(Math.max(3, Math.min(34, v)))
 }
 
-function buildWorksheetChartData(): WorksheetRow[] {
-  const rows: WorksheetRow[] = []
-  const cursor = new Date(2024, 3, 1)
-  const end = new Date(2024, 5, 30)
-  let dayIndex = 0
-  while (cursor <= end) {
-    const y = cursor.getFullYear()
-    const m = String(cursor.getMonth() + 1).padStart(2, "0")
-    const d = String(cursor.getDate()).padStart(2, "0")
-    rows.push({
-      date: `${y}-${m}-${d}`,
-      institution1: smoothSeries(dayIndex, 17, 11, 0.2, 0.11),
-      institution2: smoothSeries(dayIndex, 19, 9, 1.1, 0.095),
-      institution3: smoothSeries(dayIndex, 14, 12, 2.4, 0.13),
-      institution4: smoothSeries(dayIndex, 21, 8, 3.6, 0.088),
-    })
-    dayIndex += 1
-    cursor.setDate(cursor.getDate() + 1)
-  }
-  return rows
-}
-
-const chartData = buildWorksheetChartData()
-
 const chartConfig = {
   institution1: {
     label: "LICH",
@@ -109,6 +85,23 @@ const chartConfig = {
 function parseDataDate(iso: string) {
   const [y, m, d] = iso.split("-").map(Number)
   return new Date(y, m - 1, d)
+}
+
+function daySeedFromIso(iso: string) {
+  return Math.floor(parseDataDate(iso).getTime() / 86400000)
+}
+
+function buildWorksheetRowsForRange(isos: string[]): WorksheetRow[] {
+  return isos.map((date) => {
+    const dayIndex = daySeedFromIso(date)
+    return {
+      date,
+      institution1: smoothSeries(dayIndex, 17, 11, 0.2, 0.11),
+      institution2: smoothSeries(dayIndex, 19, 9, 1.1, 0.095),
+      institution3: smoothSeries(dayIndex, 14, 12, 2.4, 0.13),
+      institution4: smoothSeries(dayIndex, 21, 8, 3.6, 0.088),
+    }
+  })
 }
 
 type PieBreakdownRow = {
@@ -147,17 +140,10 @@ export function ChartAreaInteractive() {
   const [visibleKeys, setVisibleKeys] =
     React.useState<string[]>(DEFAULT_VISIBLE)
 
-  const filteredData = React.useMemo(() => {
-    if (!range?.from) {
-      return chartData
-    }
-    const from = startOfDay(range.from)
-    const to = endOfDay(range.to ?? range.from)
-    const interval = { start: from, end: to }
-    return chartData.filter((item) =>
-      isWithinInterval(parseDataDate(item.date), interval)
-    )
-  }, [range])
+  const filteredData = React.useMemo(
+    () => buildWorksheetRowsForRange(eachIsoDateInDashboardRange(range)),
+    [range]
+  )
 
   const { pieData, pieTotal, pieInsight } = React.useMemo(() => {
     const sums: Record<InstitutionKey, number> = {

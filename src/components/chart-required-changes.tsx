@@ -1,7 +1,6 @@
 "use client"
 
 import * as React from "react"
-import { endOfDay, isWithinInterval, startOfDay } from "date-fns"
 import { ArrowDownUpIcon, SearchIcon } from "lucide-react"
 import { Bar, BarChart, Cell, CartesianGrid, XAxis, YAxis } from "recharts"
 
@@ -30,26 +29,11 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { useDashboardDateRange } from "@/contexts/dashboard-date-range-context"
+import {
+  DEMO_SCALE_REFERENCE_DAYS,
+  dashboardRangeDayCount,
+} from "@/lib/dashboard-demo-range"
 import { cn } from "@/lib/utils"
-
-const DEMO_DATES_ISO = (() => {
-  const out: string[] = []
-  const c = new Date(2024, 3, 1)
-  const e = new Date(2024, 5, 30)
-  while (c <= e) {
-    const y = c.getFullYear()
-    const m = String(c.getMonth() + 1).padStart(2, "0")
-    const d = String(c.getDate()).padStart(2, "0")
-    out.push(`${y}-${m}-${d}`)
-    c.setDate(c.getDate() + 1)
-  }
-  return out
-})()
-
-function parseIsoDate(iso: string) {
-  const [y, mo, d] = iso.split("-").map(Number)
-  return new Date(y, mo - 1, d)
-}
 
 const IMPACT_KEYS = ["pdx", "proc", "sdx", "cc", "mcc"] as const
 type ImpactKey = (typeof IMPACT_KEYS)[number]
@@ -113,23 +97,16 @@ function scaleInt(n: number, factor: number) {
 export function ChartRequiredChanges() {
   const { range } = useDashboardDateRange()
 
-  const filteredDayCount = React.useMemo(() => {
-    if (!range?.from) {
-      return DEMO_DATES_ISO.length
-    }
-    const from = startOfDay(range.from)
-    const to = endOfDay(range.to ?? range.from)
-    const interval = { start: from, end: to }
-    return DEMO_DATES_ISO.filter((iso) =>
-      isWithinInterval(parseIsoDate(iso), interval)
-    ).length
-  }, [range])
+  const filteredDayCount = React.useMemo(
+    () => dashboardRangeDayCount(range),
+    [range]
+  )
 
   const scale = React.useMemo(
     () =>
       Math.max(
         0.12,
-        filteredDayCount / Math.max(1, DEMO_DATES_ISO.length)
+        filteredDayCount / Math.max(1, DEMO_SCALE_REFERENCE_DAYS)
       ),
     [filteredDayCount]
   )
@@ -359,11 +336,7 @@ export function ChartRequiredChanges() {
                 chartPanelClass
               )}
             >
-              {filteredDayCount === 0 ? (
-                <div className="flex min-h-[240px] flex-1 items-center justify-center px-2 text-center text-sm text-muted-foreground md:min-h-[280px]">
-                  No demo days in this reporting period. Adjust the range above.
-                </div>
-              ) : visibleImpacts.length === 0 ? (
+              {visibleImpacts.length === 0 ? (
                 <div className="flex min-h-[240px] flex-1 items-center justify-center px-2 text-center text-sm text-muted-foreground md:min-h-[280px]">
                   Select at least one impact category to see the stacked bar
                   chart.
@@ -540,11 +513,7 @@ export function ChartRequiredChanges() {
                 chartPanelClass
               )}
             >
-              {filteredDayCount === 0 ? (
-                <div className="flex min-h-[240px] flex-1 items-center justify-center px-2 text-center text-sm text-muted-foreground md:min-h-[280px]">
-                  No demo days in this reporting period.
-                </div>
-              ) : visibleReactions.length === 0 ? (
+              {visibleReactions.length === 0 ? (
                 <div className="flex min-h-[240px] flex-1 items-center justify-center px-2 text-center text-sm text-muted-foreground md:min-h-[280px]">
                   Select at least one reaction type to see the chart.
                 </div>

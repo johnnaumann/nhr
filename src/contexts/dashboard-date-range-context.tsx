@@ -4,10 +4,7 @@ import * as React from "react"
 import { endOfDay, startOfDay, subDays } from "date-fns"
 import type { DateRange } from "react-day-picker"
 
-/**
- * Last day covered by static demo series (e.g. 2024 Q2). Ranges outside this
- * window may show empty charts until data is wired to live dates.
- */
+/** Legacy anchor for docs or future real data cutoffs (charts use range-native demo data). */
 export const DASHBOARD_DATA_REFERENCE = new Date(2024, 5, 30)
 
 /** Inclusive calendar days in the default reporting period (today is the end). */
