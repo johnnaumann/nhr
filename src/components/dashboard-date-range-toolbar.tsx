@@ -32,7 +32,7 @@ export function DashboardDateRangeToolbar() {
               placeholder="Date range"
               className="w-full shrink-0 sm:w-auto sm:max-w-[min(100%,320px)]"
             />
-            <DashboardInstitutionToggle showInlineLabel />
+            <DashboardInstitutionToggle />
           </div>
         </div>
       </div>
