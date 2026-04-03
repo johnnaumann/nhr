@@ -361,7 +361,7 @@ export function ChartCoderPerformance() {
             </Select>
           </div>
 
-          <div className="grid grid-cols-1 gap-4 @xl/coder-performance:grid-cols-12 @xl/coder-performance:items-stretch">
+          <div className="grid min-h-[min(26rem,52vh)] grid-cols-1 gap-4 @xl/coder-performance:grid-cols-12 @xl/coder-performance:items-stretch">
             <div className="flex min-h-0 min-w-0 flex-col @xl/coder-performance:col-span-3">
               <div className={legendPanelClass}>
                 <div className="flex items-start justify-between gap-2">
@@ -422,27 +422,27 @@ export function ChartCoderPerformance() {
 
             <div
               className={cn(
-                "flex min-h-0 min-w-0 flex-col @xl/coder-performance:col-span-9",
+                "flex min-h-0 min-w-0 flex-1 flex-col @xl/coder-performance:col-span-9",
                 chartPanelClass
               )}
             >
               {visibleWork.length === 0 ? (
-                <div className="flex min-h-[220px] flex-1 items-center justify-center px-2 text-center text-sm text-muted-foreground md:min-h-[260px]">
+                <div className="flex min-h-[240px] flex-1 items-center justify-center px-2 text-center text-sm text-muted-foreground md:min-h-[320px]">
                   Select at least one outcome to see the stacked bars.
                 </div>
               ) : coderBarData.length === 0 ? (
-                <div className="flex min-h-[220px] flex-1 items-center justify-center px-2 text-center text-sm text-muted-foreground md:min-h-[260px]">
+                <div className="flex min-h-[240px] flex-1 items-center justify-center px-2 text-center text-sm text-muted-foreground md:min-h-[320px]">
                   No coders match this filter.
                 </div>
               ) : (
                 <ChartContainer
                   config={workStackConfig}
-                  className="!aspect-auto min-h-[220px] w-full min-w-0 flex-1 md:min-h-[260px]"
+                  className="!aspect-auto flex h-full min-h-[280px] w-full min-w-0 flex-1 md:min-h-[360px] [&_.recharts-responsive-container]:h-full [&_.recharts-responsive-container]:min-h-[inherit] [&_.recharts-wrapper]:overflow-visible [&_.recharts-surface]:overflow-visible"
                 >
                   <BarChart
                     accessibilityLayer
                     data={coderBarData}
-                    margin={{ left: 4, right: 8, top: 28, bottom: 4 }}
+                    margin={{ left: 4, right: 8, top: 12, bottom: 8 }}
                     barCategoryGap="14%"
                   >
                     <CartesianGrid vertical={false} strokeDasharray="3 3" />
@@ -452,23 +452,7 @@ export function ChartCoderPerformance() {
                       axisLine={false}
                       tickMargin={4}
                       interval={0}
-                      height={56}
-                      tick={({ x, y, payload, index }) => {
-                        const row = coderBarData[index]?.row ?? 0
-                        const dy = row === 0 ? -6 : 10
-                        const ny = Number(y) + dy
-                        return (
-                          <text
-                            x={x}
-                            y={ny}
-                            textAnchor="middle"
-                            fill="hsl(var(--muted-foreground))"
-                            className="text-[10px] sm:text-[11px]"
-                          >
-                            {String(payload.value)}
-                          </text>
-                        )
-                      }}
+                      fontSize={11}
                     />
                     <YAxis
                       tickLine={false}
@@ -483,19 +467,18 @@ export function ChartCoderPerformance() {
                         <ChartTooltipContent indicator="dot" labelKey="coder" />
                       }
                     />
-                    {WORK_KEYS.filter((k) => visibleWork.includes(k)).map(
-                      (key) => (
-                        <Bar
-                          key={key}
-                          dataKey={key}
-                          stackId="coder"
-                          fill={`var(--color-${key})`}
-                          stroke="var(--card)"
-                          strokeWidth={1}
-                          radius={0}
-                        />
-                      )
-                    )}
+                    {WORK_KEYS.filter((k) => visibleWork.includes(k)).map((key) => (
+                      <Bar
+                        key={key}
+                        dataKey={key}
+                        stackId="coder"
+                        fill={`var(--color-${key})`}
+                        stroke="var(--card)"
+                        strokeWidth={1}
+                        radius={0}
+                        isAnimationActive={false}
+                      />
+                    ))}
                   </BarChart>
                 </ChartContainer>
               )}
