@@ -19,8 +19,9 @@ export function DashboardDateRangeToolbar() {
               Reporting period &amp; sites
             </p>
             <p className="text-xs text-muted-foreground">
-              The date range and site toggles below apply everywhere institutions
-              appear—worksheets over time, site impact stacks, and related totals.
+              The date range and site toggles to the right apply everywhere
+              institutions appear—worksheets over time, site impact stacks, and
+              related totals.
             </p>
           </div>
           <div className="flex w-full min-w-0 flex-col gap-3 sm:w-auto sm:max-w-none sm:flex-row sm:items-center sm:justify-end sm:gap-4">
