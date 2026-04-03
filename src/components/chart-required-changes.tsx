@@ -79,12 +79,12 @@ const reactionChartConfig = {
 } satisfies ChartConfig
 
 const REACTION_BASE: Record<ReactionKey, number> = {
-  agrees: 285,
-  cdiDisagrees: 9,
-  mdDisagrees: 4,
-  hospitalModDrg: 5,
-  acknowledgeCqe: 742,
-  medRecsDisagree: 10,
+  agrees: 274,
+  cdiDisagrees: 96,
+  mdDisagrees: 58,
+  hospitalModDrg: 72,
+  acknowledgeCqe: 348,
+  medRecsDisagree: 128,
 }
 
 const DEFAULT_VISIBLE_IMPACTS = [...IMPACT_KEYS] as ImpactKey[]
@@ -535,7 +535,7 @@ export function ChartRequiredChanges() {
                       dataKey="name"
                       tickLine={false}
                       axisLine={false}
-                      width={132}
+                      width={160}
                       tickMargin={4}
                       className="text-xs"
                     />

@@ -106,7 +106,7 @@ function toBarChartRows(filteredDays: ChangeDayRow[]): BarRow[] {
 
   const map = new Map<
     string,
-    { weekStart: Date; sums: Record<ChangeTypeKey, number> }
+    { weekStart: Date; sums: Record<ChangeTypeKey, number>; dayCount: number }
   >()
   for (const r of filteredDays) {
     const d = parseDataDate(r.date)
@@ -118,26 +118,46 @@ function toBarChartRows(filteredDays: ChangeDayRow[]): BarRow[] {
       TYPE_KEYS.forEach((k) => {
         sums[k] = 0
       })
-      agg = { weekStart: ws, sums }
+      agg = { weekStart: ws, sums, dayCount: 0 }
       map.set(key, agg)
     }
     TYPE_KEYS.forEach((k) => {
       agg!.sums[k] += r[k]
     })
+    agg.dayCount += 1
   }
-  return [...map.entries()]
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([, agg]) => {
-      const values = {} as Record<ChangeTypeKey, number>
-      TYPE_KEYS.forEach((k) => {
-        values[k] = agg.sums[k]
-      })
-      return {
-        period: `Week of ${format(agg.weekStart, "MMM d")}`,
-        iso: format(agg.weekStart, "yyyy-MM-dd"),
-        ...values,
-      } satisfies BarRow
+
+  const sorted = [...map.entries()].sort(([a], [b]) => a.localeCompare(b))
+
+  if (sorted.length >= 2 && sorted[0][1].dayCount < 4) {
+    const [, partial] = sorted.shift()!
+    const next = sorted[0][1]
+    TYPE_KEYS.forEach((k) => {
+      next.sums[k] += partial.sums[k]
     })
+    next.dayCount += partial.dayCount
+  }
+
+  if (sorted.length >= 2 && sorted[sorted.length - 1][1].dayCount < 4) {
+    const [, partial] = sorted.pop()!
+    const prev = sorted[sorted.length - 1][1]
+    TYPE_KEYS.forEach((k) => {
+      prev.sums[k] += partial.sums[k]
+    })
+    prev.dayCount += partial.dayCount
+  }
+
+  return sorted.map(([, agg]) => {
+    const values = {} as Record<ChangeTypeKey, number>
+    TYPE_KEYS.forEach((k) => {
+      values[k] = agg.sums[k]
+    })
+    return {
+      period: `w/c ${format(agg.weekStart, "MMM d")}`,
+      iso: format(agg.weekStart, "yyyy-MM-dd"),
+      ...values,
+    } satisfies BarRow
+  })
 }
 
 function sumsByType(rows: ChangeDayRow[]): Record<ChangeTypeKey, number> {

@@ -90,7 +90,10 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs"
-import { GripVerticalIcon, CircleCheckIcon, LoaderIcon, EllipsisVerticalIcon, Columns3Icon, ChevronDownIcon, PlusIcon, ChevronsLeftIcon, ChevronLeftIcon, ChevronRightIcon, ChevronsRightIcon } from "lucide-react"
+import { GripVerticalIcon, CircleCheckIcon, LoaderIcon, EllipsisVerticalIcon, Columns3Icon, ChevronDownIcon, PlusIcon, ChevronsLeftIcon, ChevronLeftIcon, ChevronRightIcon, ChevronsRightIcon, FileTextIcon, ClockIcon } from "lucide-react"
+
+import { cn } from "@/lib/utils"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 
 export const schema = z.object({
   id: z.number(),
@@ -612,18 +615,393 @@ export function DataTable({
       </TabsContent>
       <TabsContent
         value="past-performance"
-        className="flex flex-col px-4 lg:px-6"
+        className="flex flex-col gap-4 px-4 lg:px-6"
       >
-        <div className="aspect-video w-full flex-1 rounded-lg border border-dashed"></div>
+        <div className="overflow-hidden rounded-lg border">
+          <Table>
+            <TableHeader className="bg-muted">
+              <TableRow>
+                <TableHead>Contract</TableHead>
+                <TableHead>Period</TableHead>
+                <TableHead className="text-right">Claims Processed</TableHead>
+                <TableHead>Accuracy Rate</TableHead>
+                <TableHead className="text-right">Avg. Turnaround</TableHead>
+                <TableHead className="text-right">Value</TableHead>
+                <TableHead>Rating</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {pastPerformanceData.map((row) => (
+                <TableRow key={row.id}>
+                  <TableCell>
+                    <div className="font-medium">{row.contract}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {row.client}
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-muted-foreground">
+                    {row.period}
+                  </TableCell>
+                  <TableCell className="text-right font-medium tabular-nums">
+                    {row.claimsProcessed}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <div className="h-2 w-24 overflow-hidden rounded-full bg-muted">
+                        <div
+                          className={cn(
+                            "h-full rounded-full",
+                            row.accuracyRate >= 98
+                              ? "bg-green-500"
+                              : row.accuracyRate >= 96
+                                ? "bg-yellow-500"
+                                : "bg-red-500"
+                          )}
+                          style={{ width: `${row.accuracyRate}%` }}
+                        />
+                      </div>
+                      <span className="text-sm tabular-nums">
+                        {row.accuracyRate}%
+                      </span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-right tabular-nums">
+                    {row.avgTurnaround} days
+                  </TableCell>
+                  <TableCell className="text-right font-medium">
+                    {row.dollarValue}
+                  </TableCell>
+                  <TableCell>
+                    <Badge
+                      variant="outline"
+                      className={cn(
+                        "px-1.5",
+                        row.rating === "Exceptional"
+                          ? "border-green-500/30 bg-green-500/10 text-green-700 dark:text-green-400"
+                          : "border-yellow-500/30 bg-yellow-500/10 text-yellow-700 dark:text-yellow-400"
+                      )}
+                    >
+                      {row.rating}
+                    </Badge>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
+          {pastPerformanceData.map((row) => (
+            <div
+              key={row.id}
+              className="flex flex-col gap-3 rounded-lg border p-4"
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium text-muted-foreground">
+                  Claims Mix
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  {row.client}
+                </span>
+              </div>
+              <div className="flex h-2 w-full overflow-hidden rounded-full">
+                <div
+                  className="bg-[var(--chart-1)]"
+                  style={{ width: `${row.categories.medical}%` }}
+                />
+                <div
+                  className="bg-[var(--chart-2)]"
+                  style={{ width: `${row.categories.pharmacy}%` }}
+                />
+                <div
+                  className="bg-[var(--chart-3)]"
+                  style={{ width: `${row.categories.behavioral}%` }}
+                />
+              </div>
+              <div className="flex justify-between text-xs text-muted-foreground">
+                <div className="flex items-center gap-1">
+                  <span className="inline-block size-2 rounded-full bg-[var(--chart-1)]" />
+                  Medical {row.categories.medical}%
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className="inline-block size-2 rounded-full bg-[var(--chart-2)]" />
+                  Pharmacy {row.categories.pharmacy}%
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className="inline-block size-2 rounded-full bg-[var(--chart-3)]" />
+                  Behavioral {row.categories.behavioral}%
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="flex flex-wrap items-center gap-4 rounded-lg border bg-muted/50 p-4">
+          <div className="flex flex-col">
+            <span className="text-sm font-medium">Aggregate Performance</span>
+            <span className="text-xs text-muted-foreground">
+              Across all 3 contracts
+            </span>
+          </div>
+          <Separator orientation="vertical" className="hidden h-8 sm:block" />
+          <div className="flex flex-col">
+            <span className="text-sm font-medium tabular-nums">447,810</span>
+            <span className="text-xs text-muted-foreground">Total Claims</span>
+          </div>
+          <Separator orientation="vertical" className="hidden h-8 sm:block" />
+          <div className="flex flex-col">
+            <span className="text-sm font-medium tabular-nums">97.4%</span>
+            <span className="text-xs text-muted-foreground">
+              Avg. Accuracy
+            </span>
+          </div>
+          <Separator orientation="vertical" className="hidden h-8 sm:block" />
+          <div className="flex flex-col">
+            <span className="text-sm font-medium tabular-nums">3.97 days</span>
+            <span className="text-xs text-muted-foreground">
+              Avg. Turnaround
+            </span>
+          </div>
+          <Separator orientation="vertical" className="hidden h-8 sm:block" />
+          <div className="flex flex-col">
+            <span className="text-sm font-medium tabular-nums">$13.1M</span>
+            <span className="text-xs text-muted-foreground">Total Value</span>
+          </div>
+        </div>
       </TabsContent>
-      <TabsContent value="key-personnel" className="flex flex-col px-4 lg:px-6">
-        <div className="aspect-video w-full flex-1 rounded-lg border border-dashed"></div>
+      <TabsContent
+        value="key-personnel"
+        className="flex flex-col gap-4 px-4 lg:px-6"
+      >
+        <div className="grid gap-4 md:grid-cols-2">
+          {keyPersonnelData.map((person) => (
+            <div
+              key={person.id}
+              className="flex flex-col gap-4 rounded-lg border p-4"
+            >
+              <div className="flex items-start gap-4">
+                <Avatar size="lg">
+                  <AvatarFallback>{person.initials}</AvatarFallback>
+                </Avatar>
+                <div className="min-w-0 flex-1">
+                  <div className="font-medium">{person.name}</div>
+                  <div className="text-sm text-muted-foreground">
+                    {person.title}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {person.department}
+                  </div>
+                </div>
+                <Badge variant="secondary" className="shrink-0 text-xs">
+                  {person.yearsExperience} yrs
+                </Badge>
+              </div>
+              <Separator />
+              <div className="space-y-3">
+                <div>
+                  <div className="mb-1.5 text-xs font-medium text-muted-foreground">
+                    Certifications
+                  </div>
+                  <div className="flex flex-wrap gap-1">
+                    {person.certifications.map((cert) => (
+                      <Badge
+                        key={cert}
+                        variant="secondary"
+                        className="text-xs"
+                      >
+                        {cert}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <div className="mb-1.5 text-xs font-medium text-muted-foreground">
+                    Specialties
+                  </div>
+                  <div className="flex flex-wrap gap-1">
+                    {person.specialties.map((s) => (
+                      <Badge key={s} variant="outline" className="text-xs">
+                        {s}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <Separator />
+              <div>
+                <div className="mb-2 text-xs font-medium">Recent Projects</div>
+                <div className="overflow-hidden rounded-md border">
+                  <Table>
+                    <TableBody>
+                      {person.recentProjects.map((proj) => (
+                        <TableRow key={proj.name}>
+                          <TableCell className="py-2 text-sm">
+                            {proj.name}
+                          </TableCell>
+                          <TableCell className="py-2 text-right">
+                            <Badge
+                              variant="outline"
+                              className={cn(
+                                "px-1.5 text-xs",
+                                proj.status === "Completed" &&
+                                  "border-green-500/30 bg-green-500/10 text-green-700 dark:text-green-400",
+                                proj.status === "In Progress" &&
+                                  "border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-400",
+                                proj.status === "Not Started" &&
+                                  "text-muted-foreground"
+                              )}
+                            >
+                              {proj.status === "Completed" && (
+                                <CircleCheckIcon className="fill-green-500 dark:fill-green-400" />
+                              )}
+                              {proj.status === "In Progress" && (
+                                <LoaderIcon />
+                              )}
+                              {proj.status === "Not Started" && (
+                                <ClockIcon />
+                              )}
+                              {proj.status}
+                            </Badge>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       </TabsContent>
       <TabsContent
         value="focus-documents"
-        className="flex flex-col px-4 lg:px-6"
+        className="flex flex-col gap-4 px-4 lg:px-6"
       >
-        <div className="aspect-video w-full flex-1 rounded-lg border border-dashed"></div>
+        <div className="overflow-hidden rounded-lg border">
+          <Table>
+            <TableHeader className="bg-muted">
+              <TableRow>
+                <TableHead>Document</TableHead>
+                <TableHead>Category</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Priority</TableHead>
+                <TableHead className="text-right">Pages</TableHead>
+                <TableHead>Last Reviewed</TableHead>
+                <TableHead>Compliance Deadline</TableHead>
+                <TableHead>Owner</TableHead>
+                <TableHead className="text-right">Version</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {focusDocumentsData.map((doc) => (
+                <TableRow key={doc.id}>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <FileTextIcon className="size-4 shrink-0 text-muted-foreground" />
+                      <span className="font-medium">{doc.name}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <Badge
+                      variant="outline"
+                      className="px-1.5 text-muted-foreground"
+                    >
+                      {doc.category}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <Badge
+                      variant="outline"
+                      className={cn(
+                        "px-1.5",
+                        doc.status === "Approved" &&
+                          "border-green-500/30 bg-green-500/10 text-green-700 dark:text-green-400",
+                        doc.status === "Under Review" &&
+                          "border-yellow-500/30 bg-yellow-500/10 text-yellow-700 dark:text-yellow-400",
+                        doc.status === "Pending Update" &&
+                          "border-orange-500/30 bg-orange-500/10 text-orange-700 dark:text-orange-400",
+                        doc.status === "Draft" && "text-muted-foreground"
+                      )}
+                    >
+                      {doc.status === "Approved" && (
+                        <CircleCheckIcon className="fill-green-500 dark:fill-green-400" />
+                      )}
+                      {(doc.status === "Under Review" ||
+                        doc.status === "Pending Update") && <LoaderIcon />}
+                      {doc.status === "Draft" && <ClockIcon />}
+                      {doc.status}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <Badge
+                      variant={
+                        doc.priority === "Critical" ? "destructive" : "outline"
+                      }
+                      className={cn(
+                        "px-1.5",
+                        doc.priority === "High" &&
+                          "border-orange-500/30 bg-orange-500/10 text-orange-700 dark:text-orange-400",
+                        doc.priority === "Medium" && "text-muted-foreground"
+                      )}
+                    >
+                      {doc.priority}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-right tabular-nums">
+                    {doc.pages}
+                  </TableCell>
+                  <TableCell className="text-muted-foreground">
+                    {doc.lastReviewed}
+                  </TableCell>
+                  <TableCell>
+                    <span
+                      className={cn(
+                        "text-muted-foreground",
+                        doc.complianceDeadline !== "Ongoing" &&
+                          new Date(doc.complianceDeadline) <
+                            new Date("2026-04-20") &&
+                          "font-medium text-red-600 dark:text-red-400"
+                      )}
+                    >
+                      {doc.complianceDeadline}
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-muted-foreground">
+                    {doc.owner}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Badge variant="secondary" className="text-xs">
+                      {doc.version}
+                    </Badge>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+        <div className="flex flex-wrap items-center gap-4 rounded-lg border bg-muted/50 p-4">
+          <div className="flex flex-col">
+            <span className="text-sm font-medium">Document Summary</span>
+            <span className="text-xs text-muted-foreground">
+              8 focus documents tracked
+            </span>
+          </div>
+          <Separator orientation="vertical" className="hidden h-8 sm:block" />
+          <div className="flex items-center gap-2">
+            <span className="inline-block size-2 rounded-full bg-green-500" />
+            <span className="text-sm">3 Approved</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="inline-block size-2 rounded-full bg-yellow-500" />
+            <span className="text-sm">2 Under Review</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="inline-block size-2 rounded-full bg-orange-500" />
+            <span className="text-sm">2 Pending Update</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="inline-block size-2 rounded-full bg-muted-foreground" />
+            <span className="text-sm">1 Draft</span>
+          </div>
+        </div>
       </TabsContent>
     </Tabs>
   )
@@ -648,6 +1026,185 @@ const chartConfig = {
     color: "var(--primary)",
   },
 } satisfies ChartConfig
+
+const pastPerformanceData = [
+  {
+    id: 1,
+    contract: "BlueCross BlueShield – Medicare Advantage",
+    client: "BCBS Tennessee",
+    period: "Jan 2023 – Dec 2024",
+    claimsProcessed: "142,850",
+    accuracyRate: 98.7,
+    avgTurnaround: "3.2",
+    rating: "Exceptional",
+    dollarValue: "$4.2M",
+    categories: { medical: 62, pharmacy: 24, behavioral: 14 },
+  },
+  {
+    id: 2,
+    contract: "Aetna – Medicaid Managed Care",
+    client: "Aetna Health Inc.",
+    period: "Mar 2022 – Feb 2024",
+    claimsProcessed: "89,340",
+    accuracyRate: 96.1,
+    avgTurnaround: "4.8",
+    rating: "Very Good",
+    dollarValue: "$2.8M",
+    categories: { medical: 71, pharmacy: 18, behavioral: 11 },
+  },
+  {
+    id: 3,
+    contract: "UnitedHealth – Group Policy Admin",
+    client: "UHG National Accounts",
+    period: "Jul 2021 – Jun 2023",
+    claimsProcessed: "215,620",
+    accuracyRate: 97.4,
+    avgTurnaround: "3.9",
+    rating: "Exceptional",
+    dollarValue: "$6.1M",
+    categories: { medical: 58, pharmacy: 28, behavioral: 14 },
+  },
+]
+
+const keyPersonnelData = [
+  {
+    id: 1,
+    name: "Dr. Sarah Chen",
+    initials: "SC",
+    title: "Chief Medical Officer",
+    department: "Clinical Operations",
+    certifications: ["MD", "FACP", "CPHQ"],
+    yearsExperience: 18,
+    specialties: [
+      "Utilization Management",
+      "Quality Assurance",
+      "Medicare Compliance",
+    ],
+    recentProjects: [
+      { name: "CMS Star Rating Improvement", status: "Completed" },
+      { name: "Prior Authorization Automation", status: "In Progress" },
+      { name: "Clinical Guidelines Update", status: "In Progress" },
+    ],
+  },
+  {
+    id: 2,
+    name: "Marcus Rivera",
+    initials: "MR",
+    title: "VP, Claims & Benefits Administration",
+    department: "Operations",
+    certifications: ["CEBS", "FLMI", "ACS"],
+    yearsExperience: 14,
+    specialties: [
+      "Claims Adjudication",
+      "Benefits Design",
+      "Network Management",
+    ],
+    recentProjects: [
+      { name: "Auto-adjudication Expansion", status: "Completed" },
+      { name: "Provider Network Reconfiguration", status: "In Progress" },
+      { name: "EOB Template Redesign", status: "Not Started" },
+    ],
+  },
+]
+
+const focusDocumentsData = [
+  {
+    id: 1,
+    name: "Summary Plan Description (SPD)",
+    category: "Member Comms",
+    status: "Under Review",
+    priority: "High",
+    lastReviewed: "Mar 12, 2026",
+    complianceDeadline: "Apr 30, 2026",
+    owner: "Legal & Compliance",
+    version: "v4.2",
+    pages: 48,
+  },
+  {
+    id: 2,
+    name: "Evidence of Coverage (EOC)",
+    category: "Regulatory",
+    status: "Approved",
+    priority: "Critical",
+    lastReviewed: "Feb 28, 2026",
+    complianceDeadline: "Mar 31, 2026",
+    owner: "Compliance",
+    version: "v3.1",
+    pages: 124,
+  },
+  {
+    id: 3,
+    name: "Provider Directory & Network Adequacy",
+    category: "Network",
+    status: "Pending Update",
+    priority: "High",
+    lastReviewed: "Jan 15, 2026",
+    complianceDeadline: "May 15, 2026",
+    owner: "Network Ops",
+    version: "v2.8",
+    pages: 67,
+  },
+  {
+    id: 4,
+    name: "Formulary & Drug List",
+    category: "Pharmacy",
+    status: "Approved",
+    priority: "Medium",
+    lastReviewed: "Mar 1, 2026",
+    complianceDeadline: "Jun 30, 2026",
+    owner: "Pharmacy Benefits",
+    version: "v5.0",
+    pages: 89,
+  },
+  {
+    id: 5,
+    name: "Utilization Management Protocols",
+    category: "Clinical",
+    status: "Draft",
+    priority: "High",
+    lastReviewed: "Feb 10, 2026",
+    complianceDeadline: "Apr 15, 2026",
+    owner: "Clinical Ops",
+    version: "v1.3",
+    pages: 34,
+  },
+  {
+    id: 6,
+    name: "Grievance & Appeals Procedures",
+    category: "Compliance",
+    status: "Under Review",
+    priority: "Critical",
+    lastReviewed: "Mar 5, 2026",
+    complianceDeadline: "Apr 10, 2026",
+    owner: "Member Services",
+    version: "v3.7",
+    pages: 28,
+  },
+  {
+    id: 7,
+    name: "HIPAA Privacy & Security Policies",
+    category: "Legal",
+    status: "Approved",
+    priority: "Critical",
+    lastReviewed: "Mar 20, 2026",
+    complianceDeadline: "Ongoing",
+    owner: "InfoSec",
+    version: "v6.1",
+    pages: 56,
+  },
+  {
+    id: 8,
+    name: "Claims Processing Manual",
+    category: "Operations",
+    status: "Pending Update",
+    priority: "Medium",
+    lastReviewed: "Dec 18, 2025",
+    complianceDeadline: "May 30, 2026",
+    owner: "Claims Ops",
+    version: "v4.5",
+    pages: 112,
+  },
+]
 
 function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
   const isMobile = useIsMobile()
