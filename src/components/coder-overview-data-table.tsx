@@ -283,7 +283,7 @@ export function CoderOverviewDataTable<T extends { id: number }>({
     <section
       id={sectionId}
       className={cn(
-        "flex flex-col gap-4 scroll-mt-[var(--coder-overview-scroll-margin)]",
+        "flex flex-col gap-4 scroll-mt-[var(--stacked-section-scroll-margin)]",
       )}
       aria-labelledby={headingId}
     >

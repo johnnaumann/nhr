@@ -39,8 +39,8 @@ const data = {
       ),
     },
     {
-      title: "Analytics",
-      url: "#",
+      title: "Coder Trends",
+      url: "/coder-trends",
       icon: (
         <ChartBarIcon
         />
