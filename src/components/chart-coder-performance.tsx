@@ -234,12 +234,17 @@ export function ChartCoderPerformance() {
       </CardHeader>
       <CardContent className={chartContentClass}>
         <section className={cn("flex flex-col", dashboardGridGapClass)}>
-          <div className={cn(filterToolbarClass, "items-center")}>
+          <p
+            className={cn(
+              filterToolbarClass,
+              "m-0 max-w-full min-w-0 items-baseline leading-relaxed",
+            )}
+          >
             <span>Displaying</span>
             <Select value={addFilter} onValueChange={setAddFilter}>
               <SelectTrigger
                 size="sm"
-                className={cn(filterSelectTriggerClass, "min-w-[9rem]")}
+                className={cn(filterSelectTriggerClass, "max-w-[min(100%,18rem)]")}
               >
                 <SelectValue placeholder="Add filter" />
               </SelectTrigger>
@@ -251,13 +256,11 @@ export function ChartCoderPerformance() {
                 </SelectGroup>
               </SelectContent>
             </Select>
-          </div>
-          <div className={filterToolbarClass}>
-            <span>View coder details of</span>
+            <span>, view coder details of</span>
             <Select value={detailScope} onValueChange={setDetailScope}>
               <SelectTrigger
                 size="sm"
-                className={cn(filterSelectTriggerClass, "min-w-[10rem]")}
+                className={cn(filterSelectTriggerClass, "max-w-[min(100%,14rem)]")}
               >
                 <SelectValue />
               </SelectTrigger>
@@ -269,7 +272,8 @@ export function ChartCoderPerformance() {
                 </SelectGroup>
               </SelectContent>
             </Select>
-          </div>
+            <span className="text-muted-foreground">.</span>
+          </p>
 
           <div
             className={cn(
