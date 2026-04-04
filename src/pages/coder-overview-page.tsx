@@ -1,10 +1,10 @@
 import type { CSSProperties } from "react"
 
 import { AppSidebar } from "@/components/app-sidebar"
+import { CoderOverviewTables } from "@/components/coder-overview-tables"
 import { SiteHeader } from "@/components/site-header"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 
-/** Placeholder shell for Coder Overview; content TBD. */
 export function CoderOverviewPage() {
   return (
     <SidebarProvider
@@ -18,7 +18,12 @@ export function CoderOverviewPage() {
       <AppSidebar variant="inset" />
       <SidebarInset>
         <SiteHeader />
-        <div className="flex flex-1 flex-col" aria-label="Coder overview" />
+        <div
+          className="flex flex-1 flex-col px-4 py-4 md:px-6 md:py-6"
+          aria-label="Coder overview"
+        >
+          <CoderOverviewTables />
+        </div>
       </SidebarInset>
     </SidebarProvider>
   )
