@@ -10,6 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import {
+  dashboardCardBlockGapClass,
   dashboardGridGapClass,
   dashboardMainGutterClass,
 } from "@/lib/dashboard-layout"
@@ -25,7 +26,7 @@ export function SectionCards() {
         dashboardGridGapClass,
       )}
     >
-      <Card className="@container/card">
+      <Card className={cn("@container/card", dashboardCardBlockGapClass)}>
         <CardHeader>
           <CardDescription>Missed Revenue Identified</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
@@ -48,7 +49,7 @@ export function SectionCards() {
           </div>
         </CardFooter>
       </Card>
-      <Card className="@container/card">
+      <Card className={cn("@container/card", dashboardCardBlockGapClass)}>
         <CardHeader>
           <CardDescription>Quality Enhancement Changes</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
@@ -71,7 +72,7 @@ export function SectionCards() {
           </div>
         </CardFooter>
       </Card>
-      <Card className="@container/card">
+      <Card className={cn("@container/card", dashboardCardBlockGapClass)}>
         <CardHeader>
           <CardDescription>Flagged for Compliance</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
@@ -94,7 +95,7 @@ export function SectionCards() {
           </div>
         </CardFooter>
       </Card>
-      <Card className="@container/card">
+      <Card className={cn("@container/card", dashboardCardBlockGapClass)}>
         <CardHeader>
           <CardDescription>Pending Decisions</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">

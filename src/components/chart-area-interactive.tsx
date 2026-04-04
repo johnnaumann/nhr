@@ -38,6 +38,7 @@ import {
   dashboardGridGapClass,
   pieInsightClass,
 } from "@/lib/chart-layout"
+import { dashboardCardBlockGapClass } from "@/lib/dashboard-layout"
 import { cn } from "@/lib/utils"
 import { eachIsoDateInDashboardRange } from "@/lib/dashboard-demo-range"
 import {
@@ -150,7 +151,7 @@ export function ChartAreaInteractive() {
   }, [filteredData, visibleInstitutionKeys])
 
   return (
-    <Card className="@container/card">
+    <Card className={cn("@container/card", dashboardCardBlockGapClass)}>
       <CardHeader>
         <CardTitle className="text-lg font-semibold tracking-tight sm:text-xl">
           Worksheets changed
@@ -170,10 +171,15 @@ export function ChartAreaInteractive() {
             dashboardGridGapClass,
           )}
         >
-          <div className={`${chartPanelClass} @xl/main:col-span-2 @5xl/main:col-span-3`}>
+          <div
+            className={cn(
+              chartPanelClass,
+              "@xl/main:col-span-2 @5xl/main:col-span-3 @xl/main:pr-0 @5xl/main:pr-0",
+            )}
+          >
             <ChartContainer
               config={institutionChartConfig}
-              className="!aspect-auto min-h-[240px] w-full min-w-0 flex-1 md:min-h-[280px]"
+              className="!aspect-auto min-h-[240px] w-full min-w-0 flex-1 px-3 md:min-h-[280px]"
             >
               <LineChart
                 accessibilityLayer
@@ -241,7 +247,12 @@ export function ChartAreaInteractive() {
             </ChartContainer>
           </div>
 
-          <div className={`${chartPanelClass} @xl/main:col-span-2 @5xl/main:col-span-1`}>
+          <div
+            className={cn(
+              chartPanelClass,
+              "@xl/main:col-span-2 @5xl/main:col-span-1 @xl/main:pl-0 @5xl/main:pl-0",
+            )}
+          >
             {pieTotal > 0 && visibleInstitutionKeys.length > 0 ? (
               <p className={pieInsightClass}>
                 <span className="font-medium text-foreground">Summary: </span>

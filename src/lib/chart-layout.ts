@@ -7,13 +7,22 @@ export { dashboardGridGapClass } from "./dashboard-layout"
 /**
  * Dashboard chart panels: shared bordered-muted chrome, filter toolbar strings,
  * and gaps aligned with `dashboard-layout` so the page reads as one grid.
+ *
+ * Panels use full `px-4` when stacked (one column). In multi-column layouts,
+ * pass container overrides (e.g. `@xl/types-chart:pr-0`) on the panel so the
+ * space between legend and chart is **only** the grid gap — not gap + padding
+ * on both sides.
  */
 
-export const chartPanelClass =
-  "flex min-h-0 min-w-0 flex-col rounded-xl border border-border/60 bg-muted/40 p-4 dark:bg-muted/20"
+const mutedPanelShell =
+  "flex min-h-0 min-w-0 flex-col rounded-xl border border-border/60 bg-muted/40 py-4 dark:bg-muted/20"
 
-export const legendPanelClass =
-  "flex h-full min-h-0 flex-1 flex-col gap-4 rounded-xl border border-border/60 bg-muted/40 p-4 dark:bg-muted/20"
+export const chartPanelClass = cn(mutedPanelShell, "px-4")
+
+export const legendPanelClass = cn(
+  mutedPanelShell,
+  "h-full flex-1 gap-4 px-4"
+)
 
 export const filterToolbarClass =
   "flex flex-wrap items-baseline gap-x-1 gap-y-2 text-sm text-muted-foreground"
@@ -21,9 +30,13 @@ export const filterToolbarClass =
 export const filterSelectTriggerClass =
   "h-8 w-fit border-0 border-b border-dashed border-muted-foreground/50 bg-transparent px-1 py-0 font-medium text-foreground shadow-none hover:bg-muted/40 focus:ring-0 focus-visible:ring-0 dark:hover:bg-muted/20"
 
-/** Vertical rhythm matches dashboard grid; horizontal px matches CardHeader. */
+/**
+ * Chart body: horizontal inset matches CardHeader (`px-4`). No extra bottom
+ * padding — `Card` already uses `py-4`, so adding `pb-*` here doubled the
+ * space below the charts vs. the sides.
+ */
 export const chartContentClass = cn(
-  "flex flex-col px-4 pt-0 pb-4 sm:pb-6",
+  "flex flex-col px-4 pt-0 pb-0",
   dashboardGridGapClass
 )
 

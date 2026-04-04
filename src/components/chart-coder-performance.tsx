@@ -58,6 +58,7 @@ import {
   DEMO_SCALE_REFERENCE_DAYS,
   eachIsoDateInDashboardRange,
 } from "@/lib/dashboard-demo-range"
+import { dashboardCardBlockGapClass } from "@/lib/dashboard-layout"
 import { cn } from "@/lib/utils"
 
 const WORK_KEYS = ["changed", "noChanges"] as const
@@ -299,7 +300,9 @@ export function ChartCoderPerformance() {
   )
 
   return (
-    <Card className="@container/coder-performance">
+    <Card
+      className={cn("@container/coder-performance", dashboardCardBlockGapClass)}
+    >
       <CardHeader>
         <CardTitle className="text-lg font-semibold tracking-tight sm:text-xl">
           Coder Performance
@@ -370,13 +373,15 @@ export function ChartCoderPerformance() {
                 }
                 idPrefix="coder-work"
                 ariaLabel="Filter stacks on coder chart"
+                className="@xl/coder-performance:pr-0"
               />
             </div>
 
             <div
               className={cn(
                 "flex min-h-0 min-w-0 flex-1 flex-col @xl/coder-performance:col-span-9",
-                chartPanelClass
+                chartPanelClass,
+                "@xl/coder-performance:pl-0 @xl/coder-performance:pr-4",
               )}
             >
               {visibleWork.length === 0 ? (
@@ -390,7 +395,7 @@ export function ChartCoderPerformance() {
               ) : (
                 <ChartContainer
                   config={workStackConfig}
-                  className="!aspect-auto flex h-full min-h-[280px] w-full min-w-0 flex-1 md:min-h-[360px] [&_.recharts-responsive-container]:h-full [&_.recharts-responsive-container]:min-h-[inherit] [&_.recharts-wrapper]:overflow-visible [&_.recharts-surface]:overflow-visible"
+                  className="!aspect-auto flex h-full min-h-[280px] w-full min-w-0 flex-1 px-3 md:min-h-[360px] [&_.recharts-responsive-container]:h-full [&_.recharts-responsive-container]:min-h-[inherit] [&_.recharts-wrapper]:overflow-visible [&_.recharts-surface]:overflow-visible"
                 >
                   <BarChart
                     accessibilityLayer
@@ -468,7 +473,8 @@ export function ChartCoderPerformance() {
             <div
               className={cn(
                 "flex min-h-0 min-w-0 flex-col @xl/coder-performance:col-span-2",
-                chartPanelClass
+                chartPanelClass,
+                "@xl/coder-performance:pr-0",
               )}
             >
               {visibleDetail.length === 0 ? (
@@ -482,7 +488,7 @@ export function ChartCoderPerformance() {
               ) : (
                 <ChartContainer
                   config={detailChartConfig}
-                  className="!aspect-auto min-h-[240px] w-full min-w-0 flex-1 md:min-h-[280px]"
+                  className="!aspect-auto min-h-[240px] w-full min-w-0 flex-1 px-3 md:min-h-[280px]"
                 >
                   <LineChart
                     accessibilityLayer
@@ -545,7 +551,8 @@ export function ChartCoderPerformance() {
             <div
               className={cn(
                 "flex min-h-[200px] min-w-0 flex-col",
-                chartPanelClass
+                chartPanelClass,
+                "@xl/coder-performance:px-0",
               )}
             >
               {pieTotal > 0 && visibleDetail.length > 0 && pieInsight ? (
@@ -611,6 +618,7 @@ export function ChartCoderPerformance() {
                 idPrefix="coder-detail"
                 ariaLabel="Filter categories on line and pie charts"
                 labelClassName="text-left @[480px]/coder-performance:truncate"
+                className="@xl/coder-performance:pl-0"
               />
             </div>
           </div>

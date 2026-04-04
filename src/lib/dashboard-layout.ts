@@ -12,5 +12,11 @@ export const dashboardMainGutterClass = "px-4 lg:px-6"
  */
 export const dashboardSectionStackClass = "gap-4 md:gap-6"
 
+/**
+ * Same rhythm as {@link dashboardSectionStackClass}: flex gap between CardHeader
+ * and CardBody on dashboard stat cards and chart cards.
+ */
+export const dashboardCardBlockGapClass = dashboardSectionStackClass
+
 /** Gap for CSS grids (stats row, chart panel columns, chart sub-sections). */
 export const dashboardGridGapClass = "gap-4 md:gap-6"

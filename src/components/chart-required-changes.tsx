@@ -41,6 +41,7 @@ import {
   DEMO_SCALE_REFERENCE_DAYS,
   dashboardRangeDayCount,
 } from "@/lib/dashboard-demo-range"
+import { dashboardCardBlockGapClass } from "@/lib/dashboard-layout"
 import {
   INSTITUTION_COUNT,
   SITE_SHORT_TO_INSTITUTION_KEY,
@@ -246,7 +247,9 @@ export function ChartRequiredChanges() {
   }, [reactionCounts, visibleReactions])
 
   return (
-    <Card className="@container/required-changes">
+    <Card
+      className={cn("@container/required-changes", dashboardCardBlockGapClass)}
+    >
       <CardHeader>
         <CardTitle className="text-lg font-semibold tracking-tight sm:text-xl">
           What most impacted the change
@@ -317,13 +320,15 @@ export function ChartRequiredChanges() {
                 onToggleSort={() => setImpactSortDesc((d) => !d)}
                 idPrefix="impact-chart-filter"
                 ariaLabel="Filter impact categories on chart"
+                className="@xl/required-changes:pr-0"
               />
             </div>
 
             <div
               className={cn(
                 "flex min-h-0 min-w-0 flex-col @xl/required-changes:col-span-9",
-                chartPanelClass
+                chartPanelClass,
+                "@xl/required-changes:pl-0 @xl/required-changes:pr-4",
               )}
             >
               {visibleImpacts.length === 0 ? (
@@ -334,7 +339,7 @@ export function ChartRequiredChanges() {
               ) : (
                 <ChartContainer
                   config={impactChartConfig}
-                  className="!aspect-auto min-h-[240px] w-full min-w-0 flex-1 md:min-h-[280px]"
+                  className="!aspect-auto min-h-[240px] w-full min-w-0 flex-1 px-3 md:min-h-[280px]"
                 >
                   <BarChart
                     accessibilityLayer
@@ -440,13 +445,15 @@ export function ChartRequiredChanges() {
                 onToggleSort={() => setReactionSortDesc((d) => !d)}
                 idPrefix="reaction-filter"
                 ariaLabel="Filter reaction types on chart"
+                className="@xl/required-changes:pr-0"
               />
             </div>
 
             <div
               className={cn(
                 "flex min-h-0 min-w-0 flex-col @xl/required-changes:col-span-9",
-                chartPanelClass
+                chartPanelClass,
+                "@xl/required-changes:pl-0 @xl/required-changes:pr-4",
               )}
             >
               {visibleReactions.length === 0 ? (
@@ -456,7 +463,7 @@ export function ChartRequiredChanges() {
               ) : (
                 <ChartContainer
                   config={reactionChartConfig}
-                  className="!aspect-auto min-h-[240px] w-full min-w-0 flex-1 md:min-h-[280px]"
+                  className="!aspect-auto min-h-[240px] w-full min-w-0 flex-1 px-3 md:min-h-[280px]"
                 >
                   <BarChart
                     accessibilityLayer
