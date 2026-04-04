@@ -82,7 +82,7 @@ export function ChartLegendList({
               <label
                 htmlFor={filterId}
                 className={cn(
-                  "min-w-0 flex-1 cursor-pointer truncate font-medium text-foreground",
+                  "min-w-0 flex-1 cursor-pointer truncate font-normal text-foreground",
                   labelClassName
                 )}
               >
@@ -90,7 +90,7 @@ export function ChartLegendList({
               </label>
               <Badge
                 variant="secondary"
-                className="shrink-0 gap-1 tabular-nums"
+                className="shrink-0 gap-1 font-normal tabular-nums"
               >
                 <span>{count.toLocaleString()}</span>
                 <SearchIcon className="size-3 opacity-60" aria-hidden />
