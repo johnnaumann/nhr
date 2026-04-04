@@ -283,7 +283,7 @@ export function ChartCoderPerformance() {
           >
             <div
               className={cn(
-                "flex min-h-0 min-w-0 flex-col @xl/coder-performance:col-span-2",
+                "flex h-full min-h-0 min-w-0 flex-col @xl/coder-performance:col-span-2",
                 chartPanelClass,
               )}
             >
@@ -360,7 +360,7 @@ export function ChartCoderPerformance() {
 
             <div
               className={cn(
-                "flex min-h-[200px] min-w-0 flex-col",
+                "flex h-full min-h-[200px] min-w-0 flex-col",
                 chartPanelClass,
               )}
             >
@@ -412,7 +412,7 @@ export function ChartCoderPerformance() {
               </div>
             </div>
 
-            <div className="flex min-h-0 min-w-0 flex-col">
+            <div className="flex h-full min-h-0 w-full min-w-0 flex-col">
               <ChartLegendList
                 title="Change-type totals"
                 items={detailLegendRows}

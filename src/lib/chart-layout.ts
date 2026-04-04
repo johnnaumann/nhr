@@ -15,7 +15,14 @@ const mutedPanelShell =
 
 export const chartPanelClass = mutedPanelShell
 
-export const legendPanelClass = cn(mutedPanelShell, "h-full flex-1 gap-4")
+/**
+ * Legend list shell: `h-full min-h-0` so the bordered panel matches sibling chart
+ * columns in `items-stretch` grids (content stays top-aligned via `flex-col`).
+ */
+export const legendPanelClass = cn(mutedPanelShell, "h-full min-h-0 gap-4")
+
+/** Pie / compound sidebar: grow within a flex column parent. */
+export const legendPanelFillClass = cn(legendPanelClass, "flex-1")
 
 export const filterToolbarClass =
   "flex flex-wrap items-baseline gap-x-1 gap-y-2 text-sm text-muted-foreground"

@@ -306,7 +306,7 @@ export function ChartRequiredChanges() {
               dashboardGridGapClass,
             )}
           >
-            <div className="flex min-h-0 min-w-0 flex-col @xl/required-changes:col-span-3">
+            <div className="flex h-full min-h-0 w-full min-w-0 flex-col @xl/required-changes:col-span-3">
               <ChartLegendList
                 title="Amount by impact category"
                 items={impactLegendRows}
@@ -325,7 +325,7 @@ export function ChartRequiredChanges() {
 
             <div
               className={cn(
-                "flex min-h-0 min-w-0 flex-col @xl/required-changes:col-span-9",
+                "flex h-full min-h-0 min-w-0 flex-col @xl/required-changes:col-span-9",
                 chartPanelClass,
               )}
             >
@@ -429,7 +429,7 @@ export function ChartRequiredChanges() {
               dashboardGridGapClass,
             )}
           >
-            <div className="flex min-h-0 min-w-0 flex-col @xl/required-changes:col-span-3">
+            <div className="flex h-full min-h-0 w-full min-w-0 flex-col @xl/required-changes:col-span-3">
               <ChartLegendList
                 title="Amount by reaction type"
                 items={reactionLegendRows}
@@ -448,7 +448,7 @@ export function ChartRequiredChanges() {
 
             <div
               className={cn(
-                "flex min-h-0 min-w-0 flex-col @xl/required-changes:col-span-9",
+                "flex h-full min-h-0 min-w-0 flex-col @xl/required-changes:col-span-9",
                 chartPanelClass,
               )}
             >

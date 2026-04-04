@@ -17,7 +17,7 @@ function Avatar({
       data-slot="avatar"
       data-size={size}
       className={cn(
-        "group/avatar relative flex size-8 shrink-0 rounded-full select-none after:absolute after:inset-0 after:rounded-full after:border after:border-border after:mix-blend-darken data-[size=lg]:size-10 data-[size=sm]:size-6 dark:after:mix-blend-lighten",
+        "group/avatar relative isolate block size-8 shrink-0 overflow-hidden rounded-full select-none after:pointer-events-none after:absolute after:inset-0 after:z-0 after:rounded-[inherit] after:border after:border-border after:mix-blend-darken data-[size=lg]:size-10 data-[size=sm]:size-6 dark:after:mix-blend-lighten",
         className
       )}
       {...props}
@@ -33,7 +33,7 @@ function AvatarImage({
     <AvatarPrimitive.Image
       data-slot="avatar-image"
       className={cn(
-        "aspect-square size-full rounded-full object-cover",
+        "absolute inset-0 z-[2] size-full rounded-full object-cover",
         className
       )}
       {...props}
@@ -43,17 +43,22 @@ function AvatarImage({
 
 function AvatarFallback({
   className,
+  children,
   ...props
 }: React.ComponentProps<typeof AvatarPrimitive.Fallback>) {
   return (
     <AvatarPrimitive.Fallback
       data-slot="avatar-fallback"
       className={cn(
-        "flex size-full items-center justify-center rounded-full bg-muted text-sm text-muted-foreground group-data-[size=sm]/avatar:text-xs",
+        "absolute inset-0 z-[1] overflow-hidden rounded-[inherit] bg-muted p-0 text-sm font-medium leading-none tabular-nums text-muted-foreground group-data-[size=sm]/avatar:text-xs",
         className
       )}
       {...props}
-    />
+    >
+      <span className="absolute top-1/2 left-1/2 block max-w-full -translate-x-1/2 -translate-y-1/2 whitespace-nowrap text-center">
+        {children}
+      </span>
+    </AvatarPrimitive.Fallback>
   )
 }
 

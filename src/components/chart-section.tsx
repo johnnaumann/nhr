@@ -31,7 +31,7 @@ import {
   chartContentClass,
   chartPanelClass,
   dashboardGridGapClass,
-  legendPanelClass,
+  legendPanelFillClass,
   pieInsightClass,
 } from "@/lib/chart-layout"
 import { eachIsoDateInDashboardRange } from "@/lib/dashboard-demo-range"
@@ -269,7 +269,7 @@ export function ChartSection() {
           )}
         >
             {/* Amounts + legend */}
-            <div className="flex min-h-0 min-w-0 flex-col @xl/types-chart:col-span-3">
+            <div className="flex h-full min-h-0 w-full min-w-0 flex-col @xl/types-chart:col-span-3">
               <ChartLegendList
                 title="Amount of Types of Changes"
                 items={sortedAmounts}
@@ -288,7 +288,11 @@ export function ChartSection() {
 
             {/* Stacked bars */}
             <div
-              className={cn(chartPanelClass, "@xl/types-chart:col-span-6")}
+              className={cn(
+                "flex h-full min-h-0 min-w-0 flex-col",
+                chartPanelClass,
+                "@xl/types-chart:col-span-6",
+              )}
             >
               {visibleKeys.length === 0 ? (
                 <ChartEmptyState>
@@ -367,7 +371,7 @@ export function ChartSection() {
 
             {/* Pie chart */}
             <div className="flex h-full min-h-0 min-w-0 flex-col @xl/types-chart:col-span-3">
-              <div className={legendPanelClass}>
+              <div className={legendPanelFillClass}>
                 {pieTotal > 0 && visibleKeys.length > 0 ? (
                   <p className={pieInsightClass}>
                     <span className="font-medium text-foreground">Summary: </span>

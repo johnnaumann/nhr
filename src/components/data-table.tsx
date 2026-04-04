@@ -88,6 +88,14 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 
 export const schema = documentChangeSchema
 
+/** Icon + label: flex row; `gap-0` avoids fighting tw-merge — space comes from label `pl-*`. */
+const tableStatusBadgeLayoutClass =
+  "inline-flex flex-row flex-nowrap items-center justify-center gap-0 leading-none [&_svg]:inline-block [&_svg]:shrink-0"
+
+/** Padding-left is reliable vs Badge `gap-*` merge; tune `pl-*` if you want tighter/looser. */
+const tableStatusBadgeLabelClass =
+  "translate-y-px pl-1 leading-none text-inherit"
+
 // Create a separate component for the drag handle
 function DragHandle({ id }: { id: number }) {
   const { attributes, listeners } = useSortable({
@@ -163,14 +171,19 @@ const columns: ColumnDef<DocumentChange>[] = [
     accessorKey: "status",
     header: "Status",
     cell: ({ row }) => (
-      <Badge variant="outline" className="px-1.5 text-muted-foreground">
-        {row.original.status === "Done" ? (
-          <CircleCheckIcon className="fill-green-500 dark:fill-green-400" />
-        ) : (
-          <LoaderIcon
-          />
+      <Badge
+        variant="outline"
+        className={cn(
+          tableStatusBadgeLayoutClass,
+          "px-1.5 text-muted-foreground",
         )}
-        {row.original.status}
+      >
+        {row.original.status === "Done" ? (
+          <CircleCheckIcon className="size-3 shrink-0 fill-green-500 dark:fill-green-400" />
+        ) : (
+          <LoaderIcon className="size-3 shrink-0 animate-spin" />
+        )}
+        <span className={tableStatusBadgeLabelClass}>{row.original.status}</span>
       </Badge>
     ),
   },
@@ -905,6 +918,7 @@ export function DataTable({
                     <Badge
                       variant="outline"
                       className={cn(
+                        tableStatusBadgeLayoutClass,
                         "px-1.5",
                         doc.status === "Approved" &&
                           "border-green-500/30 bg-green-500/10 text-green-700 dark:text-green-400",
@@ -916,12 +930,18 @@ export function DataTable({
                       )}
                     >
                       {doc.status === "Approved" && (
-                        <CircleCheckIcon className="fill-green-500 dark:fill-green-400" />
+                        <CircleCheckIcon className="size-3 shrink-0 fill-green-500 dark:fill-green-400" />
                       )}
                       {(doc.status === "Under Review" ||
-                        doc.status === "Pending Update") && <LoaderIcon />}
-                      {doc.status === "Draft" && <ClockIcon />}
-                      {doc.status}
+                        doc.status === "Pending Update") && (
+                        <LoaderIcon className="size-3 shrink-0 animate-spin" />
+                      )}
+                      {doc.status === "Draft" && (
+                        <ClockIcon className="size-3 shrink-0" />
+                      )}
+                      <span className={tableStatusBadgeLabelClass}>
+                        {doc.status}
+                      </span>
                     </Badge>
                   </TableCell>
                   <TableCell>

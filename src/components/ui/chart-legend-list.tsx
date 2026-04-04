@@ -1,6 +1,6 @@
-import { ArrowDownUpIcon, SearchIcon } from "lucide-react"
+import { ArrowDownUpIcon } from "lucide-react"
 
-import { Badge } from "@/components/ui/badge"
+import { LegendItemCountPill } from "@/components/chart-legend-count-pill"
 import { Button } from "@/components/ui/button"
 import { RadioGroupItemMulti } from "@/components/ui/radio-group"
 import { useDashboardLegendDetailOpener } from "@/components/dashboard-legend-detail-provider"
@@ -44,7 +44,7 @@ export function ChartLegendList({
   const openLegendDetail = useDashboardLegendDetailOpener()
 
   return (
-    <div className={cn(legendPanelClass, className)}>
+    <div className={cn(legendPanelClass, "w-full", className)}>
       <div className="flex items-start justify-between gap-2">
         <p className="text-sm text-muted-foreground">{title}</p>
         {onToggleSort != null && (
@@ -64,7 +64,7 @@ export function ChartLegendList({
           </Button>
         )}
       </div>
-      <ul className="flex flex-col gap-4" aria-label={ariaLabel}>
+      <ul className="flex flex-col gap-3" aria-label={ariaLabel}>
         {items.map(({ key, label, count, color }) => {
           const filterId = `${idPrefix}-${key}`
           const isOn = visibleKeys.includes(key)
@@ -80,45 +80,30 @@ export function ChartLegendList({
                 id={filterId}
                 checked={isOn}
                 indicatorColor={color}
+                className="self-center"
                 onCheckedChange={(on) => onToggle(key, !!on)}
               />
               <label
                 htmlFor={filterId}
                 className={cn(
-                  "min-w-0 flex-1 cursor-pointer truncate font-normal text-foreground",
+                  "flex min-h-4 min-w-0 flex-1 cursor-pointer items-center font-normal leading-none text-foreground",
                   labelClassName
                 )}
               >
-                {label}
+                <span className="min-w-0 truncate">{label}</span>
               </label>
               {openLegendDetail ? (
-                <Badge
-                  variant="secondary"
-                  asChild
-                  className="shrink-0 gap-1 font-normal tabular-nums"
-                >
-                  <button
-                    type="button"
-                    className="cursor-pointer font-inherit"
-                    aria-label={`Open change details for ${label}, ${count.toLocaleString()} items`}
-                    onClick={(e) => {
-                      e.preventDefault()
-                      e.stopPropagation()
-                      openLegendDetail({ key, label, count })
-                    }}
-                  >
-                    <span>{count.toLocaleString()}</span>
-                    <SearchIcon className="size-3 opacity-60" aria-hidden />
-                  </button>
-                </Badge>
+                <LegendItemCountPill
+                  count={count}
+                  itemLabel={label}
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    openLegendDetail({ key, label, count })
+                  }}
+                />
               ) : (
-                <Badge
-                  variant="secondary"
-                  className="shrink-0 gap-1 font-normal tabular-nums"
-                >
-                  <span>{count.toLocaleString()}</span>
-                  <SearchIcon className="size-3 opacity-60" aria-hidden />
-                </Badge>
+                <LegendItemCountPill count={count} itemLabel={label} />
               )}
             </li>
           )
