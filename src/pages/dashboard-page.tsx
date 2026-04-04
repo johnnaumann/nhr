@@ -7,6 +7,7 @@ import { ChartCoderPerformance } from '@/components/chart-coder-performance'
 import { ChartRequiredChanges } from '@/components/chart-required-changes'
 import { ChartSection } from '@/components/chart-section'
 import { DashboardDateRangeToolbar } from '@/components/dashboard-date-range-toolbar'
+import { DashboardLegendDetailProvider } from '@/components/dashboard-legend-detail-provider'
 import { DataTable } from '@/components/data-table'
 import { SectionCards } from '@/components/section-cards'
 import { SiteHeader } from '@/components/site-header'
@@ -17,6 +18,7 @@ import {
   dashboardMainGutterClass,
   dashboardSectionStackClass,
 } from '@/lib/dashboard-layout'
+import type { DocumentChange } from '@/lib/document-change-schema'
 import { cn } from '@/lib/utils'
 
 export function DashboardPage() {
@@ -35,6 +37,9 @@ export function DashboardPage() {
         <div className="flex flex-1 flex-col">
           <DashboardDateRangeProvider>
             <DashboardInstitutionsProvider>
+            <DashboardLegendDetailProvider
+              tableRows={data as DocumentChange[]}
+            >
             <div className="@container/main flex flex-1 flex-col gap-2">
               <div
                 className={cn(
@@ -56,9 +61,10 @@ export function DashboardPage() {
                 <div className={dashboardMainGutterClass}>
                   <ChartCoderPerformance />
                 </div>
-                <DataTable data={data} />
+                <DataTable data={data as DocumentChange[]} />
               </div>
             </div>
+            </DashboardLegendDetailProvider>
             </DashboardInstitutionsProvider>
           </DashboardDateRangeProvider>
         </div>

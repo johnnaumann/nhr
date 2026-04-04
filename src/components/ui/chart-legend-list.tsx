@@ -3,6 +3,7 @@ import { ArrowDownUpIcon, SearchIcon } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { RadioGroupItemMulti } from "@/components/ui/radio-group"
+import { useDashboardLegendDetailOpener } from "@/components/dashboard-legend-detail-provider"
 import { legendPanelClass } from "@/lib/chart-layout"
 import { cn } from "@/lib/utils"
 
@@ -40,6 +41,8 @@ export function ChartLegendList({
   labelClassName,
   className,
 }: ChartLegendListProps) {
+  const openLegendDetail = useDashboardLegendDetailOpener()
+
   return (
     <div className={cn(legendPanelClass, className)}>
       <div className="flex items-start justify-between gap-2">
@@ -88,13 +91,35 @@ export function ChartLegendList({
               >
                 {label}
               </label>
-              <Badge
-                variant="secondary"
-                className="shrink-0 gap-1 font-normal tabular-nums"
-              >
-                <span>{count.toLocaleString()}</span>
-                <SearchIcon className="size-3 opacity-60" aria-hidden />
-              </Badge>
+              {openLegendDetail ? (
+                <Badge
+                  variant="secondary"
+                  asChild
+                  className="shrink-0 gap-1 font-normal tabular-nums"
+                >
+                  <button
+                    type="button"
+                    className="cursor-pointer font-inherit"
+                    aria-label={`Open change details for ${label}, ${count.toLocaleString()} items`}
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      openLegendDetail({ key, label, count })
+                    }}
+                  >
+                    <span>{count.toLocaleString()}</span>
+                    <SearchIcon className="size-3 opacity-60" aria-hidden />
+                  </button>
+                </Badge>
+              ) : (
+                <Badge
+                  variant="secondary"
+                  className="shrink-0 gap-1 font-normal tabular-nums"
+                >
+                  <span>{count.toLocaleString()}</span>
+                  <SearchIcon className="size-3 opacity-60" aria-hidden />
+                </Badge>
+              )}
             </li>
           )
         })}
