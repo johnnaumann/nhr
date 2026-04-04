@@ -44,7 +44,10 @@ import {
 } from "@/lib/chart-layout"
 import { dashboardCardBlockGapClass } from "@/lib/dashboard-layout"
 import { cn } from "@/lib/utils"
-import { eachIsoDateInDashboardRange } from "@/lib/dashboard-demo-range"
+import {
+  demoHeaderBlendMultiplier,
+  eachIsoDateInDashboardRange,
+} from "@/lib/dashboard-demo-range"
 import {
   INSTITUTION_SERIES_KEYS,
   type InstitutionSeriesKey,
@@ -77,15 +80,20 @@ function daySeedFromIso(iso: string) {
   return Math.floor(parseIsoDate(iso).getTime() / 86400000)
 }
 
-function buildWorksheetRowsForRange(isos: string[]): WorksheetRow[] {
+function buildWorksheetRowsForRange(
+  isos: string[],
+  headerBlend: number
+): WorksheetRow[] {
   return isos.map((date) => {
     const dayIndex = daySeedFromIso(date)
+    const v = (x: number) =>
+      Math.max(3, Math.min(34, Math.round(x * headerBlend)))
     return {
       date,
-      institution1: smoothSeries(dayIndex, 17, 11, 0.2, 0.11),
-      institution2: smoothSeries(dayIndex, 19, 9, 1.1, 0.095),
-      institution3: smoothSeries(dayIndex, 14, 12, 2.4, 0.13),
-      institution4: smoothSeries(dayIndex, 21, 8, 3.6, 0.088),
+      institution1: v(smoothSeries(dayIndex, 17, 11, 0.2, 0.11)),
+      institution2: v(smoothSeries(dayIndex, 19, 9, 1.1, 0.095)),
+      institution3: v(smoothSeries(dayIndex, 14, 12, 2.4, 0.13)),
+      institution4: v(smoothSeries(dayIndex, 21, 8, 3.6, 0.088)),
     }
   })
 }
@@ -103,9 +111,23 @@ export function ChartAreaInteractive() {
   const { range } = useDashboardDateRange()
   const { visibleInstitutionKeys } = useDashboardInstitutions()
 
+  const headerBlend = React.useMemo(
+    () =>
+      demoHeaderBlendMultiplier(
+        visibleInstitutionKeys,
+        range,
+        "worksheets-changed"
+      ),
+    [visibleInstitutionKeys, range]
+  )
+
   const filteredData = React.useMemo(
-    () => buildWorksheetRowsForRange(eachIsoDateInDashboardRange(range)),
-    [range]
+    () =>
+      buildWorksheetRowsForRange(
+        eachIsoDateInDashboardRange(range),
+        headerBlend
+      ),
+    [range, headerBlend]
   )
 
   const { pieData, pieTotal, pieInsight } = React.useMemo(() => {

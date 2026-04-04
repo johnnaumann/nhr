@@ -21,6 +21,7 @@ import { ChartEmptyState } from "@/components/ui/chart-empty-state"
 import { ChartLegendList } from "@/components/ui/chart-legend-list"
 import { ChartTooltipValue } from "@/components/ui/chart-tooltip-value"
 import { useDashboardDateRange } from "@/contexts/dashboard-date-range-context"
+import { useDashboardInstitutions } from "@/contexts/dashboard-institutions-context"
 import {
   buildPieInsight,
   parseIsoDate,
@@ -38,7 +39,10 @@ import {
   pieInsightClass,
   pieInsightLabelClass,
 } from "@/lib/chart-layout"
-import { eachIsoDateInDashboardRange } from "@/lib/dashboard-demo-range"
+import {
+  demoHeaderBlendMultiplier,
+  eachIsoDateInDashboardRange,
+} from "@/lib/dashboard-demo-range"
 import { dashboardCardBlockGapClass } from "@/lib/dashboard-layout"
 import { cn } from "@/lib/utils"
 
@@ -199,14 +203,31 @@ const DEFAULT_VISIBLE_TYPES = [...TYPE_KEYS] as ChangeTypeKey[]
 
 export function ChartSection() {
   const { range } = useDashboardDateRange()
+  const { visibleInstitutionKeys } = useDashboardInstitutions()
   const [sortDesc, setSortDesc] = React.useState(true)
   const [visibleKeys, setVisibleKeys] =
     React.useState<ChangeTypeKey[]>(DEFAULT_VISIBLE_TYPES)
 
-  const filteredDays = React.useMemo(
-    () => buildChangeRowsForIsos(eachIsoDateInDashboardRange(range)),
-    [range]
+  const headerBlend = React.useMemo(
+    () =>
+      demoHeaderBlendMultiplier(
+        visibleInstitutionKeys,
+        range,
+        "types-of-changes"
+      ),
+    [visibleInstitutionKeys, range]
   )
+
+  const filteredDays = React.useMemo(() => {
+    const rows = buildChangeRowsForIsos(eachIsoDateInDashboardRange(range))
+    return rows.map((r) => {
+      const next = { date: r.date } as ChangeDayRow
+      TYPE_KEYS.forEach((k) => {
+        next[k] = Math.max(2, Math.round(r[k] * headerBlend))
+      })
+      return next
+    })
+  }, [range, headerBlend])
 
   const barChartData = React.useMemo(
     () => toBarChartRows(filteredDays),

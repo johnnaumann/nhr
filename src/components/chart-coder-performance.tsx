@@ -37,6 +37,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { useDashboardDateRange } from "@/contexts/dashboard-date-range-context"
+import { useDashboardInstitutions } from "@/contexts/dashboard-institutions-context"
 import {
   buildPieInsight,
   parseIsoDate,
@@ -58,6 +59,7 @@ import {
 } from "@/lib/chart-layout"
 import {
   DEMO_SCALE_REFERENCE_DAYS,
+  demoHeaderBlendMultiplier,
   eachIsoDateInDashboardRange,
 } from "@/lib/dashboard-demo-range"
 import { dashboardCardBlockGapClass } from "@/lib/dashboard-layout"
@@ -138,6 +140,17 @@ const DETAIL_PIE_COPY = {
 
 export function ChartCoderPerformance() {
   const { range } = useDashboardDateRange()
+  const { visibleInstitutionKeys } = useDashboardInstitutions()
+
+  const headerBlend = React.useMemo(
+    () =>
+      demoHeaderBlendMultiplier(
+        visibleInstitutionKeys,
+        range,
+        "coder-performance"
+      ),
+    [visibleInstitutionKeys, range]
+  )
 
   const rangeIsoDays = React.useMemo(
     () => eachIsoDateInDashboardRange(range),
@@ -165,16 +178,22 @@ export function ChartCoderPerformance() {
   const detailLineData = React.useMemo(() => {
     const scopeFactor =
       detailScope === "single" ? 0.88 : detailScope === "top5" ? 0.94 : 1
-    return buildDetailLineSeries(rangeIsoDays, scale * scopeFactor * filterMultiplier)
-  }, [detailScope, rangeIsoDays, scale, filterMultiplier])
+    return buildDetailLineSeries(
+      rangeIsoDays,
+      scale * scopeFactor * filterMultiplier * headerBlend
+    )
+  }, [detailScope, rangeIsoDays, scale, filterMultiplier, headerBlend])
 
   const detailCounts = React.useMemo(() => {
     const next = {} as Record<DetailKey, number>
     DETAIL_KEYS.forEach((k) => {
-      next[k] = scaleInt(DETAIL_BASE[k], scale * filterMultiplier)
+      next[k] = scaleInt(
+        DETAIL_BASE[k],
+        scale * filterMultiplier * headerBlend
+      )
     })
     return next
-  }, [scale, filterMultiplier])
+  }, [scale, filterMultiplier, headerBlend])
 
   const detailLegendRows = React.useMemo(() => {
     const rows = DETAIL_KEYS.map((key) => ({

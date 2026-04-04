@@ -41,6 +41,7 @@ import {
 import {
   DEMO_SCALE_REFERENCE_DAYS,
   dashboardRangeDayCount,
+  demoHeaderBlendMultiplier,
 } from "@/lib/dashboard-demo-range"
 import { dashboardCardBlockGapClass } from "@/lib/dashboard-layout"
 import {
@@ -129,6 +130,16 @@ export function ChartRequiredChanges() {
   const siteSelectionFactor =
     visibleInstitutionKeys.length / Math.max(1, INSTITUTION_COUNT)
 
+  const headerBlend = React.useMemo(
+    () =>
+      demoHeaderBlendMultiplier(
+        visibleInstitutionKeys,
+        range,
+        "required-changes"
+      ),
+    [visibleInstitutionKeys, range]
+  )
+
   const filteredDayCount = React.useMemo(
     () => dashboardRangeDayCount(range),
     [range]
@@ -187,12 +198,22 @@ export function ChartRequiredChanges() {
     const rows = activeImpactKeys.map((key) => ({
       key,
       label: String(impactChartConfig[key].label),
-      count: scaleInt(impactTotals[key], scale * worksheetBoostTop),
+      count: scaleInt(
+        impactTotals[key],
+        scale * worksheetBoostTop * headerBlend
+      ),
       color: impactChartConfig[key].color!,
     }))
     rows.sort((a, b) => (impactSortDesc ? b.count - a.count : a.count - b.count))
     return rows
-  }, [impactSortDesc, impactTotals, scale, activeImpactKeys, worksheetBoostTop])
+  }, [
+    impactSortDesc,
+    impactTotals,
+    scale,
+    activeImpactKeys,
+    worksheetBoostTop,
+    headerBlend,
+  ])
 
   const siteBarData = React.useMemo(
     () =>
@@ -201,11 +222,14 @@ export function ChartRequiredChanges() {
           site: row.short,
         }
         activeImpactKeys.forEach((k) => {
-          next[k] = scaleInt(row[k], scale * worksheetBoostTop)
+          next[k] = scaleInt(
+            row[k],
+            scale * worksheetBoostTop * headerBlend
+          )
         })
         return next
       }),
-    [scale, activeImpactKeys, worksheetBoostTop, siteRowsForCharts]
+    [scale, activeImpactKeys, worksheetBoostTop, siteRowsForCharts, headerBlend]
   )
 
   const worksheetBoostBottom = worksheetScopeBottom === "all-sheets" ? 1.35 : 1
@@ -217,11 +241,20 @@ export function ChartRequiredChanges() {
     REACTION_KEYS.forEach((k) => {
       next[k] = scaleInt(
         reactionBase[k],
-        scale * worksheetBoostBottom * siteSelectionFactor
+        scale *
+          worksheetBoostBottom *
+          siteSelectionFactor *
+          headerBlend
       )
     })
     return next
-  }, [scale, reactionBase, worksheetBoostBottom, siteSelectionFactor])
+  }, [
+    scale,
+    reactionBase,
+    worksheetBoostBottom,
+    siteSelectionFactor,
+    headerBlend,
+  ])
 
   const reactionLegendRows = React.useMemo(() => {
     const rows = REACTION_KEYS.map((key) => ({

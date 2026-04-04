@@ -1,6 +1,8 @@
 import { eachDayOfInterval, startOfDay, subDays } from "date-fns"
 import type { DateRange } from "react-day-picker"
 
+import type { InstitutionSeriesKey } from "./dashboard-institutions"
+
 /**
  * Length of the original Q2 demo window (Apr 1–Jun 30), used to scale volumes
  * so longer ranges grow roughly proportionally.
@@ -45,4 +47,36 @@ export function dashboardRangeDayCount(
   range: DateRange | undefined
 ): number {
   return eachIsoDateInDashboardRange(range).length
+}
+
+/**
+ * Demo-only multiplier from sticky header site selection + reporting range so
+ * charts that are not truly per-site still move noticeably during a presentation.
+ * Stable for the same inputs; typically ~0.75–1.15.
+ */
+export function demoHeaderBlendMultiplier(
+  visibleInstitutionKeys: InstitutionSeriesKey[],
+  range: DateRange | undefined,
+  chartSalt: string
+): number {
+  const sortedKeys = [...visibleInstitutionKeys].sort().join("|")
+  const isos = eachIsoDateInDashboardRange(range)
+  const rangeKey =
+    isos.length > 0
+      ? `${isos[0]}..${isos[isos.length - 1]}#${isos.length}`
+      : "empty"
+
+  let h = chartSalt.length * 911
+  for (let i = 0; i < sortedKeys.length; i++) {
+    h = Math.imul(h, 31) + sortedKeys.charCodeAt(i)
+  }
+  for (let i = 0; i < rangeKey.length; i++) {
+    h = Math.imul(h, 31) + rangeKey.charCodeAt(i)
+  }
+  h >>>= 0
+
+  const jitter = 0.9 + (h % 21) / 100
+  const siteBreadth = visibleInstitutionKeys.length / 4
+  const base = 0.78 + 0.22 * siteBreadth
+  return base * jitter
 }
