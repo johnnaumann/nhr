@@ -38,7 +38,7 @@ export function ThemeToggle({ className }: { className?: string }) {
           />
         ) : (
           <SunIcon
-            className="size-2.5 text-amber-500"
+            className="size-2.5 text-white"
             strokeWidth={2.5}
             aria-hidden
           />
