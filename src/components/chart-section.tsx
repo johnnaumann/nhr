@@ -283,16 +283,12 @@ export function ChartSection() {
                 onToggleSort={() => setSortDesc((d) => !d)}
                 idPrefix="types-chart-filter"
                 ariaLabel="Filter change types on charts"
-                className="@xl/types-chart:pr-0"
               />
             </div>
 
             {/* Stacked bars */}
             <div
-              className={cn(
-                chartPanelClass,
-                "@xl/types-chart:col-span-6 @xl/types-chart:px-0",
-              )}
+              className={cn(chartPanelClass, "@xl/types-chart:col-span-6")}
             >
               {visibleKeys.length === 0 ? (
                 <ChartEmptyState>
@@ -306,7 +302,7 @@ export function ChartSection() {
               ) : (
                 <ChartContainer
                   config={chartConfig}
-                  className="!aspect-auto min-h-[240px] w-full min-w-0 flex-1 px-3 md:min-h-[280px]"
+                  className="!aspect-auto min-h-[240px] w-full min-w-0 flex-1 md:min-h-[280px]"
                 >
                   <BarChart
                     accessibilityLayer
@@ -371,7 +367,7 @@ export function ChartSection() {
 
             {/* Pie chart */}
             <div className="flex h-full min-h-0 min-w-0 flex-col @xl/types-chart:col-span-3">
-              <div className={cn(legendPanelClass, "@xl/types-chart:pl-0")}>
+              <div className={legendPanelClass}>
                 {pieTotal > 0 && visibleKeys.length > 0 ? (
                   <p className={pieInsightClass}>
                     <span className="font-medium text-foreground">Summary: </span>

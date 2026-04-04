@@ -281,7 +281,6 @@ export function ChartCoderPerformance() {
               className={cn(
                 "flex min-h-0 min-w-0 flex-col @xl/coder-performance:col-span-2",
                 chartPanelClass,
-                "@xl/coder-performance:pr-0",
               )}
             >
               {visibleDetail.length === 0 ? (
@@ -295,7 +294,7 @@ export function ChartCoderPerformance() {
               ) : (
                 <ChartContainer
                   config={detailChartConfig}
-                  className="!aspect-auto min-h-[240px] w-full min-w-0 flex-1 px-3 md:min-h-[280px]"
+                  className="!aspect-auto min-h-[240px] w-full min-w-0 flex-1 md:min-h-[280px]"
                 >
                   <LineChart
                     accessibilityLayer
@@ -359,7 +358,6 @@ export function ChartCoderPerformance() {
               className={cn(
                 "flex min-h-[200px] min-w-0 flex-col",
                 chartPanelClass,
-                "@xl/coder-performance:px-0",
               )}
             >
               {pieTotal > 0 && visibleDetail.length > 0 && pieInsight ? (
@@ -425,7 +423,6 @@ export function ChartCoderPerformance() {
                 idPrefix="coder-detail"
                 ariaLabel="Filter categories on line and pie charts"
                 labelClassName="text-left @[480px]/coder-performance:truncate"
-                className="@xl/coder-performance:pl-0"
               />
             </div>
           </div>

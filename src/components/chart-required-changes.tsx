@@ -320,7 +320,6 @@ export function ChartRequiredChanges() {
                 onToggleSort={() => setImpactSortDesc((d) => !d)}
                 idPrefix="impact-chart-filter"
                 ariaLabel="Filter impact categories on chart"
-                className="@xl/required-changes:pr-0"
               />
             </div>
 
@@ -328,7 +327,6 @@ export function ChartRequiredChanges() {
               className={cn(
                 "flex min-h-0 min-w-0 flex-col @xl/required-changes:col-span-9",
                 chartPanelClass,
-                "@xl/required-changes:pl-0 @xl/required-changes:pr-4",
               )}
             >
               {visibleImpacts.length === 0 ? (
@@ -339,7 +337,7 @@ export function ChartRequiredChanges() {
               ) : (
                 <ChartContainer
                   config={impactChartConfig}
-                  className="!aspect-auto min-h-[240px] w-full min-w-0 flex-1 px-3 md:min-h-[280px]"
+                  className="!aspect-auto min-h-[240px] w-full min-w-0 flex-1 md:min-h-[280px]"
                 >
                   <BarChart
                     accessibilityLayer
@@ -445,7 +443,6 @@ export function ChartRequiredChanges() {
                 onToggleSort={() => setReactionSortDesc((d) => !d)}
                 idPrefix="reaction-filter"
                 ariaLabel="Filter reaction types on chart"
-                className="@xl/required-changes:pr-0"
               />
             </div>
 
@@ -453,7 +450,6 @@ export function ChartRequiredChanges() {
               className={cn(
                 "flex min-h-0 min-w-0 flex-col @xl/required-changes:col-span-9",
                 chartPanelClass,
-                "@xl/required-changes:pl-0 @xl/required-changes:pr-4",
               )}
             >
               {visibleReactions.length === 0 ? (
@@ -463,7 +459,7 @@ export function ChartRequiredChanges() {
               ) : (
                 <ChartContainer
                   config={reactionChartConfig}
-                  className="!aspect-auto min-h-[240px] w-full min-w-0 flex-1 px-3 md:min-h-[280px]"
+                  className="!aspect-auto min-h-[240px] w-full min-w-0 flex-1 md:min-h-[280px]"
                 >
                   <BarChart
                     accessibilityLayer

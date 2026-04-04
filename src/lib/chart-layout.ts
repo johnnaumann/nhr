@@ -5,24 +5,17 @@ import { dashboardGridGapClass } from "./dashboard-layout"
 export { dashboardGridGapClass } from "./dashboard-layout"
 
 /**
- * Dashboard chart panels: shared bordered-muted chrome, filter toolbar strings,
- * and gaps aligned with `dashboard-layout` so the page reads as one grid.
- *
- * Panels use full `px-4` when stacked (one column). In multi-column layouts,
- * pass container overrides (e.g. `@xl/types-chart:pr-0`) on the panel so the
- * space between legend and chart is **only** the grid gap — not gap + padding
- * on both sides.
+ * Dashboard chart panels: shared bordered-muted chrome. Every panel uses the
+ * same inset (`px-4` + `py-4`); **only** the grid’s `dashboardGridGapClass`
+ * separates adjacent columns so spacing stays visually consistent.
  */
 
 const mutedPanelShell =
-  "flex min-h-0 min-w-0 flex-col rounded-xl border border-border/60 bg-muted/40 py-4 dark:bg-muted/20"
+  "flex min-h-0 min-w-0 flex-col rounded-xl border border-border/60 bg-muted/40 p-4 dark:bg-muted/20"
 
-export const chartPanelClass = cn(mutedPanelShell, "px-4")
+export const chartPanelClass = mutedPanelShell
 
-export const legendPanelClass = cn(
-  mutedPanelShell,
-  "h-full flex-1 gap-4 px-4"
-)
+export const legendPanelClass = cn(mutedPanelShell, "h-full flex-1 gap-4")
 
 export const filterToolbarClass =
   "flex flex-wrap items-baseline gap-x-1 gap-y-2 text-sm text-muted-foreground"

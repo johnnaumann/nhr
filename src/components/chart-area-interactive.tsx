@@ -174,12 +174,12 @@ export function ChartAreaInteractive() {
           <div
             className={cn(
               chartPanelClass,
-              "@xl/main:col-span-2 @5xl/main:col-span-3 @xl/main:pr-0 @5xl/main:pr-0",
+              "@xl/main:col-span-2 @5xl/main:col-span-3",
             )}
           >
             <ChartContainer
               config={institutionChartConfig}
-              className="!aspect-auto min-h-[240px] w-full min-w-0 flex-1 px-3 md:min-h-[280px]"
+              className="!aspect-auto min-h-[240px] w-full min-w-0 flex-1 md:min-h-[280px]"
             >
               <LineChart
                 accessibilityLayer
@@ -250,7 +250,7 @@ export function ChartAreaInteractive() {
           <div
             className={cn(
               chartPanelClass,
-              "@xl/main:col-span-2 @5xl/main:col-span-1 @xl/main:pl-0 @5xl/main:pl-0",
+              "@xl/main:col-span-2 @5xl/main:col-span-1",
             )}
           >
             {pieTotal > 0 && visibleInstitutionKeys.length > 0 ? (
