@@ -8,6 +8,11 @@ import { SiteHeader } from "@/components/site-header"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import { DashboardDateRangeProvider } from "@/contexts/dashboard-date-range-context"
 import { DashboardInstitutionsProvider } from "@/contexts/dashboard-institutions-context"
+import {
+  dashboardMainGutterClass,
+  dashboardSectionStackClass,
+} from "@/lib/dashboard-layout"
+import { cn } from "@/lib/utils"
 
 export function CoderOverviewPage() {
   return (
@@ -35,11 +40,16 @@ export function CoderOverviewPage() {
                   } as CSSProperties
                 }
               >
-                <div className="flex flex-col gap-4 pt-0 pb-4 md:gap-6 md:pb-6">
+                <div
+                  className={cn(
+                    "flex flex-col pt-0 pb-4 md:pb-6",
+                    dashboardSectionStackClass,
+                  )}
+                >
                   <DashboardDateRangeToolbar
                     extension={<CoderOverviewDimensionNav />}
                   />
-                  <div className="px-4 lg:px-6">
+                  <div className={dashboardMainGutterClass}>
                     <CoderOverviewTables />
                   </div>
                 </div>

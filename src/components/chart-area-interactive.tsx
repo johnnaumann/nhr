@@ -32,7 +32,13 @@ import {
   parseIsoDate,
   type PieInsightRow,
 } from "@/lib/chart-helpers"
-import { chartContentClass, chartPanelClass, pieInsightClass } from "@/lib/chart-layout"
+import {
+  chartContentClass,
+  chartPanelClass,
+  dashboardGridGapClass,
+  pieInsightClass,
+} from "@/lib/chart-layout"
+import { cn } from "@/lib/utils"
 import { eachIsoDateInDashboardRange } from "@/lib/dashboard-demo-range"
 import {
   INSTITUTION_SERIES_KEYS,
@@ -145,7 +151,7 @@ export function ChartAreaInteractive() {
 
   return (
     <Card className="@container/card">
-      <CardHeader className="pt-2">
+      <CardHeader>
         <CardTitle className="text-lg font-semibold tracking-tight sm:text-xl">
           Worksheets changed
         </CardTitle>
@@ -158,7 +164,12 @@ export function ChartAreaInteractive() {
         </CardDescription>
       </CardHeader>
       <CardContent className={chartContentClass}>
-        <div className="grid grid-cols-1 items-stretch gap-4 lg:gap-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-4">
+        <div
+          className={cn(
+            "grid grid-cols-1 items-stretch @xl/main:grid-cols-2 @5xl/main:grid-cols-4",
+            dashboardGridGapClass,
+          )}
+        >
           <div className={`${chartPanelClass} @xl/main:col-span-2 @5xl/main:col-span-3`}>
             <ChartContainer
               config={institutionChartConfig}

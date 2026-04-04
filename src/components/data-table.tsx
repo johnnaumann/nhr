@@ -92,6 +92,11 @@ import {
 } from "@/components/ui/tabs"
 import { GripVerticalIcon, CircleCheckIcon, LoaderIcon, EllipsisVerticalIcon, Columns3Icon, ChevronDownIcon, PlusIcon, ChevronsLeftIcon, ChevronLeftIcon, ChevronRightIcon, ChevronsRightIcon, FileTextIcon, ClockIcon } from "lucide-react"
 
+import {
+  dashboardGridGapClass,
+  dashboardMainGutterClass,
+  dashboardSectionStackClass,
+} from "@/lib/dashboard-layout"
 import { cn } from "@/lib/utils"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 
@@ -399,9 +404,14 @@ export function DataTable({
   return (
     <Tabs
       defaultValue="outline"
-      className="w-full flex-col justify-start gap-6"
+      className={cn("w-full flex-col justify-start", dashboardSectionStackClass)}
     >
-      <div className="flex items-center justify-between px-4 lg:px-6">
+      <div
+        className={cn(
+          "flex items-center justify-between",
+          dashboardMainGutterClass,
+        )}
+      >
         <Label htmlFor="view-selector" className="sr-only">
           View
         </Label>
@@ -474,7 +484,10 @@ export function DataTable({
       </div>
       <TabsContent
         value="outline"
-        className="relative flex flex-col gap-4 overflow-auto px-4 lg:px-6"
+        className={cn(
+          "relative flex flex-col gap-4 overflow-auto",
+          dashboardMainGutterClass,
+        )}
       >
         <div className="overflow-hidden rounded-lg border">
           <DndContext
@@ -613,7 +626,7 @@ export function DataTable({
       </TabsContent>
       <TabsContent
         value="past-performance"
-        className="flex flex-col gap-4 px-4 lg:px-6"
+        className={cn("flex flex-col gap-4", dashboardMainGutterClass)}
       >
         <div className="overflow-hidden rounded-lg border">
           <Table>
@@ -687,7 +700,12 @@ export function DataTable({
             </TableBody>
           </Table>
         </div>
-        <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
+        <div
+          className={cn(
+            "grid grid-cols-2 lg:grid-cols-3",
+            dashboardGridGapClass,
+          )}
+        >
           {pastPerformanceData.map((row) => (
             <div
               key={row.id}
@@ -767,9 +785,9 @@ export function DataTable({
       </TabsContent>
       <TabsContent
         value="key-personnel"
-        className="flex flex-col gap-4 px-4 lg:px-6"
+        className={cn("flex flex-col gap-4", dashboardMainGutterClass)}
       >
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className={cn("grid md:grid-cols-2", dashboardGridGapClass)}>
           {keyPersonnelData.map((person) => (
             <div
               key={person.id}
@@ -871,7 +889,7 @@ export function DataTable({
       </TabsContent>
       <TabsContent
         value="focus-documents"
-        className="flex flex-col gap-4 px-4 lg:px-6"
+        className={cn("flex flex-col gap-4", dashboardMainGutterClass)}
       >
         <div className="overflow-hidden rounded-lg border">
           <Table>

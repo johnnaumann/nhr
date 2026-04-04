@@ -61,7 +61,7 @@ export function ChartLegendList({
           </Button>
         )}
       </div>
-      <ul className="flex flex-col gap-3" aria-label={ariaLabel}>
+      <ul className="flex flex-col gap-4" aria-label={ariaLabel}>
         {items.map(({ key, label, count, color }) => {
           const filterId = `${idPrefix}-${key}`
           const isOn = visibleKeys.includes(key)

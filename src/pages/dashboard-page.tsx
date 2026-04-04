@@ -13,6 +13,11 @@ import { SiteHeader } from '@/components/site-header'
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
 import { DashboardDateRangeProvider } from '@/contexts/dashboard-date-range-context'
 import { DashboardInstitutionsProvider } from '@/contexts/dashboard-institutions-context'
+import {
+  dashboardMainGutterClass,
+  dashboardSectionStackClass,
+} from '@/lib/dashboard-layout'
+import { cn } from '@/lib/utils'
 
 export function DashboardPage() {
   return (
@@ -31,19 +36,24 @@ export function DashboardPage() {
           <DashboardDateRangeProvider>
             <DashboardInstitutionsProvider>
             <div className="@container/main flex flex-1 flex-col gap-2">
-              <div className="flex flex-col gap-4 pt-0 pb-4 md:gap-6 md:pb-6">
+              <div
+                className={cn(
+                  'flex flex-col pt-0 pb-4 md:pb-6',
+                  dashboardSectionStackClass,
+                )}
+              >
                 <DashboardDateRangeToolbar />
                 <SectionCards />
-                <div className="px-4 lg:px-6">
+                <div className={dashboardMainGutterClass}>
                   <ChartAreaInteractive />
                 </div>
-                <div className="px-4 lg:px-6">
+                <div className={dashboardMainGutterClass}>
                   <ChartSection />
                 </div>
-                <div className="px-4 lg:px-6">
+                <div className={dashboardMainGutterClass}>
                   <ChartRequiredChanges />
                 </div>
-                <div className="px-4 lg:px-6">
+                <div className={dashboardMainGutterClass}>
                   <ChartCoderPerformance />
                 </div>
                 <DataTable data={data} />

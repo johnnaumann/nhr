@@ -30,6 +30,7 @@ import {
 import {
   chartContentClass,
   chartPanelClass,
+  dashboardGridGapClass,
   legendPanelClass,
   pieInsightClass,
 } from "@/lib/chart-layout"
@@ -247,7 +248,7 @@ export function ChartSection() {
 
   return (
     <Card className="@container/types-chart">
-      <CardHeader className="pt-2">
+      <CardHeader>
         <CardTitle className="text-lg font-semibold tracking-tight sm:text-xl">
           Types of Changes
         </CardTitle>
@@ -260,7 +261,12 @@ export function ChartSection() {
         </CardDescription>
       </CardHeader>
       <CardContent className={chartContentClass}>
-        <div className="grid grid-cols-1 gap-4 lg:gap-6 @xl/types-chart:grid-cols-12 @xl/types-chart:items-stretch">
+        <div
+          className={cn(
+            "grid grid-cols-1 @xl/types-chart:grid-cols-12 @xl/types-chart:items-stretch",
+            dashboardGridGapClass,
+          )}
+        >
             {/* Amounts + legend */}
             <div className="flex min-h-0 min-w-0 flex-col @xl/types-chart:col-span-3">
               <ChartLegendList
