@@ -81,7 +81,7 @@ export function CoderTrendsTables() {
       <div className="flex flex-col gap-4 border-b border-border/60 pb-6">
         <div>
           <h1 className="font-heading text-2xl font-semibold tracking-tight">
-            Coder trends
+            Coder Trends
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Use the sticky bar for reporting period, sites, and cohort

@@ -27,7 +27,7 @@ export function CoderTrendsPage() {
             <DashboardInstitutionsProvider>
               <div
                 className="@container/main flex flex-1 flex-col gap-2"
-                aria-label="Coder trends"
+                aria-label="Coder Trends"
                 style={
                   {
                     "--stacked-section-scroll-margin":
