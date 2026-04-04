@@ -28,7 +28,7 @@ import {
 
 const data = {
   user: {
-    name: "Demo User",
+    name: "Sample user",
     email: "user@example.com",
     avatar: "",
   },

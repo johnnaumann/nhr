@@ -224,7 +224,7 @@ export function ChangeDetailDrawerPanel({ item }: { item: DocumentChange }) {
                 <SelectGroup>
                   <SelectItem value="Reviewer 1">Reviewer 1</SelectItem>
                   <SelectItem value="Reviewer 2">Reviewer 2</SelectItem>
-                  <SelectItem value="Emily Whalen">Emily Whalen</SelectItem>
+                  <SelectItem value="Reviewer 3">Reviewer 3</SelectItem>
                 </SelectGroup>
               </SelectContent>
             </Select>
