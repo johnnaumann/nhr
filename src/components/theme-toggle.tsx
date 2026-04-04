@@ -1,37 +1,49 @@
-import * as React from 'react'
+import * as React from "react"
+import { MoonIcon, SunIcon } from "lucide-react"
 
-import { Label } from '@/components/ui/label'
-import { Switch } from '@/components/ui/switch'
-import { cn } from '@/lib/utils'
+import { Switch } from "@/components/ui/switch"
+import { cn } from "@/lib/utils"
 
-const STORAGE_KEY = 'nhr-theme'
+const STORAGE_KEY = "nhr-theme"
 
 function readInitialDark(): boolean {
-  if (typeof window === 'undefined') return false
+  if (typeof window === "undefined") return false
   const stored = localStorage.getItem(STORAGE_KEY)
-  if (stored === 'dark') return true
-  if (stored === 'light') return false
-  return window.matchMedia('(prefers-color-scheme: dark)').matches
+  if (stored === "dark") return true
+  if (stored === "light") return false
+  return window.matchMedia("(prefers-color-scheme: dark)").matches
 }
 
 export function ThemeToggle({ className }: { className?: string }) {
   const [isDark, setIsDark] = React.useState(readInitialDark)
 
   React.useLayoutEffect(() => {
-    document.documentElement.classList.toggle('dark', isDark)
-    localStorage.setItem(STORAGE_KEY, isDark ? 'dark' : 'light')
+    document.documentElement.classList.toggle("dark", isDark)
+    localStorage.setItem(STORAGE_KEY, isDark ? "dark" : "light")
   }, [isDark])
 
   return (
-    <div className={cn('flex items-center gap-3', className)}>
-      <Switch
-        id="theme-toggle"
-        checked={isDark}
-        onCheckedChange={setIsDark}
-      />
-      <Label htmlFor="theme-toggle" className="cursor-pointer text-muted-foreground">
-        Toggle mode
-      </Label>
-    </div>
+    <Switch
+      id="theme-toggle"
+      checked={isDark}
+      onCheckedChange={setIsDark}
+      aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+      className={cn(className)}
+      thumbChildren={
+        isDark ? (
+          <MoonIcon
+            className="size-2.5 text-primary"
+            strokeWidth={2.5}
+            aria-hidden
+          />
+        ) : (
+          <SunIcon
+            className="size-2.5 text-amber-500"
+            strokeWidth={2.5}
+            aria-hidden
+          />
+        )
+      }
+    />
   )
 }

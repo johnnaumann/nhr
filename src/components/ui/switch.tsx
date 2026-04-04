@@ -6,9 +6,12 @@ import { cn } from "@/lib/utils"
 function Switch({
   className,
   size = "default",
+  thumbChildren,
   ...props
 }: React.ComponentProps<typeof SwitchPrimitive.Root> & {
   size?: "sm" | "default"
+  /** Optional icon or label rendered inside the thumb (e.g. theme toggle). */
+  thumbChildren?: React.ReactNode
 }) {
   return (
     <SwitchPrimitive.Root
@@ -22,8 +25,15 @@ function Switch({
     >
       <SwitchPrimitive.Thumb
         data-slot="switch-thumb"
-        className="pointer-events-none block rounded-full bg-background ring-0 transition-transform data-checked:bg-primary-foreground data-unchecked:bg-foreground group-data-[size=default]/switch:size-4 group-data-[size=sm]/switch:size-3 group-data-[size=default]/switch:data-checked:translate-x-[calc(100%-2px)] group-data-[size=sm]/switch:data-checked:translate-x-[calc(100%-2px)] group-data-[size=default]/switch:data-unchecked:translate-x-0 group-data-[size=sm]/switch:data-unchecked:translate-x-0"
-      />
+        className={cn(
+          "pointer-events-none rounded-full bg-background ring-0 transition-transform data-checked:bg-primary-foreground data-unchecked:bg-foreground group-data-[size=default]/switch:size-4 group-data-[size=sm]/switch:size-3 group-data-[size=default]/switch:data-checked:translate-x-[calc(100%-2px)] group-data-[size=sm]/switch:data-checked:translate-x-[calc(100%-2px)] group-data-[size=default]/switch:data-unchecked:translate-x-0 group-data-[size=sm]/switch:data-unchecked:translate-x-0",
+          thumbChildren
+            ? "flex items-center justify-center [&_svg]:shrink-0"
+            : "block",
+        )}
+      >
+        {thumbChildren}
+      </SwitchPrimitive.Thumb>
     </SwitchPrimitive.Root>
   )
 }
