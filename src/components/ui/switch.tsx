@@ -28,7 +28,7 @@ function Switch({
         className={cn(
           "pointer-events-none rounded-full bg-background ring-0 transition-transform data-checked:bg-primary-foreground data-unchecked:bg-foreground group-data-[size=default]/switch:size-4 group-data-[size=sm]/switch:size-3 group-data-[size=default]/switch:data-checked:translate-x-[calc(100%-2px)] group-data-[size=sm]/switch:data-checked:translate-x-[calc(100%-2px)] group-data-[size=default]/switch:data-unchecked:translate-x-0 group-data-[size=sm]/switch:data-unchecked:translate-x-0",
           thumbChildren
-            ? "grid place-items-center overflow-hidden leading-none [&_svg]:inline-block [&_svg]:shrink-0"
+            ? "relative overflow-hidden leading-none [&_svg]:absolute [&_svg]:top-1/2 [&_svg]:left-1/2 [&_svg]:block [&_svg]:-translate-x-1/2 [&_svg]:-translate-y-1/2"
             : "block",
         )}
       >

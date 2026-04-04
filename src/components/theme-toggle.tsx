@@ -32,13 +32,15 @@ export function ThemeToggle({ className }: { className?: string }) {
       thumbChildren={
         isDark ? (
           <MoonIcon
-            className="size-2.5 shrink-0 text-primary"
+            size={10}
+            className="text-primary"
             strokeWidth={2.5}
             aria-hidden
           />
         ) : (
           <SunIcon
-            className="size-2.5 shrink-0 text-white"
+            size={10}
+            className="text-white"
             strokeWidth={2.5}
             aria-hidden
           />
