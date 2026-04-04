@@ -37,7 +37,6 @@ export function CoderOverviewPage() {
               >
                 <div className="flex flex-col gap-4 pt-0 pb-4 md:gap-6 md:pb-6">
                   <DashboardDateRangeToolbar
-                    description="Choose the reporting window and which sites to include. Coder overview tables use the same controls as the dashboard (demo data is static)."
                     extension={<CoderOverviewDimensionNav />}
                   />
                   <div className="px-4 lg:px-6">
