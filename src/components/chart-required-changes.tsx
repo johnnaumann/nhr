@@ -64,10 +64,10 @@ type SiteImpactRow = { site: string; short: string } & Record<
 
 /** Base stacked values per site (scaled by reporting-period length). */
 const SITE_IMPACT_BASE: SiteImpactRow[] = [
-  { site: "LICH", short: "LICH", pdx: 14, proc: 48, sdx: 16, cc: 35, mcc: 34 },
-  { site: "LTH", short: "LTH", pdx: 40, proc: 26, sdx: 14, cc: 20, mcc: 10 },
-  { site: "NYU", short: "NYU", pdx: 14, proc: 48, sdx: 16, cc: 35, mcc: 34 },
-  { site: "WTH", short: "WTH", pdx: 38, proc: 24, sdx: 14, cc: 24, mcc: 12 },
+  { site: "Site 1", short: "Site 1", pdx: 14, proc: 48, sdx: 16, cc: 35, mcc: 34 },
+  { site: "Site 2", short: "Site 2", pdx: 40, proc: 26, sdx: 14, cc: 20, mcc: 10 },
+  { site: "Site 3", short: "Site 3", pdx: 14, proc: 48, sdx: 16, cc: 35, mcc: 34 },
+  { site: "Site 4", short: "Site 4", pdx: 38, proc: 24, sdx: 14, cc: 24, mcc: 12 },
 ]
 
 const REACTION_KEYS = [
@@ -250,7 +250,7 @@ export function ChartRequiredChanges() {
         <CardTitle>What most impacted the change</CardTitle>
         <CardDescription>
           <span className="hidden @[540px]/required-changes:block">
-            Required-change drivers by site, then how hospitals reacted—sites
+            Required-change drivers by site, then site-level reactions—sites
             are filtered from the sticky reporting header above.
           </span>
           <span className="@[540px]/required-changes:hidden">

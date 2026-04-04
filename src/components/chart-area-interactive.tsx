@@ -83,7 +83,7 @@ const WORKSHEET_PIE_COPY = {
   tiedSuffix:
     "Compare their curves in the line chart to see timing.",
   balancedText:
-    "Workload is fairly even across institutions this period\u2014no single site dominates.",
+    "Workload is fairly even across sites this period\u2014no single site dominates.",
   dominantSuffix:
     "Worth confirming whether that reflects real volume or documentation habits at that site.",
 } as const
@@ -149,10 +149,10 @@ export function ChartAreaInteractive() {
         <CardTitle>Worksheets changed</CardTitle>
         <CardDescription>
           <span className="hidden @[540px]/card:block">
-            Worksheet changes by institution for the reporting period. Choose
-            sites in the sticky reporting header above.
+            Worksheet changes by site for the reporting period. Choose sites
+            in the sticky reporting header above.
           </span>
-          <span className="@[540px]/card:hidden">By institution</span>
+          <span className="@[540px]/card:hidden">By site</span>
         </CardDescription>
       </CardHeader>
       <CardContent className={chartContentClass}>

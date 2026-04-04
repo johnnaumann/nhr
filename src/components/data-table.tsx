@@ -270,10 +270,8 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
             </SelectTrigger>
             <SelectContent align="end">
               <SelectGroup>
-                <SelectItem value="Eddie Lake">Eddie Lake</SelectItem>
-                <SelectItem value="Jamik Tashpulatov">
-                  Jamik Tashpulatov
-                </SelectItem>
+                <SelectItem value="Reviewer 1">Reviewer 1</SelectItem>
+                <SelectItem value="Reviewer 2">Reviewer 2</SelectItem>
               </SelectGroup>
             </SelectContent>
           </Select>
@@ -1030,8 +1028,8 @@ const drawerChartConfig = {
 const pastPerformanceData = [
   {
     id: 1,
-    contract: "BlueCross BlueShield – Medicare Advantage",
-    client: "BCBS Tennessee",
+    contract: "Regional payer – Medicare Advantage (contract 1)",
+    client: "Health plan region A",
     period: "Jan 2023 – Dec 2024",
     claimsProcessed: "142,850",
     accuracyRate: 98.7,
@@ -1042,8 +1040,8 @@ const pastPerformanceData = [
   },
   {
     id: 2,
-    contract: "Aetna – Medicaid Managed Care",
-    client: "Aetna Health Inc.",
+    contract: "Regional payer – Medicaid managed care (contract 2)",
+    client: "Health plan region B",
     period: "Mar 2022 – Feb 2024",
     claimsProcessed: "89,340",
     accuracyRate: 96.1,
@@ -1054,8 +1052,8 @@ const pastPerformanceData = [
   },
   {
     id: 3,
-    contract: "UnitedHealth – Group Policy Admin",
-    client: "UHG National Accounts",
+    contract: "Regional payer – group policy admin (contract 3)",
+    client: "Health plan region C",
     period: "Jul 2021 – Jun 2023",
     claimsProcessed: "215,620",
     accuracyRate: 97.4,
@@ -1069,8 +1067,8 @@ const pastPerformanceData = [
 const keyPersonnelData = [
   {
     id: 1,
-    name: "Dr. Sarah Chen",
-    initials: "SC",
+    name: "Coder 1",
+    initials: "C1",
     title: "Chief Medical Officer",
     department: "Clinical Operations",
     certifications: ["MD", "FACP", "CPHQ"],
@@ -1088,8 +1086,8 @@ const keyPersonnelData = [
   },
   {
     id: 2,
-    name: "Marcus Rivera",
-    initials: "MR",
+    name: "Coder 2",
+    initials: "C2",
     title: "VP, Claims & Benefits Administration",
     department: "Operations",
     certifications: ["CEBS", "FLMI", "ACS"],
@@ -1382,10 +1380,8 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
-                    <SelectItem value="Eddie Lake">Eddie Lake</SelectItem>
-                    <SelectItem value="Jamik Tashpulatov">
-                      Jamik Tashpulatov
-                    </SelectItem>
+                    <SelectItem value="Reviewer 1">Reviewer 1</SelectItem>
+                    <SelectItem value="Reviewer 2">Reviewer 2</SelectItem>
                     <SelectItem value="Emily Whalen">Emily Whalen</SelectItem>
                   </SelectGroup>
                 </SelectContent>

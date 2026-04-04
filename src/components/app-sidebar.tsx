@@ -17,8 +17,8 @@ import { LayoutDashboardIcon, ListIcon, ChartBarIcon, FolderIcon, UsersIcon, Cam
 
 const data = {
   user: {
-    name: "John Doe",
-    email: "john@company.com",
+    name: "Demo User",
+    email: "user@example.com",
     avatar: "",
   },
   navMain: [

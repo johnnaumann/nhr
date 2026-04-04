@@ -12,21 +12,21 @@ export type InstitutionSeriesKey = (typeof INSTITUTION_SERIES_KEYS)[number]
 
 /** Labels and colours for institution toggles and Recharts `ChartContainer`. */
 export const institutionChartConfig = {
-  institution1: { label: "LICH", color: "var(--chart-1)" },
-  institution2: { label: "LTH", color: "var(--chart-2)" },
-  institution3: { label: "NYU", color: "var(--chart-3)" },
-  institution4: { label: "WTH", color: "var(--chart-4)" },
+  institution1: { label: "Site 1", color: "var(--chart-1)" },
+  institution2: { label: "Site 2", color: "var(--chart-2)" },
+  institution3: { label: "Site 3", color: "var(--chart-3)" },
+  institution4: { label: "Site 4", color: "var(--chart-4)" },
 } satisfies ChartConfig
 
-/** Map impact-chart site short codes to worksheet institution keys. */
+/** Map impact-chart site labels to worksheet institution keys. */
 export const SITE_SHORT_TO_INSTITUTION_KEY: Record<
   string,
   InstitutionSeriesKey
 > = {
-  LICH: "institution1",
-  LTH: "institution2",
-  NYU: "institution3",
-  WTH: "institution4",
+  "Site 1": "institution1",
+  "Site 2": "institution2",
+  "Site 3": "institution3",
+  "Site 4": "institution4",
 }
 
 export const INSTITUTION_COUNT = INSTITUTION_SERIES_KEYS.length

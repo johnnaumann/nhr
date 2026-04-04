@@ -99,18 +99,10 @@ type CoderBarRow = {
   coder: string
 } & Record<WorkKey, number>
 
-const CODER_NAMES = [
-  "Sarah Chen",
-  "David Ruiz",
-  "Priya Patel",
-  "James Wilson",
-  "Emily Foster",
-  "Michael Tran",
-  "Rachel Kim",
-  "Carlos Diaz",
-  "Aisha Brown",
-  "Tom Nguyen",
-]
+const CODER_NAMES = Array.from(
+  { length: 10 },
+  (_, i) => `Coder ${i + 1}`,
+)
 
 /** Dramatically varied stacks — top coders stand out, clear performance tiers. */
 const CODER_BAR_BASE: Record<WorkKey, number>[] = [

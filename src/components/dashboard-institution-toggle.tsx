@@ -44,7 +44,7 @@ export function DashboardInstitutionToggle({
         size="sm"
         spacing={0}
         className="w-max max-w-full flex-nowrap gap-0 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-        aria-label="Show or hide hospital sites on charts"
+        aria-label="Show or hide sites on charts"
       >
         {INSTITUTION_SERIES_KEYS.map((key) => (
           <ToggleGroupItem
