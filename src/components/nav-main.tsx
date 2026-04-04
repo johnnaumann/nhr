@@ -1,3 +1,6 @@
+import type { ReactNode } from "react"
+import { Link, useLocation } from "react-router-dom"
+
 import { Button } from "@/components/ui/button"
 import {
   SidebarGroup,
@@ -14,9 +17,11 @@ export function NavMain({
   items: {
     title: string
     url: string
-    icon?: React.ReactNode
+    icon?: ReactNode
   }[]
 }) {
+  const location = useLocation()
+
   return (
     <SidebarGroup>
       <SidebarGroupContent className="flex flex-col gap-2">
@@ -42,14 +47,30 @@ export function NavMain({
           </SidebarMenuItem>
         </SidebarMenu>
         <SidebarMenu>
-          {items.map((item) => (
-            <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton tooltip={item.title}>
-                {item.icon}
-                <span>{item.title}</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          ))}
+          {items.map((item) => {
+            const isAppRoute = item.url.startsWith("/")
+            return (
+              <SidebarMenuItem key={item.title}>
+                {isAppRoute ? (
+                  <SidebarMenuButton
+                    tooltip={item.title}
+                    asChild
+                    isActive={location.pathname === item.url}
+                  >
+                    <Link to={item.url}>
+                      {item.icon}
+                      <span>{item.title}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                ) : (
+                  <SidebarMenuButton tooltip={item.title}>
+                    {item.icon}
+                    <span>{item.title}</span>
+                  </SidebarMenuButton>
+                )}
+              </SidebarMenuItem>
+            )
+          })}
         </SidebarMenu>
       </SidebarGroupContent>
     </SidebarGroup>

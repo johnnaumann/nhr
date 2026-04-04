@@ -24,15 +24,15 @@ const data = {
   navMain: [
     {
       title: "Dashboard",
-      url: "#",
+      url: "/dashboard",
       icon: (
         <LayoutDashboardIcon
         />
       ),
     },
     {
-      title: "Lifecycle",
-      url: "#",
+      title: "Coder Overview",
+      url: "/coder-overview",
       icon: (
         <ListIcon
         />

@@ -2,6 +2,7 @@ import { Route, Routes, useNavigate } from 'react-router-dom'
 
 import { LoginForm } from '@/components/login-form'
 import { ThemeToggle } from '@/components/theme-toggle'
+import { CoderOverviewPage } from '@/pages/coder-overview-page'
 import { DashboardPage } from '@/pages/dashboard-page'
 
 function LoginPage() {
@@ -26,6 +27,7 @@ function App() {
     <Routes>
       <Route path="/" element={<LoginPage />} />
       <Route path="/dashboard" element={<DashboardPage />} />
+      <Route path="/coder-overview" element={<CoderOverviewPage />} />
     </Routes>
   )
 }
