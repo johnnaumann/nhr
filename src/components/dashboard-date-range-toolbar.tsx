@@ -1,5 +1,7 @@
 "use client"
 
+import type { ReactNode } from "react"
+
 import { DashboardInstitutionToggle } from "@/components/dashboard-institution-toggle"
 import { DateRangePicker } from "@/components/date-range-picker"
 import { useDashboardDateRange } from "@/contexts/dashboard-date-range-context"
@@ -14,11 +16,14 @@ type DashboardDateRangeToolbarProps = {
   title?: string
   /** Overrides the helper line under the title. */
   description?: string
+  /** Renders below the main row inside the same sticky bar (e.g. in-page section links). */
+  extension?: ReactNode
 }
 
 export function DashboardDateRangeToolbar({
   title = DEFAULT_TITLE,
   description = DEFAULT_DESCRIPTION,
+  extension,
 }: DashboardDateRangeToolbarProps = {}) {
   const { range, setRange, referenceDate } = useDashboardDateRange()
 
@@ -45,6 +50,9 @@ export function DashboardDateRangeToolbar({
             <DashboardInstitutionToggle />
           </div>
         </div>
+        {extension ? (
+          <div className="border-t border-border/60 pt-3">{extension}</div>
+        ) : null}
       </div>
     </div>
   )

@@ -3,6 +3,7 @@
 import type { ColumnDef } from "@tanstack/react-table"
 
 import { CoderOverviewDataTable } from "@/components/coder-overview-data-table"
+import { CODER_OVERVIEW_DIMENSIONS } from "@/components/coder-overview-dimension-nav"
 import {
   CODER_COMPLIANCE_DATA,
   CODER_DRG_DATA,
@@ -15,8 +16,6 @@ import {
   type CoderOverviewOverallRow,
   type CoderOverviewQualityRow,
 } from "@/lib/coder-overview-table-data"
-
-const DIMENSIONS = ["Overall", "DRG", "Missed Opportunities", "Compliance", "Quality"] as const
 
 function rightHeader(label: string) {
   return () => <div className="w-full text-right">{label}</div>
@@ -291,52 +290,43 @@ export function CoderOverviewTables() {
             Coder Overview
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Use the sticky reporting bar above for date range and sites. Tables
-            mirror the Excel export structure—demo data only.
+            Use the sticky bar for date range, sites, and dimension shortcuts.
+            Tables mirror the Excel export structure—demo data only.
           </p>
-        </div>
-        <div
-          className="flex flex-wrap gap-2 text-xs text-muted-foreground"
-          aria-hidden
-        >
-          <span className="font-medium text-foreground">Dimensions:</span>
-          {DIMENSIONS.map((d) => (
-            <span
-              key={d}
-              className="rounded-md border border-border/60 bg-muted/40 px-2 py-0.5"
-            >
-              {d}
-            </span>
-          ))}
         </div>
       </div>
 
       <CoderOverviewDataTable
         title="Overall"
+        sectionId={CODER_OVERVIEW_DIMENSIONS[0].sectionId}
         initialData={CODER_OVERALL_DATA}
         dataColumns={overallColumns}
       />
 
       <CoderOverviewDataTable
         title="DRG"
+        sectionId={CODER_OVERVIEW_DIMENSIONS[1].sectionId}
         initialData={CODER_DRG_DATA}
         dataColumns={drgColumns}
       />
 
       <CoderOverviewDataTable
         title="Missed Opportunities"
+        sectionId={CODER_OVERVIEW_DIMENSIONS[2].sectionId}
         initialData={CODER_MISSED_DATA}
         dataColumns={missedColumns}
       />
 
       <CoderOverviewDataTable
         title="Compliance"
+        sectionId={CODER_OVERVIEW_DIMENSIONS[3].sectionId}
         initialData={CODER_COMPLIANCE_DATA}
         dataColumns={complianceColumns}
       />
 
       <CoderOverviewDataTable
         title="Quality"
+        sectionId={CODER_OVERVIEW_DIMENSIONS[4].sectionId}
         initialData={CODER_QUALITY_DATA}
         dataColumns={qualityColumns}
       />

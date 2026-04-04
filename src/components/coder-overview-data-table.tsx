@@ -76,6 +76,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { cn } from "@/lib/utils"
 
 function DragHandle({ id }: { id: UniqueIdentifier }) {
   const { attributes, listeners } = useSortable({ id })
@@ -188,6 +189,8 @@ function buildColumns<T extends { id: number }>(
 
 export type CoderOverviewDataTableProps<T extends { id: number }> = {
   title: string
+  /** Anchor id for in-page navigation (e.g. from sticky dimension nav). */
+  sectionId: string
   initialData: T[]
   dataColumns: ColumnDef<T>[]
 }
@@ -200,6 +203,7 @@ function columnMenuLabel<T extends { id: number }>(column: Column<T, unknown>) {
 
 export function CoderOverviewDataTable<T extends { id: number }>({
   title,
+  sectionId,
   initialData,
   dataColumns,
 }: CoderOverviewDataTableProps<T>) {
@@ -276,7 +280,13 @@ export function CoderOverviewDataTable<T extends { id: number }>({
   }
 
   return (
-    <section className="flex flex-col gap-4" aria-labelledby={headingId}>
+    <section
+      id={sectionId}
+      className={cn(
+        "flex flex-col gap-4 scroll-mt-[var(--coder-overview-scroll-margin)]",
+      )}
+      aria-labelledby={headingId}
+    >
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h2
           id={headingId}
