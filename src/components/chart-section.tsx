@@ -248,7 +248,9 @@ export function ChartSection() {
   return (
     <Card className="@container/types-chart">
       <CardHeader className="pt-2">
-        <CardTitle>Types of Changes</CardTitle>
+        <CardTitle className="text-lg font-semibold tracking-tight sm:text-xl">
+          Types of Changes
+        </CardTitle>
         <CardDescription>
           <span className="hidden @[540px]/types-chart:block">
             Required document changes by category—counts, trend over time, and

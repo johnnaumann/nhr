@@ -300,7 +300,9 @@ export function ChartCoderPerformance() {
   return (
     <Card className="@container/coder-performance">
       <CardHeader className="pt-2">
-        <CardTitle>Coder Performance</CardTitle>
+        <CardTitle className="text-lg font-semibold tracking-tight sm:text-xl">
+          Coder Performance
+        </CardTitle>
         <CardDescription>
           <span className="hidden @[540px]/coder-performance:block">
             Coder volume by worksheet outcome, detail trends, and change-type

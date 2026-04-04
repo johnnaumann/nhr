@@ -247,7 +247,9 @@ export function ChartRequiredChanges() {
   return (
     <Card className="@container/required-changes">
       <CardHeader className="pt-2">
-        <CardTitle>What most impacted the change</CardTitle>
+        <CardTitle className="text-lg font-semibold tracking-tight sm:text-xl">
+          What most impacted the change
+        </CardTitle>
         <CardDescription>
           <span className="hidden @[540px]/required-changes:block">
             Required-change drivers by site, then site-level reactions—sites

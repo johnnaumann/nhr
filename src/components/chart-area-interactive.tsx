@@ -146,7 +146,9 @@ export function ChartAreaInteractive() {
   return (
     <Card className="@container/card">
       <CardHeader className="pt-2">
-        <CardTitle>Worksheets changed</CardTitle>
+        <CardTitle className="text-lg font-semibold tracking-tight sm:text-xl">
+          Worksheets changed
+        </CardTitle>
         <CardDescription>
           <span className="hidden @[540px]/card:block">
             Worksheet changes by site for the reporting period. Choose sites
