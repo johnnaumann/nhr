@@ -15,109 +15,95 @@ import {
   dashboardMainGutterClass,
 } from "@/lib/dashboard-layout"
 import { cn } from "@/lib/utils"
-import { TrendingUpIcon, TrendingDownIcon } from "lucide-react"
+import { TrendingDownIcon, TrendingUpIcon } from "lucide-react"
+
+const SUMMARY_CARDS = [
+  {
+    label: "Missed revenue identified",
+    value: "$23.6M",
+    changeLabel: "+12.5%",
+    trend: "up" as const,
+    caption: "Beats prior quarter — DRG & add-on lift",
+  },
+  {
+    label: "Quality enhancement cases",
+    value: "45",
+    changeLabel: "-8.2%",
+    trend: "down" as const,
+    caption: "Down vs last period after coder coaching",
+  },
+  {
+    label: "Compliance flags",
+    value: "156",
+    changeLabel: "-14.3%",
+    trend: "down" as const,
+    caption: "Fewer flags; legacy audit backlog cleared",
+  },
+  {
+    label: "Pending decisions",
+    value: "72",
+    changeLabel: "+5.1%",
+    trend: "up" as const,
+    caption: "Queue up — network & benefits changes",
+  },
+]
+
+const trendBadgeClass = {
+  up: "border-emerald-500/35 bg-emerald-500/10 text-emerald-800 dark:border-emerald-500/45 dark:bg-emerald-500/15 dark:text-emerald-300",
+  down:
+    "border-rose-500/35 bg-rose-500/10 text-rose-800 dark:border-rose-500/45 dark:bg-rose-500/15 dark:text-rose-300",
+} as const
+
+const trendIconClass = {
+  up: "text-emerald-600 dark:text-emerald-400",
+  down: "text-rose-600 dark:text-rose-400",
+} as const
 
 export function SectionCards() {
   return (
     <div
       className={cn(
-        "grid grid-cols-1 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card *:data-[slot=card]:shadow-xs @xl/main:grid-cols-2 @5xl/main:grid-cols-4 dark:*:data-[slot=card]:bg-card",
+        "grid grid-cols-1 *:data-[slot=card]:shadow-xs @xl/main:grid-cols-2 @5xl/main:grid-cols-4",
         dashboardMainGutterClass,
         dashboardGridGapClass,
       )}
     >
-      <Card className={cn("@container/card", dashboardCardBlockGapClass)}>
-        <CardHeader>
-          <CardDescription>Missed Revenue Identified</CardDescription>
-          <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            $23.6M
-          </CardTitle>
-          <CardAction>
-            <Badge variant="outline">
-              <TrendingUpIcon />
-              +12.5%
-            </Badge>
-          </CardAction>
-        </CardHeader>
-        <CardFooter className="flex-col items-start gap-1.5 text-sm">
-          <div className="line-clamp-1 flex gap-2 font-medium">
-            Positive revenue opportunity{" "}
-            <TrendingUpIcon className="size-4" />
-          </div>
-          <div className="text-muted-foreground">
-            Missed positive revenue identified
-          </div>
-        </CardFooter>
-      </Card>
-      <Card className={cn("@container/card", dashboardCardBlockGapClass)}>
-        <CardHeader>
-          <CardDescription>Quality Enhancement Changes</CardDescription>
-          <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            45
-          </CardTitle>
-          <CardAction>
-            <Badge variant="outline">
-              <TrendingDownIcon />
-              -8.2%
-            </Badge>
-          </CardAction>
-        </CardHeader>
-        <CardFooter className="flex-col items-start gap-1.5 text-sm">
-          <div className="line-clamp-1 flex gap-2 font-medium">
-            Coding quality cases down{" "}
-            <TrendingDownIcon className="size-4" />
-          </div>
-          <div className="text-muted-foreground">
-            Cases requiring quality enhancement
-          </div>
-        </CardFooter>
-      </Card>
-      <Card className={cn("@container/card", dashboardCardBlockGapClass)}>
-        <CardHeader>
-          <CardDescription>Flagged for Compliance</CardDescription>
-          <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            156
-          </CardTitle>
-          <CardAction>
-            <Badge variant="outline">
-              <TrendingDownIcon />
-              -14.3%
-            </Badge>
-          </CardAction>
-        </CardHeader>
-        <CardFooter className="flex-col items-start gap-1.5 text-sm">
-          <div className="line-clamp-1 flex gap-2 font-medium">
-            Compliance flags decreasing{" "}
-            <TrendingDownIcon className="size-4" />
-          </div>
-          <div className="text-muted-foreground">
-            Cases flagged for compliance review
-          </div>
-        </CardFooter>
-      </Card>
-      <Card className={cn("@container/card", dashboardCardBlockGapClass)}>
-        <CardHeader>
-          <CardDescription>Pending Decisions</CardDescription>
-          <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            72
-          </CardTitle>
-          <CardAction>
-            <Badge variant="outline">
-              <TrendingUpIcon />
-              +5.1%
-            </Badge>
-          </CardAction>
-        </CardHeader>
-        <CardFooter className="flex-col items-start gap-1.5 text-sm">
-          <div className="line-clamp-1 flex gap-2 font-medium">
-            53 of 156 cases had changes{" "}
-            <TrendingUpIcon className="size-4" />
-          </div>
-          <div className="text-muted-foreground">
-            Decisions awaiting review
-          </div>
-        </CardFooter>
-      </Card>
+      {SUMMARY_CARDS.map((card) => {
+        const TrendIcon = card.trend === "up" ? TrendingUpIcon : TrendingDownIcon
+        return (
+          <Card
+            key={card.label}
+            className={cn("@container/card", dashboardCardBlockGapClass)}
+          >
+            <CardHeader>
+              <CardDescription>{card.label}</CardDescription>
+              <CardTitle className="text-3xl font-semibold tabular-nums tracking-tight @[250px]/card:text-4xl @[380px]/card:text-5xl">
+                {card.value}
+              </CardTitle>
+              <CardAction>
+                <Badge
+                  variant="outline"
+                  className={cn("border font-medium", trendBadgeClass[card.trend])}
+                >
+                  <TrendIcon />
+                  {card.changeLabel}
+                </Badge>
+              </CardAction>
+            </CardHeader>
+            <CardFooter className="text-sm">
+              <div
+                className={cn(
+                  "flex min-w-0 items-center gap-2 font-medium",
+                  trendIconClass[card.trend],
+                )}
+              >
+                <TrendIcon className="size-4 shrink-0" aria-hidden />
+                <span className="min-w-0 truncate">{card.caption}</span>
+              </div>
+            </CardFooter>
+          </Card>
+        )
+      })}
     </div>
   )
 }
