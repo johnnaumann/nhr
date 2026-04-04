@@ -1,16 +1,8 @@
 "use client"
 
-import * as React from "react"
 import type { ColumnDef } from "@tanstack/react-table"
 
 import { CoderOverviewDataTable } from "@/components/coder-overview-data-table"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import {
   CODER_COMPLIANCE_DATA,
   CODER_DRG_DATA,
@@ -291,9 +283,6 @@ const qualityColumns: ColumnDef<CoderOverviewQualityRow>[] = [
 ]
 
 export function CoderOverviewTables() {
-  const [timeFilter, setTimeFilter] = React.useState("last-90")
-  const [siteFilter, setSiteFilter] = React.useState("all")
-
   return (
     <div className="flex flex-col gap-10">
       <div className="flex flex-col gap-4 border-b border-border/60 pb-6">
@@ -302,42 +291,9 @@ export function CoderOverviewTables() {
             Coder Overview
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Filter by time and location (site). Tables mirror the Excel export
-            structure—demo data only.
+            Use the sticky reporting bar above for date range and sites. Tables
+            mirror the Excel export structure—demo data only.
           </p>
-        </div>
-        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end sm:gap-4">
-          <div className="space-y-1.5">
-            <p className="text-xs font-medium text-muted-foreground">Time</p>
-            <Select value={timeFilter} onValueChange={setTimeFilter}>
-              <SelectTrigger className="w-full min-w-[12rem] sm:w-[12rem]">
-                <SelectValue placeholder="Period" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="last-30">Last 30 days</SelectItem>
-                <SelectItem value="last-90">Last 90 days</SelectItem>
-                <SelectItem value="ytd">Year to date</SelectItem>
-                <SelectItem value="custom">Custom range</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-1.5">
-            <p className="text-xs font-medium text-muted-foreground">
-              Location (site)
-            </p>
-            <Select value={siteFilter} onValueChange={setSiteFilter}>
-              <SelectTrigger className="w-full min-w-[12rem] sm:w-[12rem]">
-                <SelectValue placeholder="All sites" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All sites</SelectItem>
-                <SelectItem value="site-1">Site 1</SelectItem>
-                <SelectItem value="site-2">Site 2</SelectItem>
-                <SelectItem value="site-3">Site 3</SelectItem>
-                <SelectItem value="site-4">Site 4</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
         </div>
         <div
           className="flex flex-wrap gap-2 text-xs text-muted-foreground"

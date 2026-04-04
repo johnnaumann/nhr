@@ -4,7 +4,22 @@ import { DashboardInstitutionToggle } from "@/components/dashboard-institution-t
 import { DateRangePicker } from "@/components/date-range-picker"
 import { useDashboardDateRange } from "@/contexts/dashboard-date-range-context"
 
-export function DashboardDateRangeToolbar() {
+const DEFAULT_TITLE = "Reporting period & sites"
+
+const DEFAULT_DESCRIPTION =
+  "The date range and site toggles to the right apply everywhere sites appear—worksheets over time, site impact stacks, and related totals."
+
+type DashboardDateRangeToolbarProps = {
+  /** Overrides the lead title (plain text; use for route-specific labeling). */
+  title?: string
+  /** Overrides the helper line under the title. */
+  description?: string
+}
+
+export function DashboardDateRangeToolbar({
+  title = DEFAULT_TITLE,
+  description = DEFAULT_DESCRIPTION,
+}: DashboardDateRangeToolbarProps = {}) {
   const { range, setRange, referenceDate } = useDashboardDateRange()
 
   return (
@@ -15,14 +30,8 @@ export function DashboardDateRangeToolbar() {
       <div className="flex flex-col gap-4 px-4 lg:px-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
           <div className="min-w-0 space-y-0.5">
-            <p className="text-sm font-medium text-foreground">
-              Reporting period &amp; sites
-            </p>
-            <p className="text-xs text-muted-foreground">
-              The date range and site toggles to the right apply everywhere
-              sites appear—worksheets over time, site impact stacks, and related
-              totals.
-            </p>
+            <p className="text-sm font-medium text-foreground">{title}</p>
+            <p className="text-xs text-muted-foreground">{description}</p>
           </div>
           <div className="flex w-full min-w-0 flex-col gap-3 sm:w-auto sm:max-w-none sm:flex-row sm:items-center sm:justify-end sm:gap-4">
             <DateRangePicker
