@@ -35,8 +35,12 @@ import {
 import {
   chartContentClass,
   chartPanelClass,
+  chartPieInsightSlotClass,
+  chartPieSlotClass,
+  chartPlotHeightClass,
   dashboardGridGapClass,
   pieInsightClass,
+  pieInsightLabelClass,
 } from "@/lib/chart-layout"
 import { dashboardCardBlockGapClass } from "@/lib/dashboard-layout"
 import { cn } from "@/lib/utils"
@@ -86,13 +90,13 @@ function buildWorksheetRowsForRange(isos: string[]): WorksheetRow[] {
   })
 }
 
+/** Suffixes tuned to ~55 chars so tied / dominant / spread branches match worksheet chart. */
 const WORKSHEET_PIE_COPY = {
-  tiedSuffix:
-    "Compare their curves in the line chart to see timing.",
+  tiedSuffix: "See line chart for site timing in this reporting range.",
   balancedText:
-    "Workload is fairly even across sites this period\u2014no single site dominates.",
-  dominantSuffix:
-    "Worth confirming whether that reflects real volume or documentation habits at that site.",
+    "Site workload looks even this range—no visible site leads worksheet pie by a clear margin now.",
+  dominantSuffix: "Check volume vs documentation habits using charts here.",
+  spreadSuffix: "Compare top vs bottom slices in line and pie view here.",
 } as const
 
 export function ChartAreaInteractive() {
@@ -179,7 +183,7 @@ export function ChartAreaInteractive() {
           >
             <ChartContainer
               config={institutionChartConfig}
-              className="!aspect-auto min-h-[240px] w-full min-w-0 flex-1 md:min-h-[280px]"
+              className={chartPlotHeightClass}
             >
               <LineChart
                 accessibilityLayer
@@ -253,13 +257,15 @@ export function ChartAreaInteractive() {
               "@xl/main:col-span-2 @5xl/main:col-span-1",
             )}
           >
-            {pieTotal > 0 && visibleInstitutionKeys.length > 0 ? (
-              <p className={pieInsightClass}>
-                <span className="font-medium text-foreground">Summary: </span>
-                {pieInsight}
-              </p>
-            ) : null}
-            <div className="flex h-[240px] w-full shrink-0 flex-col items-center justify-center md:h-[280px]">
+            <div className={chartPieInsightSlotClass}>
+              {pieTotal > 0 && visibleInstitutionKeys.length > 0 ? (
+                <p className={pieInsightClass}>
+                  <span className={pieInsightLabelClass}>Summary:</span>{" "}
+                  {pieInsight}
+                </p>
+              ) : null}
+            </div>
+            <div className={chartPieSlotClass}>
               {visibleInstitutionKeys.length === 0 ? (
                 <ChartEmptyState variant="pie">
                   Turn on at least one site in the reporting header to see the pie

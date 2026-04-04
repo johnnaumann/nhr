@@ -47,10 +47,14 @@ import {
 import {
   chartContentClass,
   chartPanelClass,
+  chartPieInsightSlotClass,
+  chartPieSlotClass,
+  chartPlotHeightClass,
   dashboardGridGapClass,
   filterSelectTriggerClass,
   filterToolbarClass,
   pieInsightClass,
+  pieInsightLabelClass,
 } from "@/lib/chart-layout"
 import {
   DEMO_SCALE_REFERENCE_DAYS,
@@ -122,10 +126,14 @@ function buildDetailLineSeries(
   })
 }
 
+/** Pie insight copy aligned with other dashboard charts (`buildPieInsight` patterns). */
 const DETAIL_PIE_COPY = {
   dominantThreshold: 42,
-  dominantSuffix:
-    "Compare the line trend to see whether that holds across the period.",
+  tiedSuffix: "See coder lines for category timing in report range.",
+  balancedText:
+    "Coder detail mix looks even this range—no visible category leads the pie by a clear margin now.",
+  dominantSuffix: "Check coder line trend vs other detail categories here.",
+  spreadSuffix: "Compare top vs bottom detail slices on line and pie.",
 } as const
 
 export function ChartCoderPerformance() {
@@ -298,7 +306,7 @@ export function ChartCoderPerformance() {
               ) : (
                 <ChartContainer
                   config={detailChartConfig}
-                  className="!aspect-auto min-h-[240px] w-full min-w-0 flex-1 md:min-h-[280px]"
+                  className={chartPlotHeightClass}
                 >
                   <LineChart
                     accessibilityLayer
@@ -364,13 +372,15 @@ export function ChartCoderPerformance() {
                 chartPanelClass,
               )}
             >
-              {pieTotal > 0 && visibleDetail.length > 0 && pieInsight ? (
-                <p className={pieInsightClass}>
-                  <span className="font-medium text-foreground">Summary: </span>
-                  {pieInsight}
-                </p>
-              ) : null}
-              <div className="flex h-[240px] w-full shrink-0 flex-col items-center justify-center md:h-[280px]">
+              <div className={chartPieInsightSlotClass}>
+                {pieTotal > 0 && visibleDetail.length > 0 && pieInsight ? (
+                  <p className={pieInsightClass}>
+                    <span className={pieInsightLabelClass}>Summary:</span>{" "}
+                    {pieInsight}
+                  </p>
+                ) : null}
+              </div>
+              <div className={chartPieSlotClass}>
                 {visibleDetail.length === 0 ? (
                   <ChartEmptyState variant="pie">
                     No slice to show

@@ -35,22 +35,25 @@ export function toggleVisibleKey<T extends string>(
 export type PieInsightRow = { label: string; value: number; pct: number }
 
 export type PieInsightCopy = {
-  /** Extra sentence appended when top two slices are nearly tied. */
+  /** Appended after the tied pattern (keep ~same length as other charts’ suffixes). */
   tiedSuffix?: string
-  /** Full sentence when the spread between top and bottom is small. */
+  /** Full insight when the spread between top and bottom is small (~same length as other branches). */
   balancedText?: string
-  /** Extra sentence appended when the top slice is very large. */
+  /** Appended after the dominant pattern. */
   dominantSuffix?: string
+  /** Appended after the spread pattern (top vs bottom labels). */
+  spreadSuffix?: string
   /** Minimum pct for the "dominant" branch (default 38). */
   dominantThreshold?: number
 }
 
+function normalizePieInsightText(s: string): string {
+  return s.replace(/\s+/g, " ").trim()
+}
+
 /**
- * Generate a short narrative insight from sorted pie-breakdown rows.
- *
- * If `copy` is omitted the function still produces a sensible default using
- * only label names and percentages.  Pass partial `PieInsightCopy` to
- * customise the phrasing per chart.
+ * Pie summary lines use parallel patterns per branch. Category labels are kept
+ * whole (trimmed only); long text scrolls inside the fixed pie insight slot.
  */
 export function buildPieInsight(
   sorted: PieInsightRow[],
@@ -65,22 +68,39 @@ export function buildPieInsight(
   const spread = top.pct - bottom.pct
   const threshold = copy.dominantThreshold ?? 38
 
+  const a = top.label.trim()
+  const b = bottom.label.trim()
+  const p1 = Math.round(top.pct)
+  const p2 = second ? Math.round(second.pct) : 0
+  const pb = Math.round(bottom.pct)
+
   if (second && Math.abs(top.pct - second.pct) < 4) {
-    const base = `${top.label} and ${second.label} are almost tied (${top.pct.toFixed(1)}% vs ${second.pct.toFixed(1)}%).`
-    return copy.tiedSuffix ? `${base} ${copy.tiedSuffix}` : base
+    const s2 = second.label.trim()
+    const core = `${a} & ${s2} tied ${p1}%/${p2}%.`
+    const tail =
+      copy.tiedSuffix ??
+      "See charts for timing and share details in this range."
+    return normalizePieInsightText(`${core} ${tail}`)
   }
 
   if (spread < 12) {
-    return (
+    const text =
       copy.balancedText ??
-      "Distribution is fairly balanced this period\u2014no single category dominates."
-    )
+      "Mix looks even this range\u2014no slice leads the pie by a clear margin."
+    return normalizePieInsightText(text)
   }
 
   if (top.pct >= threshold) {
-    const base = `${top.label} accounts for a large share (${top.pct.toFixed(1)}%).`
-    return copy.dominantSuffix ? `${base} ${copy.dominantSuffix}` : base
+    const core = `${a} leads at ${p1}% in this pie slice.`
+    const tail =
+      copy.dominantSuffix ??
+      "Confirm drivers on the paired chart for this reporting range."
+    return normalizePieInsightText(`${core} ${tail}`)
   }
 
-  return `${top.label} leads with ${top.pct.toFixed(1)}% of ${total.toLocaleString()} total; ${bottom.label} is lowest at ${bottom.pct.toFixed(1)}%.`
+  const core = `${a} leads ${p1}%; ${b} lowest ${pb}%.`
+  const tail =
+    copy.spreadSuffix ??
+    "Compare top versus bottom slices in the paired chart views."
+  return normalizePieInsightText(`${core} ${tail}`)
 }

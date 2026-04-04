@@ -1,11 +1,12 @@
+import { chartPlotHeightClass, chartPlotTallHeightClass } from "@/lib/chart-layout"
 import { cn } from "@/lib/utils"
 
 /**
  * Consistent empty-state placeholder used inside chart panels.
  *
- * - `"chart"` (default): standard min-height 240/280px, fills flex parent
- * - `"chart-tall"`: taller 240/320px for charts with many categories
- * - `"pie"`:  fills parent height (no min-height)
+ * - `"chart"` (default): same flex + min-height as `chartPlotHeightClass`
+ * - `"chart-tall"`: same flex + min-height as `chartPlotTallHeightClass`
+ * - `"pie"`: fills parent height (no min-height)
  */
 export function ChartEmptyState({
   children,
@@ -20,10 +21,8 @@ export function ChartEmptyState({
     <div
       className={cn(
         "flex items-center justify-center px-2 text-center text-sm text-muted-foreground",
-        variant === "chart" &&
-          "min-h-[240px] w-full flex-1 md:min-h-[280px]",
-        variant === "chart-tall" &&
-          "min-h-[240px] flex-1 md:min-h-[320px]",
+        variant === "chart" && chartPlotHeightClass,
+        variant === "chart-tall" && chartPlotTallHeightClass,
         variant === "pie" && "h-full w-full",
         className
       )}

@@ -33,6 +33,7 @@ import { scaleInt, toggleVisibleKey } from "@/lib/chart-helpers"
 import {
   chartContentClass,
   chartPanelClass,
+  chartPlotHeightClass,
   dashboardGridGapClass,
   filterSelectTriggerClass,
   filterToolbarClass,
@@ -337,7 +338,7 @@ export function ChartRequiredChanges() {
               ) : (
                 <ChartContainer
                   config={impactChartConfig}
-                  className="!aspect-auto min-h-[240px] w-full min-w-0 flex-1 md:min-h-[280px]"
+                  className={chartPlotHeightClass}
                 >
                   <BarChart
                     accessibilityLayer
@@ -459,7 +460,7 @@ export function ChartRequiredChanges() {
               ) : (
                 <ChartContainer
                   config={reactionChartConfig}
-                  className="!aspect-auto min-h-[240px] w-full min-w-0 flex-1 md:min-h-[280px]"
+                  className={chartPlotHeightClass}
                 >
                   <BarChart
                     accessibilityLayer

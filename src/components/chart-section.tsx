@@ -30,9 +30,13 @@ import {
 import {
   chartContentClass,
   chartPanelClass,
+  chartPieInsightSlotClass,
+  chartPieSlotClass,
+  chartPlotHeightClass,
   dashboardGridGapClass,
   legendPanelFillClass,
   pieInsightClass,
+  pieInsightLabelClass,
 } from "@/lib/chart-layout"
 import { eachIsoDateInDashboardRange } from "@/lib/dashboard-demo-range"
 import { dashboardCardBlockGapClass } from "@/lib/dashboard-layout"
@@ -182,13 +186,13 @@ function sumsByType(rows: ChangeDayRow[]): Record<ChangeTypeKey, number> {
   return sums
 }
 
+/** Suffixes tuned to ~55 chars so pie insight length matches the worksheets chart. */
 const TYPES_PIE_COPY = {
-  tiedSuffix:
-    "Compare their stacks in the bar chart to see how volumes shift by period.",
+  tiedSuffix: "See bar chart for per-type volume in this report range.",
   balancedText:
-    "Change types are fairly balanced this period\u2014no single category dominates the mix.",
-  dominantSuffix:
-    "Worth confirming whether that reflects real remediation volume or how changes are classified.",
+    "Change-type mix looks even this range—no visible type leads required pie by a clear margin now.",
+  dominantSuffix: "Check remediation vs classification on bar charts here.",
+  spreadSuffix: "Compare top vs bottom slices in bar and pie views here.",
 } as const
 
 const DEFAULT_VISIBLE_TYPES = [...TYPE_KEYS] as ChangeTypeKey[]
@@ -306,7 +310,7 @@ export function ChartSection() {
               ) : (
                 <ChartContainer
                   config={chartConfig}
-                  className="!aspect-auto min-h-[240px] w-full min-w-0 flex-1 md:min-h-[280px]"
+                  className={chartPlotHeightClass}
                 >
                   <BarChart
                     accessibilityLayer
@@ -372,13 +376,15 @@ export function ChartSection() {
             {/* Pie chart */}
             <div className="flex h-full min-h-0 min-w-0 flex-col @xl/types-chart:col-span-3">
               <div className={legendPanelFillClass}>
-                {pieTotal > 0 && visibleKeys.length > 0 ? (
-                  <p className={pieInsightClass}>
-                    <span className="font-medium text-foreground">Summary: </span>
-                    {pieInsight}
-                  </p>
-                ) : null}
-                <div className="flex h-[240px] w-full shrink-0 flex-col items-center justify-center md:h-[280px]">
+                <div className={chartPieInsightSlotClass}>
+                  {pieTotal > 0 && visibleKeys.length > 0 ? (
+                    <p className={pieInsightClass}>
+                      <span className={pieInsightLabelClass}>Summary:</span>{" "}
+                      {pieInsight}
+                    </p>
+                  ) : null}
+                </div>
+                <div className={chartPieSlotClass}>
                   {visibleKeys.length === 0 ? (
                     <ChartEmptyState variant="pie">
                       Select at least one change type to see the pie chart.

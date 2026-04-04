@@ -40,5 +40,37 @@ export const chartContentClass = cn(
   dashboardGridGapClass
 )
 
+/**
+ * Cartesian plots: fill the padded chart panel (flex-1) with sensible minimums.
+ * `basis-0` + `flex-1` lets the plot consume remaining row height in stretch grids.
+ */
+export const chartPlotHeightClass = cn(
+  "flex h-full w-full min-w-0 flex-1 flex-col !aspect-auto",
+  "min-h-[240px] basis-0 md:min-h-[280px]"
+)
+
+/** Taller minimum on `md+` (e.g. many categories in empty state). */
+export const chartPlotTallHeightClass = cn(
+  "flex h-full w-full min-w-0 flex-1 flex-col !aspect-auto",
+  "min-h-[240px] basis-0 md:min-h-[320px]"
+)
+
+/** Pie slot inside a flex column: grows like Cartesian charts, same minimum heights. */
+export const chartPieSlotClass = cn(
+  "flex min-h-[240px] w-full min-w-0 flex-1 flex-col items-center justify-center",
+  "md:min-h-[280px]"
+)
+
+/**
+ * Fixed-height block above pie charts so stretch-grids don’t resize sibling charts.
+ * Long summaries scroll inside this slot; labels are no longer shortened mid-word in {@link buildPieInsight}.
+ */
+export const chartPieInsightSlotClass =
+  "h-20 w-full shrink-0 overflow-y-auto overflow-x-hidden"
+
+/** Full summary body; lives inside {@link chartPieInsightSlotClass} (scroll there if needed). */
 export const pieInsightClass =
-  "max-h-24 w-full shrink-0 overflow-y-auto pb-2 text-left text-xs leading-relaxed text-muted-foreground"
+  "m-0 w-full text-pretty text-left text-sm leading-relaxed text-muted-foreground"
+
+/** Label before pie insight body (pair with `{" "}` after the span so a space is always present). */
+export const pieInsightLabelClass = "shrink-0 font-medium text-foreground"
