@@ -13,7 +13,10 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { useCoderTrendsDimension } from "@/contexts/coder-trends-dimension-context"
+import { useDashboardDateRange } from "@/contexts/dashboard-date-range-context"
+import { useDashboardInstitutions } from "@/contexts/dashboard-institutions-context"
 import type { CoderTrendCohortKey } from "@/lib/coder-trends-data"
+import { deriveCoderTrendsUnifiedData } from "@/lib/coder-trends-derived-data"
 import {
   CODER_TRENDS_COHORT_LABELS,
   CODER_TRENDS_UNIFIED_DATA,
@@ -190,13 +193,22 @@ const dataColumns: ColumnDef<CoderTrendUnifiedRow>[] = [
 
 export function CoderTrendsTables() {
   const { activeFilter } = useCoderTrendsDimension()
+  const { range } = useDashboardDateRange()
+  const { visibleInstitutionKeys } = useDashboardInstitutions()
+
+  const derivedData = React.useMemo(
+    () =>
+      deriveCoderTrendsUnifiedData(CODER_TRENDS_UNIFIED_DATA, {
+        range,
+        visibleInstitutionKeys,
+      }),
+    [range, visibleInstitutionKeys],
+  )
 
   const filteredData = React.useMemo(() => {
-    if (activeFilter === "overall") return CODER_TRENDS_UNIFIED_DATA
-    return CODER_TRENDS_UNIFIED_DATA.filter(
-      (row) => row.cohort === activeFilter,
-    )
-  }, [activeFilter])
+    if (activeFilter === "overall") return derivedData
+    return derivedData.filter((row) => row.cohort === activeFilter)
+  }, [activeFilter, derivedData])
 
   return (
     <CoderOverviewDataTable
