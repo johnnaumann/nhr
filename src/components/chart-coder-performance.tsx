@@ -488,7 +488,7 @@ export function ChartCoderPerformance({
                 onToggleSort={() => setDetailSortDesc((d) => !d)}
                 idPrefix="coder-detail"
                 ariaLabel="Filter categories on line and pie charts"
-                labelClassName="text-left @[480px]/coder-performance:truncate"
+                labelClassName="text-left"
               />
             </div>
           </div>

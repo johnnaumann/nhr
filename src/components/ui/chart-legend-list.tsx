@@ -72,7 +72,7 @@ export function ChartLegendList({
             <li
               key={key}
               className={cn(
-                "flex min-w-0 items-center gap-2.5 text-sm transition-opacity",
+                "flex w-full min-w-0 items-center gap-2.5 text-sm transition-opacity",
                 !isOn && "opacity-40"
               )}
             >
@@ -94,6 +94,7 @@ export function ChartLegendList({
               </label>
               {openLegendDetail ? (
                 <LegendItemCountPill
+                  className="ml-auto shrink-0"
                   count={count}
                   itemLabel={label}
                   onClick={(e) => {
@@ -103,7 +104,11 @@ export function ChartLegendList({
                   }}
                 />
               ) : (
-                <LegendItemCountPill count={count} itemLabel={label} />
+                <LegendItemCountPill
+                  className="ml-auto shrink-0"
+                  count={count}
+                  itemLabel={label}
+                />
               )}
             </li>
           )
