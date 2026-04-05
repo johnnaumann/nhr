@@ -34,6 +34,7 @@ import {
   type ColumnFiltersState,
   type Row,
   type SortingState,
+  type Table as TanStackTable,
   type VisibilityState,
 } from "@tanstack/react-table"
 import { toast } from "sonner"
@@ -76,6 +77,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { useCoderOverviewTableToolbar } from "@/contexts/coder-overview-table-toolbar-context"
 import { cn } from "@/lib/utils"
 
 function DragHandle({ id }: { id: UniqueIdentifier }) {
@@ -188,7 +190,8 @@ function buildColumns<T extends { id: number }>(
 }
 
 export type CoderOverviewDataTableProps<T extends { id: number }> = {
-  title: string
+  /** Optional heading above the toolbar (e.g. section name). */
+  title?: string
   /** Anchor id for in-page navigation (e.g. from sticky dimension nav). */
   sectionId: string
   initialData: T[]
@@ -197,7 +200,7 @@ export type CoderOverviewDataTableProps<T extends { id: number }> = {
   defaultPageSize?: number
 }
 
-function columnMenuLabel<T extends { id: number }>(column: Column<T, unknown>) {
+export function coderOverviewColumnMenuLabel(column: Column<unknown, unknown>) {
   const h = column.columnDef.header
   if (typeof h === "string") return h
   return column.id
@@ -212,6 +215,8 @@ export function CoderOverviewDataTable<T extends { id: number }>({
 }: CoderOverviewDataTableProps<T>) {
   const headingId = React.useId()
   const dndInstanceId = React.useId()
+  const stickyToolbarHost = useCoderOverviewTableToolbar()
+  const showInlineColumnsExport = stickyToolbarHost === null
   const [data, setData] = React.useState(() => initialData)
   const [rowSelection, setRowSelection] = React.useState({})
   const [columnVisibility, setColumnVisibility] =
@@ -270,6 +275,14 @@ export function CoderOverviewDataTable<T extends { id: number }>({
     getFacetedUniqueValues: getFacetedUniqueValues(),
   })
 
+  React.useEffect(() => {
+    if (!stickyToolbarHost) return
+    stickyToolbarHost.setTable(table as TanStackTable<unknown>)
+    return () => {
+      stickyToolbarHost.setTable(null)
+    }
+  }, [stickyToolbarHost, table])
+
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event
     if (active && over && active.id !== over.id) {
@@ -288,69 +301,88 @@ export function CoderOverviewDataTable<T extends { id: number }>({
       className={cn(
         "flex flex-col gap-4 scroll-mt-[var(--stacked-section-scroll-margin)]",
       )}
-      aria-labelledby={headingId}
+      aria-label={title ? undefined : "Data table"}
+      aria-labelledby={title ? headingId : undefined}
     >
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      {showInlineColumnsExport ? (
+        <div
+          className={cn(
+            "flex flex-col gap-3 sm:flex-row sm:items-center",
+            title ? "sm:justify-between" : "sm:justify-end",
+          )}
+        >
+          {title ? (
+            <h2
+              id={headingId}
+              className="font-heading text-base font-semibold tracking-tight"
+            >
+              {title}
+            </h2>
+          ) : null}
+          <div className="flex flex-wrap items-center gap-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <Columns3Icon data-icon="inline-start" />
+                  Columns
+                  <ChevronDownIcon data-icon="inline-end" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                {table
+                  .getAllColumns()
+                  .filter(
+                    (column) =>
+                      typeof column.accessorFn !== "undefined" &&
+                      column.getCanHide(),
+                  )
+                  .map((column) => (
+                    <DropdownMenuCheckboxItem
+                      key={column.id}
+                      checked={column.getIsVisible()}
+                      onCheckedChange={(value) =>
+                        column.toggleVisibility(!!value)
+                      }
+                    >
+                      {coderOverviewColumnMenuLabel(
+                        column as Column<unknown, unknown>,
+                      )}
+                    </DropdownMenuCheckboxItem>
+                  ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <Button
+              variant="outline"
+              size="sm"
+              aria-label="Export selection"
+              onClick={() => {
+                const n = table.getFilteredSelectedRowModel().rows.length
+                toast.promise(
+                  new Promise((resolve) => setTimeout(resolve, 800)),
+                  {
+                    loading: "Preparing export…",
+                    success:
+                      n > 0
+                        ? `Export ready for ${n} selected row(s) (demo).`
+                        : "Export ready (demo). Select rows to include them.",
+                    error: "Export failed",
+                  },
+                )
+              }}
+            >
+              <DownloadIcon data-icon="inline-start" />
+              <span className="hidden sm:inline">Export</span>
+            </Button>
+          </div>
+        </div>
+      ) : title ? (
         <h2
           id={headingId}
           className="font-heading text-base font-semibold tracking-tight"
         >
           {title}
         </h2>
-        <div className="flex flex-wrap items-center gap-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm">
-                <Columns3Icon data-icon="inline-start" />
-                Columns
-                <ChevronDownIcon data-icon="inline-end" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
-              {table
-                .getAllColumns()
-                .filter(
-                  (column) =>
-                    typeof column.accessorFn !== "undefined" &&
-                    column.getCanHide(),
-                )
-                .map((column) => (
-                  <DropdownMenuCheckboxItem
-                    key={column.id}
-                    checked={column.getIsVisible()}
-                    onCheckedChange={(value) =>
-                      column.toggleVisibility(!!value)
-                    }
-                  >
-                    {columnMenuLabel(column)}
-                  </DropdownMenuCheckboxItem>
-                ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-          <Button
-            variant="outline"
-            size="sm"
-            aria-label="Export selection"
-            onClick={() => {
-              const n = table.getFilteredSelectedRowModel().rows.length
-              toast.promise(
-                new Promise((resolve) => setTimeout(resolve, 800)),
-                {
-                  loading: "Preparing export…",
-                  success:
-                    n > 0
-                      ? `Export ready for ${n} selected row(s) (demo).`
-                      : "Export ready (demo). Select rows to include them.",
-                  error: "Export failed",
-                },
-              )
-            }}
-          >
-            <DownloadIcon data-icon="inline-start" />
-            <span className="hidden sm:inline">Export</span>
-          </Button>
-        </div>
-      </div>
+      ) : null}
 
       <div className="overflow-hidden rounded-lg border">
         <DndContext

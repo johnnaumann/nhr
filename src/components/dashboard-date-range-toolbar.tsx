@@ -11,10 +11,13 @@ import { cn } from "@/lib/utils"
 type DashboardDateRangeToolbarProps = {
   /** Left side of the bar (e.g. dimension or cohort jump links). Date and sites stay on the right. */
   extension?: ReactNode
+  /** Appended after date range and sites in the right cluster. */
+  trailing?: ReactNode
 }
 
 export function DashboardDateRangeToolbar({
   extension,
+  trailing,
 }: DashboardDateRangeToolbarProps = {}) {
   const { range, setRange, referenceDate } = useDashboardDateRange()
 
@@ -43,6 +46,11 @@ export function DashboardDateRangeToolbar({
               className="w-full shrink-0 sm:w-auto sm:max-w-[min(100%,320px)]"
             />
             <DashboardInstitutionToggle />
+            {trailing ? (
+              <div className="flex shrink-0 flex-wrap items-center gap-2 sm:gap-3">
+                {trailing}
+              </div>
+            ) : null}
           </div>
         </div>
       </div>

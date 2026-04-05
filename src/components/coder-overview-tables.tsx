@@ -433,30 +433,13 @@ export function CoderOverviewTables() {
     return [coderIdColumn, typeColumn, ...restMetrics]
   }, [activeDimension])
 
-  const title = CODER_OVERVIEW_DIMENSION_LABELS[activeDimension]
-
   return (
-    <div className="flex flex-col gap-10">
-      <div className="flex flex-col gap-4 border-b border-border/60 pb-6">
-        <div>
-          <h1 className="font-heading text-2xl font-semibold tracking-tight">
-            Coder Overview
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Use the sticky bar for date range and sites. Overall lists every
-            category; other choices show one category—demo data only.
-          </p>
-        </div>
-      </div>
-
-      <CoderOverviewDataTable
-        key={activeDimension}
-        title={title}
-        sectionId={CODER_OVERVIEW_TABLE_SECTION_ID}
-        initialData={filteredData}
-        dataColumns={dataColumns}
-        defaultPageSize={30}
-      />
-    </div>
+    <CoderOverviewDataTable
+      key={activeDimension}
+      sectionId={CODER_OVERVIEW_TABLE_SECTION_ID}
+      initialData={filteredData}
+      dataColumns={dataColumns}
+      defaultPageSize={30}
+    />
   )
 }
