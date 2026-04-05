@@ -75,7 +75,7 @@ function rightHeader(label: string) {
 }
 
 const typeColumn: ColumnDef<CoderOverviewUnifiedRow> = {
-  id: "dimension",
+  id: "Type",
   accessorKey: "dimension",
   header: "Type",
   cell: ({ row }) => (
@@ -87,106 +87,106 @@ const typeColumn: ColumnDef<CoderOverviewUnifiedRow> = {
 /** All categories at once: full metric set (every row has values). */
 const allCategoriesMetricColumns: ColumnDef<CoderOverviewUnifiedRow>[] = [
   {
-    id: "Coder ID",
+    id: "Coder",
     accessorKey: "coderId",
-    header: "Coder ID",
+    header: "Coder",
     cell: ({ row }) => (
       <span className="font-medium">{row.original.coderId}</span>
     ),
     enableHiding: false,
   },
   {
-    id: "Total Reviewed",
+    id: "Reviewed",
     accessorKey: "totalReviewed",
-    header: rightHeader("Total Reviewed"),
+    header: rightHeader("Reviewed"),
     cell: ({ getValue }) => (
       <div className="text-right tabular-nums">{getValue<string>()}</div>
     ),
   },
   {
-    id: "Change Rate",
+    id: "Chg %",
     accessorKey: "changeRate",
-    header: rightHeader("Change Rate"),
+    header: rightHeader("Chg %"),
     cell: ({ getValue }) => (
       <div className="text-right tabular-nums">{getValue<string>()}</div>
     ),
   },
   {
-    id: "Total Changes",
+    id: "Changes",
     accessorKey: "totalChanges",
-    header: rightHeader("Total Changes"),
+    header: rightHeader("Changes"),
     cell: ({ getValue }) => (
       <div className="text-right tabular-nums">{getValue<string>()}</div>
     ),
   },
   {
-    id: "Increased Changes",
+    id: "+Chg",
     accessorKey: "increasedChanges",
-    header: rightHeader("Increased Changes"),
+    header: rightHeader("+Chg"),
     cell: ({ getValue }) => (
       <div className="text-right tabular-nums">{getValue<string>()}</div>
     ),
   },
   {
-    id: "Decreased Changes",
+    id: "-Chg",
     accessorKey: "decreasedChanges",
-    header: rightHeader("Decreased Changes"),
+    header: rightHeader("-Chg"),
     cell: ({ getValue }) => (
       <div className="text-right tabular-nums">{getValue<string>()}</div>
     ),
   },
   {
-    id: "Up Changes",
+    id: "Up",
     accessorKey: "upChanges",
-    header: rightHeader("Up Changes"),
+    header: rightHeader("Up"),
     cell: ({ getValue }) => (
       <div className="text-right tabular-nums">{getValue<string>()}</div>
     ),
   },
   {
-    id: "Avg missed $ increase",
+    id: "Avg miss $",
     accessorKey: "avgMissedIncrease",
-    header: rightHeader("Avg missed $ increase"),
+    header: rightHeader("Avg miss $"),
     cell: ({ getValue }) => (
       <div className="text-right tabular-nums">{getValue<string>()}</div>
     ),
   },
   {
-    id: "Total Missed Revenue",
+    id: "Missed $",
     accessorKey: "totalMissedRevenue",
-    header: rightHeader("Total Missed Revenue"),
+    header: rightHeader("Missed $"),
     cell: ({ getValue }) => (
       <div className="text-right tabular-nums">{getValue<string>()}</div>
     ),
   },
   {
-    id: "Avg. Compliance Risk Saved",
+    id: "Avg comp $",
     accessorKey: "avgComplianceRiskSaved",
-    header: rightHeader("Avg. Compliance Risk Saved"),
+    header: rightHeader("Avg comp $"),
     cell: ({ getValue }) => (
       <div className="text-right tabular-nums">{getValue<string>()}</div>
     ),
   },
   {
-    id: "Total Compliance Risk Prevented",
+    id: "Comp prev $",
     accessorKey: "totalComplianceRiskPrevented",
-    header: rightHeader("Total Compliance Risk Prevented"),
+    header: rightHeader("Comp prev $"),
     cell: ({ getValue }) => (
       <div className="text-right tabular-nums">{getValue<string>()}</div>
     ),
   },
   {
-    id: "Secondary Diagnosis",
+    id: "2° Dx",
     accessorKey: "secondaryDiagnosis",
-    header: rightHeader("Secondary Diagnosis"),
+    header: rightHeader("2° Dx"),
     cell: ({ getValue }) => (
       <div className="text-right tabular-nums">{getValue<string>()}</div>
     ),
   },
   {
-    id: "Secondary Procedures",
+    id: "2° Proc",
     accessorKey: "secondaryProcedures",
-    header: rightHeader("Secondary Procedures"),
+    header: rightHeader("2° Proc"),
     cell: ({ getValue }) => (
       <div className="text-right tabular-nums">{getValue<string>()}</div>
     ),
@@ -195,50 +195,50 @@ const allCategoriesMetricColumns: ColumnDef<CoderOverviewUnifiedRow>[] = [
 
 const drgColumns: ColumnDef<CoderOverviewUnifiedRow>[] = [
   {
-    id: "Coder ID",
+    id: "Coder",
     accessorKey: "coderId",
-    header: "Coder ID",
+    header: "Coder",
     cell: ({ row }) => (
       <span className="font-medium">{row.original.coderId}</span>
     ),
     enableHiding: false,
   },
   {
-    id: "Total Reviewed",
+    id: "Reviewed",
     accessorKey: "totalReviewed",
-    header: rightHeader("Total Reviewed"),
+    header: rightHeader("Reviewed"),
     cell: ({ getValue }) => (
       <div className="text-right tabular-nums">{getValue<string>()}</div>
     ),
   },
   {
-    id: "Total Changes",
+    id: "Changes",
     accessorKey: "totalChanges",
-    header: rightHeader("Total Changes"),
+    header: rightHeader("Changes"),
     cell: ({ getValue }) => (
       <div className="text-right tabular-nums">{getValue<string>()}</div>
     ),
   },
   {
-    id: "Change Rate",
+    id: "Chg %",
     accessorKey: "changeRate",
-    header: rightHeader("Change Rate"),
+    header: rightHeader("Chg %"),
     cell: ({ getValue }) => (
       <div className="text-right tabular-nums">{getValue<string>()}</div>
     ),
   },
   {
-    id: "Increased Changes",
+    id: "+Chg",
     accessorKey: "increasedChanges",
-    header: rightHeader("Increased Changes"),
+    header: rightHeader("+Chg"),
     cell: ({ getValue }) => (
       <div className="text-right tabular-nums">{getValue<string>()}</div>
     ),
   },
   {
-    id: "Decreased Changes",
+    id: "-Chg",
     accessorKey: "decreasedChanges",
-    header: rightHeader("Decreased Changes"),
+    header: rightHeader("-Chg"),
     cell: ({ getValue }) => (
       <div className="text-right tabular-nums">{getValue<string>()}</div>
     ),
@@ -247,50 +247,50 @@ const drgColumns: ColumnDef<CoderOverviewUnifiedRow>[] = [
 
 const missedColumns: ColumnDef<CoderOverviewUnifiedRow>[] = [
   {
-    id: "Coder ID",
+    id: "Coder",
     accessorKey: "coderId",
-    header: "Coder ID",
+    header: "Coder",
     cell: ({ row }) => (
       <span className="font-medium">{row.original.coderId}</span>
     ),
     enableHiding: false,
   },
   {
-    id: "Total Reviewed",
+    id: "Reviewed",
     accessorKey: "totalReviewed",
-    header: rightHeader("Total Reviewed"),
+    header: rightHeader("Reviewed"),
     cell: ({ getValue }) => (
       <div className="text-right tabular-nums">{getValue<string>()}</div>
     ),
   },
   {
-    id: "Up Changes",
+    id: "Up",
     accessorKey: "upChanges",
-    header: rightHeader("Up Changes"),
+    header: rightHeader("Up"),
     cell: ({ getValue }) => (
       <div className="text-right tabular-nums">{getValue<string>()}</div>
     ),
   },
   {
-    id: "Change Rate",
+    id: "Chg %",
     accessorKey: "changeRate",
-    header: rightHeader("Change Rate"),
+    header: rightHeader("Chg %"),
     cell: ({ getValue }) => (
       <div className="text-right tabular-nums">{getValue<string>()}</div>
     ),
   },
   {
-    id: "Avg missed $ increase",
+    id: "Avg miss $",
     accessorKey: "avgMissedIncrease",
-    header: rightHeader("Avg missed $ increase"),
+    header: rightHeader("Avg miss $"),
     cell: ({ getValue }) => (
       <div className="text-right tabular-nums">{getValue<string>()}</div>
     ),
   },
   {
-    id: "Total Missed Revenue",
+    id: "Missed $",
     accessorKey: "totalMissedRevenue",
-    header: rightHeader("Total Missed Revenue"),
+    header: rightHeader("Missed $"),
     cell: ({ getValue }) => (
       <div className="text-right tabular-nums">{getValue<string>()}</div>
     ),
@@ -299,50 +299,50 @@ const missedColumns: ColumnDef<CoderOverviewUnifiedRow>[] = [
 
 const complianceColumns: ColumnDef<CoderOverviewUnifiedRow>[] = [
   {
-    id: "Coder ID",
+    id: "Coder",
     accessorKey: "coderId",
-    header: "Coder ID",
+    header: "Coder",
     cell: ({ row }) => (
       <span className="font-medium">{row.original.coderId}</span>
     ),
     enableHiding: false,
   },
   {
-    id: "Total Reviewed",
+    id: "Reviewed",
     accessorKey: "totalReviewed",
-    header: rightHeader("Total Reviewed"),
+    header: rightHeader("Reviewed"),
     cell: ({ getValue }) => (
       <div className="text-right tabular-nums">{getValue<string>()}</div>
     ),
   },
   {
-    id: "Total Changes",
+    id: "Changes",
     accessorKey: "totalChanges",
-    header: rightHeader("Total Changes"),
+    header: rightHeader("Changes"),
     cell: ({ getValue }) => (
       <div className="text-right tabular-nums">{getValue<string>()}</div>
     ),
   },
   {
-    id: "Change Rate",
+    id: "Chg %",
     accessorKey: "changeRate",
-    header: rightHeader("Change Rate"),
+    header: rightHeader("Chg %"),
     cell: ({ getValue }) => (
       <div className="text-right tabular-nums">{getValue<string>()}</div>
     ),
   },
   {
-    id: "Avg. Compliance Risk Saved",
+    id: "Avg comp $",
     accessorKey: "avgComplianceRiskSaved",
-    header: rightHeader("Avg. Compliance Risk Saved"),
+    header: rightHeader("Avg comp $"),
     cell: ({ getValue }) => (
       <div className="text-right tabular-nums">{getValue<string>()}</div>
     ),
   },
   {
-    id: "Total Compliance Risk Prevented",
+    id: "Comp prev $",
     accessorKey: "totalComplianceRiskPrevented",
-    header: rightHeader("Total Compliance Risk Prevented"),
+    header: rightHeader("Comp prev $"),
     cell: ({ getValue }) => (
       <div className="text-right tabular-nums">{getValue<string>()}</div>
     ),
@@ -351,50 +351,50 @@ const complianceColumns: ColumnDef<CoderOverviewUnifiedRow>[] = [
 
 const qualityColumns: ColumnDef<CoderOverviewUnifiedRow>[] = [
   {
-    id: "Coder ID",
+    id: "Coder",
     accessorKey: "coderId",
-    header: "Coder ID",
+    header: "Coder",
     cell: ({ row }) => (
       <span className="font-medium">{row.original.coderId}</span>
     ),
     enableHiding: false,
   },
   {
-    id: "Total Reviewed",
+    id: "Reviewed",
     accessorKey: "totalReviewed",
-    header: rightHeader("Total Reviewed"),
+    header: rightHeader("Reviewed"),
     cell: ({ getValue }) => (
       <div className="text-right tabular-nums">{getValue<string>()}</div>
     ),
   },
   {
-    id: "Total Changes",
+    id: "Changes",
     accessorKey: "totalChanges",
-    header: rightHeader("Total Changes"),
+    header: rightHeader("Changes"),
     cell: ({ getValue }) => (
       <div className="text-right tabular-nums">{getValue<string>()}</div>
     ),
   },
   {
-    id: "Change Rate",
+    id: "Chg %",
     accessorKey: "changeRate",
-    header: rightHeader("Change Rate"),
+    header: rightHeader("Chg %"),
     cell: ({ getValue }) => (
       <div className="text-right tabular-nums">{getValue<string>()}</div>
     ),
   },
   {
-    id: "Secondary Diagnosis",
+    id: "2° Dx",
     accessorKey: "secondaryDiagnosis",
-    header: rightHeader("Secondary Diagnosis"),
+    header: rightHeader("2° Dx"),
     cell: ({ getValue }) => (
       <div className="text-right tabular-nums">{getValue<string>()}</div>
     ),
   },
   {
-    id: "Secondary Procedures",
+    id: "2° Proc",
     accessorKey: "secondaryProcedures",
-    header: rightHeader("Secondary Procedures"),
+    header: rightHeader("2° Proc"),
     cell: ({ getValue }) => (
       <div className="text-right tabular-nums">{getValue<string>()}</div>
     ),
@@ -429,7 +429,8 @@ export function CoderOverviewTables() {
       activeDimension === "overall"
         ? allCategoriesMetricColumns
         : METRIC_COLUMNS_BY_ROW_DIMENSION[activeDimension]
-    return [typeColumn, ...metrics]
+    const [coderIdColumn, ...restMetrics] = metrics
+    return [coderIdColumn, typeColumn, ...restMetrics]
   }, [activeDimension])
 
   const title = CODER_OVERVIEW_DIMENSION_LABELS[activeDimension]
