@@ -3,26 +3,30 @@
 import type { ColumnDef } from "@tanstack/react-table"
 
 import type { IndividualCoderGridRow } from "@/lib/individual-coder-table-data"
+import { cn } from "@/lib/utils"
 
-/** Aligns drag + label + five metrics + actions across individual coder tables. */
+/** Aligns label + five metrics + actions (no drag column) across individual coder tables. */
 export const INDIVIDUAL_CODER_TABLE_COLGROUP = (
   <colgroup>
-    <col style={{ width: "2.25rem" }} />
-    <col style={{ width: "13%" }} />
-    <col style={{ width: "16.75%" }} />
-    <col style={{ width: "16.75%" }} />
-    <col style={{ width: "16.75%" }} />
-    <col style={{ width: "16.75%" }} />
-    <col style={{ width: "16.75%" }} />
+    <col style={{ width: "14%" }} />
+    <col style={{ width: "17.1%" }} />
+    <col style={{ width: "17.1%" }} />
+    <col style={{ width: "17.1%" }} />
+    <col style={{ width: "17.1%" }} />
+    <col style={{ width: "17.1%" }} />
     <col style={{ width: "2.75rem" }} />
   </colgroup>
 )
 
 export const INDIVIDUAL_CODER_TABLE_CLASS = "table-fixed"
 
+/** Overview summary tables: hug content so right-aligned metrics are not pushed across a full-width row. */
+export const INDIVIDUAL_CODER_OVERVIEW_TABLE_CLASS =
+  "table-auto w-max max-w-full [&_th:first-child]:pl-1.5 [&_td:first-child]:pl-1.5"
+
 function metricHead(label: string) {
   return () => (
-    <div className="w-full text-right text-sm font-medium leading-tight">
+    <div className="w-full text-right text-sm font-medium leading-none">
       {label}
     </div>
   )
@@ -30,7 +34,7 @@ function metricHead(label: string) {
 
 function MetricCell({ value }: { value: unknown }) {
   return (
-    <div className="text-right text-sm tabular-nums sm:text-base">
+    <div className="text-right text-sm tabular-nums leading-none sm:text-base">
       {String(value ?? "")}
     </div>
   )
@@ -46,7 +50,7 @@ function BlankLabelHeader() {
 
 /**
  * Six data columns: label (optional blank) + five right-aligned metric slots.
- * Matches {@link INDIVIDUAL_CODER_TABLE_COLGROUP} column count with drag/actions.
+ * Matches {@link INDIVIDUAL_CODER_TABLE_COLGROUP} column count with actions only.
  */
 export function buildIndividualCoderGridColumns(
   options: {
@@ -91,4 +95,42 @@ export function buildIndividualCoderGridColumns(
       ),
     })),
   ]
+}
+
+/**
+ * Four right-aligned metric columns only (no label column), for individual coder overview
+ * summary tables that match the design mock.
+ */
+export function buildIndividualCoderOverviewMetricColumns(options: {
+  h1: string
+  h2: string
+  h3: string
+  h4: string
+  /** 1-based indices among the four metrics (e.g. 3 and 4 for currency emphasis). */
+  dangerMetricIndices?: number[]
+}): ColumnDef<IndividualCoderGridRow>[] {
+  const { h1, h2, h3, h4, dangerMetricIndices = [] } = options
+  const headers = [h1, h2, h3, h4] as const
+  const keys = ["s1", "s2", "s3", "s4"] as const
+  const danger = new Set(dangerMetricIndices)
+
+  return keys.map((key, i) => ({
+    id: headers[i]!,
+    accessorKey: key,
+    header: metricHead(headers[i]!),
+    cell: ({ getValue }: { getValue: () => unknown }) => {
+      const value = getValue()
+      const emphasize = danger.has(i + 1)
+      return (
+        <div
+          className={cn(
+            "text-right text-sm tabular-nums leading-none sm:text-base",
+            emphasize && "font-medium text-destructive",
+          )}
+        >
+          {String(value ?? "")}
+        </div>
+      )
+    },
+  }))
 }

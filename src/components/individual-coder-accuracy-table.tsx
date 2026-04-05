@@ -62,6 +62,7 @@ export function IndividualCoderAccuracyTable({
         hideColumnsAndExport
         hideFooter
         hideSelectColumn
+        hideDragColumn
         {...gridTableProps}
       />
     </section>

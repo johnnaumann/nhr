@@ -2,9 +2,8 @@
 
 import { CoderOverviewDataTable } from "@/components/coder-overview-data-table"
 import {
-  buildIndividualCoderGridColumns,
-  INDIVIDUAL_CODER_TABLE_CLASS,
-  INDIVIDUAL_CODER_TABLE_COLGROUP,
+  buildIndividualCoderOverviewMetricColumns,
+  INDIVIDUAL_CODER_OVERVIEW_TABLE_CLASS,
 } from "@/components/individual-coder-grid-table"
 import { dashboardMainGutterClass } from "@/lib/dashboard-layout"
 import {
@@ -16,11 +15,9 @@ import {
 } from "@/lib/individual-coder-table-data"
 import { cn } from "@/lib/utils"
 
-const EM = "—"
-
 const gridTableProps = {
-  tableClassName: INDIVIDUAL_CODER_TABLE_CLASS,
-  tableColGroup: INDIVIDUAL_CODER_TABLE_COLGROUP,
+  tableClassName: INDIVIDUAL_CODER_OVERVIEW_TABLE_CLASS,
+  tableFrameClassName: "w-fit max-w-full",
 } as const
 
 export type IndividualCoderOverviewPanelProps = {
@@ -59,89 +56,79 @@ export function IndividualCoderOverviewPanel({
         <CoderOverviewDataTable
           sectionId={INDIVIDUAL_CODER_OVERVIEW_BLOCK_IDS.drg}
           initialData={INDIVIDUAL_CODER_GRID_BLOCK_DRG}
-          dataColumns={buildIndividualCoderGridColumns({
-            emptyLabelHeader: true,
-            h1: "Charts changed",
-            h2: "Change rate",
-            h3: "DRG changes",
-            h4: "Quality changes",
-            h5: "Recovered DRG",
+          title="Charts Changed"
+          titleAs="h3"
+          dataColumns={buildIndividualCoderOverviewMetricColumns({
+            h1: "Change Rate",
+            h2: "DRG Changes",
+            h3: "Quality Changes",
+            h4: "Recovered DRG",
           })}
           defaultPageSize={10}
           hideColumnsAndExport
           hideFooter
           hideSelectColumn
+          hideDragColumn
           {...gridTableProps}
         />
 
-        <div className="flex flex-col gap-2">
-          <h3 className="font-heading text-base font-semibold tracking-tight text-foreground">
-            Missed revenue opportunities
-          </h3>
-          <CoderOverviewDataTable
-            sectionId={INDIVIDUAL_CODER_OVERVIEW_BLOCK_IDS.missed}
-            initialData={INDIVIDUAL_CODER_GRID_BLOCK_MISSED}
-            dataColumns={buildIndividualCoderGridColumns({
-              emptyLabelHeader: true,
-              h1: "Change rate",
-              h2: "Up changes",
-              h3: "Avg missed $ increase",
-              h4: "Total missed revenue",
-              h5: EM,
-            })}
-            defaultPageSize={10}
-            hideColumnsAndExport
-            hideFooter
-            hideSelectColumn
-            {...gridTableProps}
-          />
-        </div>
+        <CoderOverviewDataTable
+          sectionId={INDIVIDUAL_CODER_OVERVIEW_BLOCK_IDS.missed}
+          initialData={INDIVIDUAL_CODER_GRID_BLOCK_MISSED}
+          title="Missed Revenue Opportunities"
+          titleAs="h3"
+          dataColumns={buildIndividualCoderOverviewMetricColumns({
+            h1: "Change Rate",
+            h2: "Up Changes",
+            h3: "Avg missed $ increase",
+            h4: "Total Missed Revenue",
+            dangerMetricIndices: [3, 4],
+          })}
+          defaultPageSize={10}
+          hideColumnsAndExport
+          hideFooter
+          hideSelectColumn
+          hideDragColumn
+          {...gridTableProps}
+        />
 
-        <div className="flex flex-col gap-2">
-          <h3 className="font-heading text-base font-semibold tracking-tight text-foreground">
-            Compliance
-          </h3>
-          <CoderOverviewDataTable
-            sectionId={INDIVIDUAL_CODER_OVERVIEW_BLOCK_IDS.compliance}
-            initialData={INDIVIDUAL_CODER_GRID_BLOCK_COMPLIANCE}
-            dataColumns={buildIndividualCoderGridColumns({
-              emptyLabelHeader: true,
-              h1: "Change rate",
-              h2: "Compliance changes",
-              h3: "Avg. compliance risk prevented",
-              h4: "Total compliance risk prevented",
-              h5: EM,
-            })}
-            defaultPageSize={10}
-            hideColumnsAndExport
-            hideFooter
-            hideSelectColumn
-            {...gridTableProps}
-          />
-        </div>
+        <CoderOverviewDataTable
+          sectionId={INDIVIDUAL_CODER_OVERVIEW_BLOCK_IDS.compliance}
+          initialData={INDIVIDUAL_CODER_GRID_BLOCK_COMPLIANCE}
+          title="Compliance"
+          titleAs="h3"
+          dataColumns={buildIndividualCoderOverviewMetricColumns({
+            h1: "Change Rate",
+            h2: "Compliance Changes",
+            h3: "Avg compliance Risk Prevented",
+            h4: "Total Compliance Risk Prevented",
+          })}
+          defaultPageSize={10}
+          hideColumnsAndExport
+          hideFooter
+          hideSelectColumn
+          hideDragColumn
+          {...gridTableProps}
+        />
 
-        <div className="flex flex-col gap-2">
-          <h3 className="font-heading text-base font-semibold tracking-tight text-foreground">
-            Quality
-          </h3>
-          <CoderOverviewDataTable
-            sectionId={INDIVIDUAL_CODER_OVERVIEW_BLOCK_IDS.quality}
-            initialData={INDIVIDUAL_CODER_GRID_BLOCK_QUALITY}
-            dataColumns={buildIndividualCoderGridColumns({
-              emptyLabelHeader: true,
-              h1: "Change rate",
-              h2: "PDX",
-              h3: "Secondary diagnosis",
-              h4: "Secondary procedures",
-              h5: EM,
-            })}
-            defaultPageSize={10}
-            hideColumnsAndExport
-            hideFooter
-            hideSelectColumn
-            {...gridTableProps}
-          />
-        </div>
+        <CoderOverviewDataTable
+          sectionId={INDIVIDUAL_CODER_OVERVIEW_BLOCK_IDS.quality}
+          initialData={INDIVIDUAL_CODER_GRID_BLOCK_QUALITY}
+          title="Quality"
+          titleAs="h3"
+          dataColumns={buildIndividualCoderOverviewMetricColumns({
+            h1: "Change Rate",
+            h2: "PDX",
+            h3: "Secondary Diagnosis",
+            h4: "Secondary Procedures",
+          })}
+          defaultPageSize={10}
+          hideColumnsAndExport
+          hideFooter
+          hideSelectColumn
+          hideDragColumn
+          {...gridTableProps}
+        />
       </div>
     </section>
   )

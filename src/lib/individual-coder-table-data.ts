@@ -15,8 +15,8 @@ export const INDIVIDUAL_CODER_GRID_BLOCK_DRG: IndividualCoderGridRow[] = [
   {
     id: 1,
     label: "",
-    s1: "84",
-    s2: "8.0%",
+    s1: "8.0%",
+    s2: "84",
     s3: "32",
     s4: "8",
     s5: EM,

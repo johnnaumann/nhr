@@ -122,10 +122,30 @@ function DraggableRow<T extends { id: number }>({ row }: { row: Row<T> }) {
   )
 }
 
+function StaticDataRow<T extends { id: number }>({ row }: { row: Row<T> }) {
+  return (
+    <TableRow data-state={row.getIsSelected() && "selected"}>
+      {row.getVisibleCells().map((cell) => (
+        <TableCell key={cell.id}>
+          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+        </TableCell>
+      ))}
+    </TableRow>
+  )
+}
+
 function buildColumns<T extends { id: number }>(
   dataColumns: ColumnDef<T>[],
-  options?: { hideSelectColumn?: boolean },
+  options?: { hideSelectColumn?: boolean; hideDragColumn?: boolean },
 ): ColumnDef<T>[] {
+  const dragColumn: ColumnDef<T> = {
+    id: "drag",
+    header: () => null,
+    cell: ({ row }) => <DragHandle id={row.original.id} />,
+    enableHiding: false,
+    enableSorting: false,
+  }
+
   const selectColumn: ColumnDef<T> = {
     id: "select",
     header: ({ table }) => (
@@ -156,13 +176,7 @@ function buildColumns<T extends { id: number }>(
   }
 
   return [
-    {
-      id: "drag",
-      header: () => null,
-      cell: ({ row }) => <DragHandle id={row.original.id} />,
-      enableHiding: false,
-      enableSorting: false,
-    },
+    ...(options?.hideDragColumn ? [] : [dragColumn]),
     ...(options?.hideSelectColumn ? [] : [selectColumn]),
     ...dataColumns,
     {
@@ -172,7 +186,10 @@ function buildColumns<T extends { id: number }>(
           <DropdownMenuTrigger asChild>
             <Button
               variant="ghost"
-              className="flex size-8 text-muted-foreground data-[state=open]:bg-muted"
+              className={cn(
+                "flex text-muted-foreground data-[state=open]:bg-muted",
+                options?.hideDragColumn ? "size-7" : "size-8",
+              )}
               size="icon"
             >
               <EllipsisVerticalIcon />
@@ -195,6 +212,8 @@ function buildColumns<T extends { id: number }>(
 export type CoderOverviewDataTableProps<T extends { id: number }> = {
   /** Optional heading above the toolbar (e.g. section name). */
   title?: string
+  /** Semantic level for {@link title} (default h2). Use h3 when nested under a page h2. */
+  titleAs?: "h2" | "h3"
   /** Anchor id for in-page navigation (e.g. from sticky dimension nav). */
   sectionId: string
   initialData: T[]
@@ -207,10 +226,14 @@ export type CoderOverviewDataTableProps<T extends { id: number }> = {
   hideFooter?: boolean
   /** When true, no row checkbox column (e.g. individual coder tables). */
   hideSelectColumn?: boolean
+  /** When true, no drag handle column and rows are not reorderable. */
+  hideDragColumn?: boolean
   /** Passed to {@link Table} (e.g. `table-fixed`). */
   tableClassName?: string
   /** Inserted after `<table>` (e.g. `<colgroup>` for column widths). */
   tableColGroup?: React.ReactNode
+  /** Merged onto the rounded border wrapper around the table (e.g. `w-fit`). */
+  tableFrameClassName?: string
 }
 
 export function coderOverviewColumnMenuLabel(column: Column<unknown, unknown>) {
@@ -221,6 +244,7 @@ export function coderOverviewColumnMenuLabel(column: Column<unknown, unknown>) {
 
 export function CoderOverviewDataTable<T extends { id: number }>({
   title,
+  titleAs = "h2",
   sectionId,
   initialData,
   dataColumns,
@@ -228,10 +252,13 @@ export function CoderOverviewDataTable<T extends { id: number }>({
   hideColumnsAndExport = false,
   hideFooter = false,
   hideSelectColumn = false,
+  hideDragColumn = false,
   tableClassName,
   tableColGroup,
+  tableFrameClassName,
 }: CoderOverviewDataTableProps<T>) {
   const headingId = React.useId()
+  const TitleTag: "h2" | "h3" = titleAs
   const dndInstanceId = React.useId()
   const stickyToolbarHost = useCoderOverviewTableToolbar()
   const showInlineColumnsExport =
@@ -254,8 +281,9 @@ export function CoderOverviewDataTable<T extends { id: number }>({
   }, [initialData])
 
   const columns = React.useMemo(
-    () => buildColumns(dataColumns, { hideSelectColumn }),
-    [dataColumns, hideSelectColumn],
+    () =>
+      buildColumns(dataColumns, { hideSelectColumn, hideDragColumn }),
+    [dataColumns, hideDragColumn, hideSelectColumn],
   )
 
   const sensors = useSensors(
@@ -314,6 +342,10 @@ export function CoderOverviewDataTable<T extends { id: number }>({
     }
   }
 
+  const compactCoderTableLayoutClass =
+    hideDragColumn &&
+    "[&_thead_tr:first-child_th]:h-auto [&_thead_tr:first-child_th]:py-2"
+
   return (
     <section
       id={sectionId}
@@ -331,12 +363,12 @@ export function CoderOverviewDataTable<T extends { id: number }>({
           )}
         >
           {title ? (
-            <h2
+            <TitleTag
               id={headingId}
               className="font-heading text-base font-semibold tracking-tight"
             >
               {title}
-            </h2>
+            </TitleTag>
           ) : null}
           <div className="flex flex-wrap items-center gap-2">
             <DropdownMenu>
@@ -395,23 +427,25 @@ export function CoderOverviewDataTable<T extends { id: number }>({
           </div>
         </div>
       ) : title ? (
-        <h2
+        <TitleTag
           id={headingId}
           className="font-heading text-base font-semibold tracking-tight"
         >
           {title}
-        </h2>
+        </TitleTag>
       ) : null}
 
-      <div className="overflow-hidden rounded-lg border">
-        <DndContext
-          id={dndInstanceId}
-          collisionDetection={closestCenter}
-          modifiers={[restrictToVerticalAxis]}
-          onDragEnd={handleDragEnd}
-          sensors={sensors}
-        >
-          <Table className={tableClassName} colGroup={tableColGroup}>
+      <div
+        className={cn(
+          "overflow-hidden rounded-lg border",
+          tableFrameClassName,
+        )}
+      >
+        {hideDragColumn ? (
+          <Table
+            className={cn(tableClassName, compactCoderTableLayoutClass)}
+            colGroup={tableColGroup}
+          >
             <TableHeader className="sticky top-0 z-10 bg-muted">
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow key={headerGroup.id}>
@@ -428,20 +462,19 @@ export function CoderOverviewDataTable<T extends { id: number }>({
                 </TableRow>
               ))}
             </TableHeader>
-            <TableBody className="**:data-[slot=table-cell]:first:w-8">
+            <TableBody
+              className={cn(hideDragColumn && "[&_td]:py-1.5")}
+            >
               {table.getRowModel().rows.length ? (
-                <SortableContext
-                  items={dataIds}
-                  strategy={verticalListSortingStrategy}
-                >
-                  {table.getRowModel().rows.map((row) => (
-                    <DraggableRow key={row.id} row={row} />
-                  ))}
-                </SortableContext>
+                table
+                  .getRowModel()
+                  .rows.map((row) => (
+                    <StaticDataRow key={row.id} row={row} />
+                  ))
               ) : (
                 <TableRow>
                   <TableCell
-                    colSpan={columns.length}
+                    colSpan={table.getVisibleLeafColumns().length}
                     className="h-24 text-center"
                   >
                     No results.
@@ -450,7 +483,55 @@ export function CoderOverviewDataTable<T extends { id: number }>({
               )}
             </TableBody>
           </Table>
-        </DndContext>
+        ) : (
+          <DndContext
+            id={dndInstanceId}
+            collisionDetection={closestCenter}
+            modifiers={[restrictToVerticalAxis]}
+            onDragEnd={handleDragEnd}
+            sensors={sensors}
+          >
+            <Table className={tableClassName} colGroup={tableColGroup}>
+              <TableHeader className="sticky top-0 z-10 bg-muted">
+                {table.getHeaderGroups().map((headerGroup) => (
+                  <TableRow key={headerGroup.id}>
+                    {headerGroup.headers.map((header) => (
+                      <TableHead key={header.id} colSpan={header.colSpan}>
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(
+                              header.column.columnDef.header,
+                              header.getContext(),
+                            )}
+                      </TableHead>
+                    ))}
+                  </TableRow>
+                ))}
+              </TableHeader>
+              <TableBody className="**:data-[slot=table-cell]:first:w-8">
+                {table.getRowModel().rows.length ? (
+                  <SortableContext
+                    items={dataIds}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    {table.getRowModel().rows.map((row) => (
+                      <DraggableRow key={row.id} row={row} />
+                    ))}
+                  </SortableContext>
+                ) : (
+                  <TableRow>
+                    <TableCell
+                      colSpan={table.getVisibleLeafColumns().length}
+                      className="h-24 text-center"
+                    >
+                      No results.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </DndContext>
+        )}
       </div>
 
       {!hideFooter ? (
