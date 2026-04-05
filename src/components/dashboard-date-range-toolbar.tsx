@@ -13,11 +13,14 @@ type DashboardDateRangeToolbarProps = {
   extension?: ReactNode
   /** Rendered between date range and sites in the right cluster. */
   trailing?: ReactNode
+  /** When false, site multi-select is hidden (e.g. individual coder page). */
+  showInstitutionToggle?: boolean
 }
 
 export function DashboardDateRangeToolbar({
   extension,
   trailing,
+  showInstitutionToggle = true,
 }: DashboardDateRangeToolbarProps = {}) {
   const { range, setRange, referenceDate } = useDashboardDateRange()
 
@@ -52,7 +55,7 @@ export function DashboardDateRangeToolbar({
                 {trailing}
               </div>
             ) : null}
-            <DashboardInstitutionToggle />
+            {showInstitutionToggle ? <DashboardInstitutionToggle /> : null}
           </div>
         </div>
       </div>

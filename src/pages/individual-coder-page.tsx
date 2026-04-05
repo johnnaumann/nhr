@@ -81,6 +81,7 @@ export function IndividualCoderPage() {
                       />
                     }
                     trailing={<IndividualCoderExportButton />}
+                    showInstitutionToggle={false}
                   />
                   <IndividualCoderSectionCards />
                   <IndividualCoderOverviewPanel
