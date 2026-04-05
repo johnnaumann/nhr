@@ -15,6 +15,11 @@ import {
   CODER_OVERVIEW_TABLE_SECTION_ID,
 } from "@/components/coder-overview-dimension-nav"
 import { Badge } from "@/components/ui/badge"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 import { useCoderOverviewDimension } from "@/contexts/coder-overview-dimension-context"
 import { useDashboardDateRange } from "@/contexts/dashboard-date-range-context"
 import { useDashboardInstitutions } from "@/contexts/dashboard-institutions-context"
@@ -72,8 +77,69 @@ function CoderOverviewTypeBadge({
   )
 }
 
-function rightHeader(label: string) {
-  return () => <div className="w-full text-right">{label}</div>
+/** Hover help for numeric / metric columns (not Coder or Type). */
+const CODER_OVERVIEW_COLUMN_HELP: Record<string, string> = {
+  Reviewed:
+    "Count of encounters or charts this coder completed in the selected date range and sites.",
+  "Chg %":
+    "Percentage of reviewed records that had at least one coding change in this lens.",
+  Changes:
+    "Total coding changes recorded for this coder in the selected period.",
+  "+Chg":
+    "Changes that increased weight, relative weight, or financial impact (e.g. higher DRG or dollars).",
+  "-Chg":
+    "Changes that decreased weight, relative weight, or financial impact.",
+  Up: "Count of upward-only adjustments in the missed-revenue view (e.g. captures that increased payment).",
+  "Avg miss $":
+    "Average estimated dollar impact per upward missed-revenue opportunity.",
+  "Missed $":
+    "Total estimated missed revenue associated with upward coding changes in this view.",
+  "Avg comp $":
+    "Average compliance dollars attributed to each change in this compliance lens.",
+  "Comp prev $":
+    "Total estimated compliance risk avoided or corrected for this coder in the period.",
+  "2° Dx":
+    "Number of secondary diagnosis coding changes in the quality lens.",
+  "2° Proc":
+    "Number of secondary procedure coding changes in the quality lens.",
+}
+
+function metricHeaderRight(columnId: string) {
+  const description = CODER_OVERVIEW_COLUMN_HELP[columnId]
+  const label = columnId
+  if (!description) {
+    return () => <div className="w-full text-right">{label}</div>
+  }
+  return function MetricHeader() {
+    return (
+      <div className="flex w-full justify-end">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              type="button"
+              className={cn(
+                "cursor-help border-0 border-b border-dashed border-muted-foreground bg-transparent p-0 text-right font-medium text-inherit underline-offset-4 transition-colors",
+                "hover:text-foreground",
+                "focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+              )}
+            >
+              {label}
+            </button>
+          </TooltipTrigger>
+          <TooltipContent
+            side="bottom"
+            align="end"
+            sideOffset={6}
+            className="max-w-none text-left"
+          >
+            <span className="inline-block max-w-sm text-left whitespace-normal">
+              {description}
+            </span>
+          </TooltipContent>
+        </Tooltip>
+      </div>
+    )
+  }
 }
 
 const typeColumn: ColumnDef<CoderOverviewUnifiedRow> = {
@@ -100,7 +166,7 @@ const allCategoriesMetricColumns: ColumnDef<CoderOverviewUnifiedRow>[] = [
   {
     id: "Reviewed",
     accessorKey: "totalReviewed",
-    header: rightHeader("Reviewed"),
+    header: metricHeaderRight("Reviewed"),
     cell: ({ getValue }) => (
       <div className="text-right tabular-nums">{getValue<string>()}</div>
     ),
@@ -108,7 +174,7 @@ const allCategoriesMetricColumns: ColumnDef<CoderOverviewUnifiedRow>[] = [
   {
     id: "Chg %",
     accessorKey: "changeRate",
-    header: rightHeader("Chg %"),
+    header: metricHeaderRight("Chg %"),
     cell: ({ getValue }) => (
       <div className="text-right tabular-nums">{getValue<string>()}</div>
     ),
@@ -116,7 +182,7 @@ const allCategoriesMetricColumns: ColumnDef<CoderOverviewUnifiedRow>[] = [
   {
     id: "Changes",
     accessorKey: "totalChanges",
-    header: rightHeader("Changes"),
+    header: metricHeaderRight("Changes"),
     cell: ({ getValue }) => (
       <div className="text-right tabular-nums">{getValue<string>()}</div>
     ),
@@ -124,7 +190,7 @@ const allCategoriesMetricColumns: ColumnDef<CoderOverviewUnifiedRow>[] = [
   {
     id: "+Chg",
     accessorKey: "increasedChanges",
-    header: rightHeader("+Chg"),
+    header: metricHeaderRight("+Chg"),
     cell: ({ getValue }) => (
       <div className="text-right tabular-nums">{getValue<string>()}</div>
     ),
@@ -132,7 +198,7 @@ const allCategoriesMetricColumns: ColumnDef<CoderOverviewUnifiedRow>[] = [
   {
     id: "-Chg",
     accessorKey: "decreasedChanges",
-    header: rightHeader("-Chg"),
+    header: metricHeaderRight("-Chg"),
     cell: ({ getValue }) => (
       <div className="text-right tabular-nums">{getValue<string>()}</div>
     ),
@@ -140,7 +206,7 @@ const allCategoriesMetricColumns: ColumnDef<CoderOverviewUnifiedRow>[] = [
   {
     id: "Up",
     accessorKey: "upChanges",
-    header: rightHeader("Up"),
+    header: metricHeaderRight("Up"),
     cell: ({ getValue }) => (
       <div className="text-right tabular-nums">{getValue<string>()}</div>
     ),
@@ -148,7 +214,7 @@ const allCategoriesMetricColumns: ColumnDef<CoderOverviewUnifiedRow>[] = [
   {
     id: "Avg miss $",
     accessorKey: "avgMissedIncrease",
-    header: rightHeader("Avg miss $"),
+    header: metricHeaderRight("Avg miss $"),
     cell: ({ getValue }) => (
       <div className="text-right tabular-nums">{getValue<string>()}</div>
     ),
@@ -156,7 +222,7 @@ const allCategoriesMetricColumns: ColumnDef<CoderOverviewUnifiedRow>[] = [
   {
     id: "Missed $",
     accessorKey: "totalMissedRevenue",
-    header: rightHeader("Missed $"),
+    header: metricHeaderRight("Missed $"),
     cell: ({ getValue }) => (
       <div className="text-right tabular-nums">{getValue<string>()}</div>
     ),
@@ -164,7 +230,7 @@ const allCategoriesMetricColumns: ColumnDef<CoderOverviewUnifiedRow>[] = [
   {
     id: "Avg comp $",
     accessorKey: "avgComplianceRiskSaved",
-    header: rightHeader("Avg comp $"),
+    header: metricHeaderRight("Avg comp $"),
     cell: ({ getValue }) => (
       <div className="text-right tabular-nums">{getValue<string>()}</div>
     ),
@@ -172,7 +238,7 @@ const allCategoriesMetricColumns: ColumnDef<CoderOverviewUnifiedRow>[] = [
   {
     id: "Comp prev $",
     accessorKey: "totalComplianceRiskPrevented",
-    header: rightHeader("Comp prev $"),
+    header: metricHeaderRight("Comp prev $"),
     cell: ({ getValue }) => (
       <div className="text-right tabular-nums">{getValue<string>()}</div>
     ),
@@ -180,7 +246,7 @@ const allCategoriesMetricColumns: ColumnDef<CoderOverviewUnifiedRow>[] = [
   {
     id: "2° Dx",
     accessorKey: "secondaryDiagnosis",
-    header: rightHeader("2° Dx"),
+    header: metricHeaderRight("2° Dx"),
     cell: ({ getValue }) => (
       <div className="text-right tabular-nums">{getValue<string>()}</div>
     ),
@@ -188,7 +254,7 @@ const allCategoriesMetricColumns: ColumnDef<CoderOverviewUnifiedRow>[] = [
   {
     id: "2° Proc",
     accessorKey: "secondaryProcedures",
-    header: rightHeader("2° Proc"),
+    header: metricHeaderRight("2° Proc"),
     cell: ({ getValue }) => (
       <div className="text-right tabular-nums">{getValue<string>()}</div>
     ),
@@ -208,7 +274,7 @@ const drgColumns: ColumnDef<CoderOverviewUnifiedRow>[] = [
   {
     id: "Reviewed",
     accessorKey: "totalReviewed",
-    header: rightHeader("Reviewed"),
+    header: metricHeaderRight("Reviewed"),
     cell: ({ getValue }) => (
       <div className="text-right tabular-nums">{getValue<string>()}</div>
     ),
@@ -216,7 +282,7 @@ const drgColumns: ColumnDef<CoderOverviewUnifiedRow>[] = [
   {
     id: "Changes",
     accessorKey: "totalChanges",
-    header: rightHeader("Changes"),
+    header: metricHeaderRight("Changes"),
     cell: ({ getValue }) => (
       <div className="text-right tabular-nums">{getValue<string>()}</div>
     ),
@@ -224,7 +290,7 @@ const drgColumns: ColumnDef<CoderOverviewUnifiedRow>[] = [
   {
     id: "Chg %",
     accessorKey: "changeRate",
-    header: rightHeader("Chg %"),
+    header: metricHeaderRight("Chg %"),
     cell: ({ getValue }) => (
       <div className="text-right tabular-nums">{getValue<string>()}</div>
     ),
@@ -232,7 +298,7 @@ const drgColumns: ColumnDef<CoderOverviewUnifiedRow>[] = [
   {
     id: "+Chg",
     accessorKey: "increasedChanges",
-    header: rightHeader("+Chg"),
+    header: metricHeaderRight("+Chg"),
     cell: ({ getValue }) => (
       <div className="text-right tabular-nums">{getValue<string>()}</div>
     ),
@@ -240,7 +306,7 @@ const drgColumns: ColumnDef<CoderOverviewUnifiedRow>[] = [
   {
     id: "-Chg",
     accessorKey: "decreasedChanges",
-    header: rightHeader("-Chg"),
+    header: metricHeaderRight("-Chg"),
     cell: ({ getValue }) => (
       <div className="text-right tabular-nums">{getValue<string>()}</div>
     ),
@@ -260,7 +326,7 @@ const missedColumns: ColumnDef<CoderOverviewUnifiedRow>[] = [
   {
     id: "Reviewed",
     accessorKey: "totalReviewed",
-    header: rightHeader("Reviewed"),
+    header: metricHeaderRight("Reviewed"),
     cell: ({ getValue }) => (
       <div className="text-right tabular-nums">{getValue<string>()}</div>
     ),
@@ -268,7 +334,7 @@ const missedColumns: ColumnDef<CoderOverviewUnifiedRow>[] = [
   {
     id: "Up",
     accessorKey: "upChanges",
-    header: rightHeader("Up"),
+    header: metricHeaderRight("Up"),
     cell: ({ getValue }) => (
       <div className="text-right tabular-nums">{getValue<string>()}</div>
     ),
@@ -276,7 +342,7 @@ const missedColumns: ColumnDef<CoderOverviewUnifiedRow>[] = [
   {
     id: "Chg %",
     accessorKey: "changeRate",
-    header: rightHeader("Chg %"),
+    header: metricHeaderRight("Chg %"),
     cell: ({ getValue }) => (
       <div className="text-right tabular-nums">{getValue<string>()}</div>
     ),
@@ -284,7 +350,7 @@ const missedColumns: ColumnDef<CoderOverviewUnifiedRow>[] = [
   {
     id: "Avg miss $",
     accessorKey: "avgMissedIncrease",
-    header: rightHeader("Avg miss $"),
+    header: metricHeaderRight("Avg miss $"),
     cell: ({ getValue }) => (
       <div className="text-right tabular-nums">{getValue<string>()}</div>
     ),
@@ -292,7 +358,7 @@ const missedColumns: ColumnDef<CoderOverviewUnifiedRow>[] = [
   {
     id: "Missed $",
     accessorKey: "totalMissedRevenue",
-    header: rightHeader("Missed $"),
+    header: metricHeaderRight("Missed $"),
     cell: ({ getValue }) => (
       <div className="text-right tabular-nums">{getValue<string>()}</div>
     ),
@@ -312,7 +378,7 @@ const complianceColumns: ColumnDef<CoderOverviewUnifiedRow>[] = [
   {
     id: "Reviewed",
     accessorKey: "totalReviewed",
-    header: rightHeader("Reviewed"),
+    header: metricHeaderRight("Reviewed"),
     cell: ({ getValue }) => (
       <div className="text-right tabular-nums">{getValue<string>()}</div>
     ),
@@ -320,7 +386,7 @@ const complianceColumns: ColumnDef<CoderOverviewUnifiedRow>[] = [
   {
     id: "Changes",
     accessorKey: "totalChanges",
-    header: rightHeader("Changes"),
+    header: metricHeaderRight("Changes"),
     cell: ({ getValue }) => (
       <div className="text-right tabular-nums">{getValue<string>()}</div>
     ),
@@ -328,7 +394,7 @@ const complianceColumns: ColumnDef<CoderOverviewUnifiedRow>[] = [
   {
     id: "Chg %",
     accessorKey: "changeRate",
-    header: rightHeader("Chg %"),
+    header: metricHeaderRight("Chg %"),
     cell: ({ getValue }) => (
       <div className="text-right tabular-nums">{getValue<string>()}</div>
     ),
@@ -336,7 +402,7 @@ const complianceColumns: ColumnDef<CoderOverviewUnifiedRow>[] = [
   {
     id: "Avg comp $",
     accessorKey: "avgComplianceRiskSaved",
-    header: rightHeader("Avg comp $"),
+    header: metricHeaderRight("Avg comp $"),
     cell: ({ getValue }) => (
       <div className="text-right tabular-nums">{getValue<string>()}</div>
     ),
@@ -344,7 +410,7 @@ const complianceColumns: ColumnDef<CoderOverviewUnifiedRow>[] = [
   {
     id: "Comp prev $",
     accessorKey: "totalComplianceRiskPrevented",
-    header: rightHeader("Comp prev $"),
+    header: metricHeaderRight("Comp prev $"),
     cell: ({ getValue }) => (
       <div className="text-right tabular-nums">{getValue<string>()}</div>
     ),
@@ -364,7 +430,7 @@ const qualityColumns: ColumnDef<CoderOverviewUnifiedRow>[] = [
   {
     id: "Reviewed",
     accessorKey: "totalReviewed",
-    header: rightHeader("Reviewed"),
+    header: metricHeaderRight("Reviewed"),
     cell: ({ getValue }) => (
       <div className="text-right tabular-nums">{getValue<string>()}</div>
     ),
@@ -372,7 +438,7 @@ const qualityColumns: ColumnDef<CoderOverviewUnifiedRow>[] = [
   {
     id: "Changes",
     accessorKey: "totalChanges",
-    header: rightHeader("Changes"),
+    header: metricHeaderRight("Changes"),
     cell: ({ getValue }) => (
       <div className="text-right tabular-nums">{getValue<string>()}</div>
     ),
@@ -380,7 +446,7 @@ const qualityColumns: ColumnDef<CoderOverviewUnifiedRow>[] = [
   {
     id: "Chg %",
     accessorKey: "changeRate",
-    header: rightHeader("Chg %"),
+    header: metricHeaderRight("Chg %"),
     cell: ({ getValue }) => (
       <div className="text-right tabular-nums">{getValue<string>()}</div>
     ),
@@ -388,7 +454,7 @@ const qualityColumns: ColumnDef<CoderOverviewUnifiedRow>[] = [
   {
     id: "2° Dx",
     accessorKey: "secondaryDiagnosis",
-    header: rightHeader("2° Dx"),
+    header: metricHeaderRight("2° Dx"),
     cell: ({ getValue }) => (
       <div className="text-right tabular-nums">{getValue<string>()}</div>
     ),
@@ -396,7 +462,7 @@ const qualityColumns: ColumnDef<CoderOverviewUnifiedRow>[] = [
   {
     id: "2° Proc",
     accessorKey: "secondaryProcedures",
-    header: rightHeader("2° Proc"),
+    header: metricHeaderRight("2° Proc"),
     cell: ({ getValue }) => (
       <div className="text-right tabular-nums">{getValue<string>()}</div>
     ),
