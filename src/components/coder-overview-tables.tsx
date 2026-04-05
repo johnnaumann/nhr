@@ -16,6 +16,9 @@ import {
 } from "@/components/coder-overview-dimension-nav"
 import { Badge } from "@/components/ui/badge"
 import { useCoderOverviewDimension } from "@/contexts/coder-overview-dimension-context"
+import { useDashboardDateRange } from "@/contexts/dashboard-date-range-context"
+import { useDashboardInstitutions } from "@/contexts/dashboard-institutions-context"
+import { deriveCoderOverviewUnifiedData } from "@/lib/coder-overview-derived-data"
 import {
   CODER_OVERVIEW_UNIFIED_DATA,
   type CoderOverviewRowDimension,
@@ -412,15 +415,24 @@ const METRIC_COLUMNS_BY_ROW_DIMENSION: Record<
 
 export function CoderOverviewTables() {
   const { activeDimension } = useCoderOverviewDimension()
+  const { range } = useDashboardDateRange()
+  const { visibleInstitutionKeys } = useDashboardInstitutions()
+
+  const derivedData = React.useMemo(
+    () =>
+      deriveCoderOverviewUnifiedData(CODER_OVERVIEW_UNIFIED_DATA, {
+        range,
+        visibleInstitutionKeys,
+      }),
+    [range, visibleInstitutionKeys],
+  )
 
   const filteredData = React.useMemo(
     () =>
       activeDimension === "overall"
-        ? CODER_OVERVIEW_UNIFIED_DATA
-        : CODER_OVERVIEW_UNIFIED_DATA.filter(
-            (row) => row.dimension === activeDimension,
-          ),
-    [activeDimension],
+        ? derivedData
+        : derivedData.filter((row) => row.dimension === activeDimension),
+    [activeDimension, derivedData],
   )
 
   const dataColumns = React.useMemo(() => {
