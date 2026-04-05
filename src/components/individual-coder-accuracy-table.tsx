@@ -1,29 +1,52 @@
 "use client"
 
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
+import type { ColumnDef } from "@tanstack/react-table"
+
+import { CoderOverviewDataTable } from "@/components/coder-overview-data-table"
 import { dashboardMainGutterClass } from "@/lib/dashboard-layout"
+import {
+  INDIVIDUAL_CODER_ACCURACY_ROWS,
+  type IndividualCoderAccuracyRow,
+} from "@/lib/individual-coder-table-data"
 import { cn } from "@/lib/utils"
 
-const ACCURACY_ROWS: {
-  type: string
-  ttlAssig: number
-  ttlChg: number
-  pctAcc: string
-}[] = [
-  { type: "Coding accuracy", ttlAssig: 235, ttlChg: 9, pctAcc: "96%" },
-  { type: "Dx accuracy", ttlAssig: 182, ttlChg: 9, pctAcc: "95%" },
-  { type: "PCS accuracy", ttlAssig: 53, ttlChg: 0, pctAcc: "100%" },
-  { type: "Disposition acc", ttlAssig: 23, ttlChg: 0, pctAcc: "100%" },
-  { type: "POA accuracy", ttlAssig: 182, ttlChg: 0, pctAcc: "100%" },
-  { type: "Risk of mortality", ttlAssig: 23, ttlChg: 1, pctAcc: "96%" },
-  { type: "Severity of illness", ttlAssig: 23, ttlChg: 3, pctAcc: "87%" },
+export const INDIVIDUAL_CODER_ACCURACY_SECTION_ID =
+  "individual-coder-accuracy-table"
+
+const accuracyColumns: ColumnDef<IndividualCoderAccuracyRow>[] = [
+  {
+    id: "Type",
+    accessorKey: "type",
+    header: "Type",
+    cell: ({ row }) => (
+      <span className="font-medium">{row.original.type}</span>
+    ),
+    enableHiding: false,
+  },
+  {
+    id: "Ttl assig",
+    accessorKey: "ttlAssig",
+    header: () => <div className="w-full text-right">Ttl assig</div>,
+    cell: ({ getValue }) => (
+      <div className="text-right tabular-nums">{getValue<number>()}</div>
+    ),
+  },
+  {
+    id: "Ttl chg",
+    accessorKey: "ttlChg",
+    header: () => <div className="w-full text-right">Ttl chg</div>,
+    cell: ({ getValue }) => (
+      <div className="text-right tabular-nums">{getValue<number>()}</div>
+    ),
+  },
+  {
+    id: "% acc",
+    accessorKey: "pctAcc",
+    header: () => <div className="w-full text-right">% acc</div>,
+    cell: ({ getValue }) => (
+      <div className="text-right tabular-nums">{getValue<string>()}</div>
+    ),
+  },
 ]
 
 export function IndividualCoderAccuracyTable({
@@ -33,43 +56,24 @@ export function IndividualCoderAccuracyTable({
 }) {
   return (
     <section
-      className={cn(dashboardMainGutterClass, className)}
+      className={cn(dashboardMainGutterClass, "flex flex-col gap-3", className)}
       aria-labelledby="individual-coder-accuracy-heading"
     >
       <h2
         id="individual-coder-accuracy-heading"
-        className="mb-3 font-heading text-lg font-semibold tracking-tight"
+        className="font-heading text-lg font-semibold tracking-tight"
       >
         Coder accuracy snapshot
       </h2>
-      <div className="overflow-hidden rounded-lg border">
-        <Table>
-          <TableHeader>
-            <TableRow className="bg-muted/50 hover:bg-muted/50">
-              <TableHead className="font-medium">Type</TableHead>
-              <TableHead className="text-right font-medium">Ttl assig</TableHead>
-              <TableHead className="text-right font-medium">Ttl chg</TableHead>
-              <TableHead className="text-right font-medium">% acc</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {ACCURACY_ROWS.map((row) => (
-              <TableRow key={row.type}>
-                <TableCell className="font-medium">{row.type}</TableCell>
-                <TableCell className="text-right tabular-nums">
-                  {row.ttlAssig}
-                </TableCell>
-                <TableCell className="text-right tabular-nums">
-                  {row.ttlChg}
-                </TableCell>
-                <TableCell className="text-right tabular-nums">
-                  {row.pctAcc}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+
+      <CoderOverviewDataTable
+        sectionId={INDIVIDUAL_CODER_ACCURACY_SECTION_ID}
+        initialData={INDIVIDUAL_CODER_ACCURACY_ROWS}
+        dataColumns={accuracyColumns}
+        defaultPageSize={20}
+        hideColumnsAndExport
+        hideFooter
+      />
     </section>
   )
 }
