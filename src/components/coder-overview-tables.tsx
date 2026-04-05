@@ -27,8 +27,7 @@ import { cn } from "@/lib/utils"
 const tableTypeBadgeLayoutClass =
   "inline-flex flex-row flex-nowrap items-center justify-center gap-0 leading-none [&_svg]:inline-block [&_svg]:shrink-0"
 
-const tableTypeBadgeLabelClass =
-  "translate-y-px pl-1 leading-none text-inherit"
+const tableTypeBadgeLabelClass = "pl-1 leading-none text-inherit"
 
 const dimensionBadgeTone: Record<CoderOverviewRowDimension, string> = {
   drg: "border-sky-500/45 text-sky-800 dark:text-sky-300",

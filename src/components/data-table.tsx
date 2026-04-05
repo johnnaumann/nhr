@@ -93,8 +93,7 @@ const tableStatusBadgeLayoutClass =
   "inline-flex flex-row flex-nowrap items-center justify-center gap-0 leading-none [&_svg]:inline-block [&_svg]:shrink-0"
 
 /** Padding-left is reliable vs Badge `gap-*` merge; tune `pl-*` if you want tighter/looser. */
-const tableStatusBadgeLabelClass =
-  "translate-y-px pl-1 leading-none text-inherit"
+const tableStatusBadgeLabelClass = "pl-1 leading-none text-inherit"
 
 // Create a separate component for the drag handle
 function DragHandle({ id }: { id: number }) {
@@ -160,11 +159,11 @@ const columns: ColumnDef<DocumentChange>[] = [
     accessorKey: "type",
     header: "Section Type",
     cell: ({ row }) => (
-      <div className="w-32">
+      <span className="inline-flex w-32 max-w-full">
         <Badge variant="outline" className="px-1.5 text-muted-foreground">
           {row.original.type}
         </Badge>
-      </div>
+      </span>
     ),
   },
   {

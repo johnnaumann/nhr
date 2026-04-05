@@ -82,6 +82,11 @@ function TableCell({ className, ...props }: React.ComponentProps<"td">) {
       data-slot="table-cell"
       className={cn(
         "p-2 align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0",
+        /**
+         * Badge-only cells: kill the table-cell “strut” line box (line-height >
+         * badge height) so `align-middle` truly centers the chip in the row.
+         */
+        "[&:has([data-slot=badge])]:leading-none",
         className
       )}
       {...props}
