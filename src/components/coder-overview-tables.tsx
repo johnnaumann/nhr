@@ -454,6 +454,7 @@ export function CoderOverviewTables() {
         sectionId={CODER_OVERVIEW_TABLE_SECTION_ID}
         initialData={filteredData}
         dataColumns={dataColumns}
+        defaultPageSize={30}
       />
     </div>
   )

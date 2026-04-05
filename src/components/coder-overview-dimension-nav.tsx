@@ -41,7 +41,6 @@ export function CoderOverviewDimensionNav({
       className={cn("flex flex-wrap items-center gap-2", className)}
       aria-label="Coder overview: Overall shows all categories, or filter by one"
     >
-      <span className="text-xs font-medium text-muted-foreground">View:</span>
       {CODER_OVERVIEW_DIMENSIONS.map(({ dimensionKey, label }) => {
         const isActive = activeDimension === dimensionKey
         return (

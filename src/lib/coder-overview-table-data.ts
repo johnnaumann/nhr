@@ -32,11 +32,55 @@ export type CoderOverviewUnifiedRow = {
   secondaryProcedures: string
 }
 
-/**
- * Nine coders, each once. `dimension` is mixed down the list for the Type column;
- * all metric columns are filled on every row (demo).
- */
-export const CODER_OVERVIEW_UNIFIED_DATA: CoderOverviewUnifiedRow[] = [
+const DIMENSION_MIX_CYCLE: CoderOverviewRowDimension[] = [
+  "compliance",
+  "drg",
+  "quality",
+  "missed-opportunities",
+  "drg",
+  "compliance",
+  "missed-opportunities",
+  "quality",
+  "drg",
+]
+
+function formatUsd(n: number): string {
+  return `$${n.toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`
+}
+
+function buildDemoCoderRow(id: number): CoderOverviewUnifiedRow {
+  const dimension = DIMENSION_MIX_CYCLE[(id - 1) % DIMENSION_MIX_CYCLE.length]
+  const tc = 8 + ((id * 31) % 52)
+  const inc = Math.max(1, Math.round(tc * (0.45 + (id % 7) * 0.03)))
+  const dec = Math.max(1, tc - inc)
+  const up = Math.max(1, Math.min(tc, Math.round(tc * 0.42 + (id % 6))))
+  const reviewed = 420 + ((id * 79) % 740)
+  const ratePct = 0.6 + (((id * 13) % 77) / 10)
+
+  return {
+    id,
+    dimension,
+    coderId: `Coder ${id}`,
+    totalReviewed: reviewed.toLocaleString("en-US"),
+    changeRate: `${ratePct.toFixed(2)}%`,
+    totalChanges: String(tc),
+    increasedChanges: String(inc),
+    decreasedChanges: String(dec),
+    upChanges: String(up),
+    avgMissedIncrease: formatUsd(120 + id * 47 + (id % 11) * 12),
+    totalMissedRevenue: formatUsd(8000 + id * 4980 + (id % 13) * 900),
+    avgComplianceRiskSaved: formatUsd(180 + id * 23),
+    totalComplianceRiskPrevented: formatUsd(28000 + id * 11200),
+    secondaryDiagnosis: String(4 + (id * 5) % 24),
+    secondaryProcedures: String(5 + (id * 7) % 28),
+  }
+}
+
+/** First nine rows (curated); remaining rows follow the same mix pattern with generated metrics. */
+const CODER_OVERVIEW_BASE_ROWS: CoderOverviewUnifiedRow[] = [
   {
     id: 1,
     dimension: "compliance",
@@ -190,4 +234,17 @@ export const CODER_OVERVIEW_UNIFIED_DATA: CoderOverviewUnifiedRow[] = [
     secondaryDiagnosis: "7",
     secondaryProcedures: "10",
   },
+]
+
+const EXTRA_CODER_COUNT = 41
+
+/**
+ * 50 coders (`Coder 1` … `Coder 50`). Types cycle through the mix pattern; all
+ * metric columns are filled on every row (demo).
+ */
+export const CODER_OVERVIEW_UNIFIED_DATA: CoderOverviewUnifiedRow[] = [
+  ...CODER_OVERVIEW_BASE_ROWS,
+  ...Array.from({ length: EXTRA_CODER_COUNT }, (_, i) =>
+    buildDemoCoderRow(10 + i),
+  ),
 ]

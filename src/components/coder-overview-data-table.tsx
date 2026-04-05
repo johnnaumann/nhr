@@ -193,6 +193,8 @@ export type CoderOverviewDataTableProps<T extends { id: number }> = {
   sectionId: string
   initialData: T[]
   dataColumns: ColumnDef<T>[]
+  /** Initial rows per page (default 10). */
+  defaultPageSize?: number
 }
 
 function columnMenuLabel<T extends { id: number }>(column: Column<T, unknown>) {
@@ -206,6 +208,7 @@ export function CoderOverviewDataTable<T extends { id: number }>({
   sectionId,
   initialData,
   dataColumns,
+  defaultPageSize = 10,
 }: CoderOverviewDataTableProps<T>) {
   const headingId = React.useId()
   const dndInstanceId = React.useId()
@@ -219,7 +222,7 @@ export function CoderOverviewDataTable<T extends { id: number }>({
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [pagination, setPagination] = React.useState({
     pageIndex: 0,
-    pageSize: 10,
+    pageSize: defaultPageSize,
   })
 
   React.useEffect(() => {
