@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils"
 type DashboardDateRangeToolbarProps = {
   /** Left side of the bar (e.g. dimension or cohort jump links). Date and sites stay on the right. */
   extension?: ReactNode
-  /** Appended after date range and sites in the right cluster. */
+  /** Rendered between date range and sites in the right cluster. */
   trailing?: ReactNode
 }
 
@@ -34,9 +34,11 @@ export function DashboardDateRangeToolbar({
           )}
         >
           {extension ? (
-            <div className="min-w-0 flex-1">{extension}</div>
+            <div className="flex min-h-8 min-w-0 flex-1 flex-wrap items-center">
+              {extension}
+            </div>
           ) : null}
-          <div className="flex w-full min-w-0 shrink-0 flex-col gap-3 sm:w-auto sm:flex-row sm:items-center sm:justify-end sm:gap-4">
+          <div className="flex w-full min-w-0 shrink-0 flex-col gap-3 sm:min-h-8 sm:w-auto sm:flex-row sm:items-center sm:justify-end sm:gap-3">
             <DateRangePicker
               value={range}
               onValueChange={setRange}
@@ -45,12 +47,12 @@ export function DashboardDateRangeToolbar({
               placeholder="Date range"
               className="w-full shrink-0 sm:w-auto sm:max-w-[min(100%,320px)]"
             />
-            <DashboardInstitutionToggle />
             {trailing ? (
-              <div className="flex shrink-0 flex-wrap items-center gap-2 sm:gap-3">
+              <div className="flex h-8 shrink-0 items-center gap-2 sm:gap-3">
                 {trailing}
               </div>
             ) : null}
+            <DashboardInstitutionToggle />
           </div>
         </div>
       </div>

@@ -30,13 +30,13 @@ export function CoderOverviewToolbarActions({
   return (
     <div
       className={cn(
-        "flex shrink-0 flex-wrap items-center gap-2",
+        "flex h-8 shrink-0 items-center gap-2",
         className,
       )}
     >
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="sm" disabled={disabled}>
+          <Button variant="outline" size="default" className="h-8" disabled={disabled}>
             <Columns3Icon data-icon="inline-start" />
             Columns
             <ChevronDownIcon data-icon="inline-end" />
@@ -67,7 +67,8 @@ export function CoderOverviewToolbarActions({
       </DropdownMenu>
       <Button
         variant="outline"
-        size="sm"
+        size="default"
+        className="h-8"
         disabled={disabled}
         aria-label="Export selection"
         onClick={() => {

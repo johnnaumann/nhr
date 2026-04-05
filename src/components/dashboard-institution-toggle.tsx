@@ -27,7 +27,7 @@ export function DashboardInstitutionToggle({
   return (
     <div
       className={cn(
-        "flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center sm:gap-2",
+        "flex min-h-8 min-w-0 flex-col gap-2 sm:flex-row sm:items-center sm:gap-2",
         className
       )}
     >
@@ -41,7 +41,7 @@ export function DashboardInstitutionToggle({
         value={visibleInstitutionKeys}
         onValueChange={setVisibleInstitutionKeys}
         variant="outline"
-        size="sm"
+        size="default"
         spacing={0}
         className="w-max max-w-full flex-nowrap gap-0 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         aria-label="Show or hide sites on charts"

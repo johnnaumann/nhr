@@ -38,7 +38,10 @@ export function CoderOverviewDimensionNav({
 
   return (
     <nav
-      className={cn("flex flex-wrap items-center gap-2", className)}
+      className={cn(
+        "flex min-h-8 flex-wrap items-center gap-2",
+        className,
+      )}
       aria-label="Coder overview: Overall shows all categories, or filter by one"
     >
       {CODER_OVERVIEW_DIMENSIONS.map(({ dimensionKey, label }) => {
@@ -50,7 +53,7 @@ export function CoderOverviewDimensionNav({
             aria-pressed={isActive}
             aria-controls={CODER_OVERVIEW_TABLE_SECTION_ID}
             className={cn(
-              "rounded-md border px-2.5 py-1 text-xs font-medium transition-colors",
+              "inline-flex h-8 items-center rounded-md border px-2.5 text-[0.8rem] font-medium leading-none transition-colors",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
               isActive
                 ? "border-primary bg-primary text-primary-foreground"

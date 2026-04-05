@@ -56,15 +56,15 @@ export function DateRangePicker({
   )
 
   return (
-    <div className={cn("grid gap-2", className)}>
+    <div className={cn("flex h-8 items-stretch", className)}>
       <Popover>
         <PopoverTrigger asChild>
           <Button
             type="button"
             variant="outline"
-            size="sm"
+            size="default"
             className={cn(
-              "w-full min-w-0 justify-start text-left font-normal sm:w-[min(100%,280px)]",
+              "h-8 w-full min-w-0 justify-start gap-1.5 text-left font-normal sm:w-[min(100%,280px)]",
               !value?.from && "text-muted-foreground"
             )}
             aria-label={placeholder}
