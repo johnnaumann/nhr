@@ -1,59 +1,40 @@
 "use client"
 
-import type { ColumnDef } from "@tanstack/react-table"
+import * as React from "react"
 
 import { CoderOverviewDataTable } from "@/components/coder-overview-data-table"
+import {
+  buildIndividualCoderGridColumns,
+  INDIVIDUAL_CODER_TABLE_CLASS,
+  INDIVIDUAL_CODER_TABLE_COLGROUP,
+} from "@/components/individual-coder-grid-table"
 import { dashboardMainGutterClass } from "@/lib/dashboard-layout"
 import {
+  accuracyRowsToGrid,
   INDIVIDUAL_CODER_ACCURACY_ROWS,
-  type IndividualCoderAccuracyRow,
 } from "@/lib/individual-coder-table-data"
 import { cn } from "@/lib/utils"
 
 export const INDIVIDUAL_CODER_ACCURACY_SECTION_ID =
   "individual-coder-accuracy-table"
 
-const accuracyColumns: ColumnDef<IndividualCoderAccuracyRow>[] = [
-  {
-    id: "Type",
-    accessorKey: "type",
-    header: "Type",
-    cell: ({ row }) => (
-      <span className="font-medium">{row.original.type}</span>
-    ),
-    enableHiding: false,
-  },
-  {
-    id: "Ttl assig",
-    accessorKey: "ttlAssig",
-    header: () => <div className="w-full text-right">Ttl assig</div>,
-    cell: ({ getValue }) => (
-      <div className="text-right tabular-nums">{getValue<number>()}</div>
-    ),
-  },
-  {
-    id: "Ttl chg",
-    accessorKey: "ttlChg",
-    header: () => <div className="w-full text-right">Ttl chg</div>,
-    cell: ({ getValue }) => (
-      <div className="text-right tabular-nums">{getValue<number>()}</div>
-    ),
-  },
-  {
-    id: "% acc",
-    accessorKey: "pctAcc",
-    header: () => <div className="w-full text-right">% acc</div>,
-    cell: ({ getValue }) => (
-      <div className="text-right tabular-nums">{getValue<string>()}</div>
-    ),
-  },
-]
+const EM = "—"
+
+const gridTableProps = {
+  tableClassName: INDIVIDUAL_CODER_TABLE_CLASS,
+  tableColGroup: INDIVIDUAL_CODER_TABLE_COLGROUP,
+} as const
 
 export function IndividualCoderAccuracyTable({
   className,
 }: {
   className?: string
 }) {
+  const gridRows = React.useMemo(
+    () => accuracyRowsToGrid(INDIVIDUAL_CODER_ACCURACY_ROWS),
+    [],
+  )
+
   return (
     <section
       className={cn(dashboardMainGutterClass, "flex flex-col gap-3", className)}
@@ -68,12 +49,20 @@ export function IndividualCoderAccuracyTable({
 
       <CoderOverviewDataTable
         sectionId={INDIVIDUAL_CODER_ACCURACY_SECTION_ID}
-        initialData={INDIVIDUAL_CODER_ACCURACY_ROWS}
-        dataColumns={accuracyColumns}
+        initialData={gridRows}
+        dataColumns={buildIndividualCoderGridColumns({
+          emptyLabelHeader: false,
+          h1: "Ttl assig",
+          h2: "Ttl chg",
+          h3: "% acc",
+          h4: EM,
+          h5: EM,
+        })}
         defaultPageSize={20}
         hideColumnsAndExport
         hideFooter
         hideSelectColumn
+        {...gridTableProps}
       />
     </section>
   )

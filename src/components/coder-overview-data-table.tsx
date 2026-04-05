@@ -207,6 +207,10 @@ export type CoderOverviewDataTableProps<T extends { id: number }> = {
   hideFooter?: boolean
   /** When true, no row checkbox column (e.g. individual coder tables). */
   hideSelectColumn?: boolean
+  /** Passed to {@link Table} (e.g. `table-fixed`). */
+  tableClassName?: string
+  /** Inserted after `<table>` (e.g. `<colgroup>` for column widths). */
+  tableColGroup?: React.ReactNode
 }
 
 export function coderOverviewColumnMenuLabel(column: Column<unknown, unknown>) {
@@ -224,6 +228,8 @@ export function CoderOverviewDataTable<T extends { id: number }>({
   hideColumnsAndExport = false,
   hideFooter = false,
   hideSelectColumn = false,
+  tableClassName,
+  tableColGroup,
 }: CoderOverviewDataTableProps<T>) {
   const headingId = React.useId()
   const dndInstanceId = React.useId()
@@ -405,7 +411,7 @@ export function CoderOverviewDataTable<T extends { id: number }>({
           onDragEnd={handleDragEnd}
           sensors={sensors}
         >
-          <Table>
+          <Table className={tableClassName} colGroup={tableColGroup}>
             <TableHeader className="sticky top-0 z-10 bg-muted">
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow key={headerGroup.id}>

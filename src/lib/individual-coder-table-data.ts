@@ -1,76 +1,62 @@
-export type IndividualCoderBlockDrgRow = {
+/** Shared 6-column grid: label + five metric slots (pad unused with "—"). */
+export type IndividualCoderGridRow = {
   id: number
-  chartsChanged: string
-  changeRate: string
-  drgChanges: string
-  qualityChanges: string
-  recoveredDrg: string
+  label: string
+  s1: string
+  s2: string
+  s3: string
+  s4: string
+  s5: string
 }
 
-export type IndividualCoderBlockMissedRow = {
-  id: number
-  changeRate: string
-  upChanges: string
-  avgMissedIncrease: string
-  totalMissedRevenue: string
-}
+const EM = "—"
 
-export type IndividualCoderBlockComplianceRow = {
-  id: number
-  changeRate: string
-  complianceChanges: string
-  avgComplianceRiskPrevented: string
-  totalComplianceRiskPrevented: string
-}
-
-export type IndividualCoderBlockQualityRow = {
-  id: number
-  changeRate: string
-  pdx: string
-  secondaryDiagnosis: string
-  secondaryProcedures: string
-}
-
-/** DRG / volume summary — one demo row per block. */
-export const INDIVIDUAL_CODER_BLOCK_DRG: IndividualCoderBlockDrgRow[] = [
+export const INDIVIDUAL_CODER_GRID_BLOCK_DRG: IndividualCoderGridRow[] = [
   {
     id: 1,
-    chartsChanged: "84",
-    changeRate: "8.0%",
-    drgChanges: "32",
-    qualityChanges: "8",
-    recoveredDrg: "—",
+    label: "",
+    s1: "84",
+    s2: "8.0%",
+    s3: "32",
+    s4: "8",
+    s5: EM,
   },
 ]
 
-export const INDIVIDUAL_CODER_BLOCK_MISSED: IndividualCoderBlockMissedRow[] = [
+export const INDIVIDUAL_CODER_GRID_BLOCK_MISSED: IndividualCoderGridRow[] = [
   {
     id: 1,
-    changeRate: "6.20%",
-    upChanges: "63",
-    avgMissedIncrease: "$5,009.00",
-    totalMissedRevenue: "$1,262,268.00",
+    label: "",
+    s1: "6.20%",
+    s2: "63",
+    s3: "$5,009.00",
+    s4: "$1,262,268.00",
+    s5: EM,
   },
 ]
 
-export const INDIVIDUAL_CODER_BLOCK_COMPLIANCE: IndividualCoderBlockComplianceRow[] =
+export const INDIVIDUAL_CODER_GRID_BLOCK_COMPLIANCE: IndividualCoderGridRow[] =
   [
     {
       id: 1,
-      changeRate: "2.00%",
-      complianceChanges: "20",
-      avgComplianceRiskPrevented: "$121.53",
-      totalComplianceRiskPrevented: "$30,382.50",
+      label: "",
+      s1: "2.00%",
+      s2: "20",
+      s3: "$121.53",
+      s4: "$30,382.50",
+      s5: EM,
     },
   ]
 
-export const INDIVIDUAL_CODER_BLOCK_QUALITY: IndividualCoderBlockQualityRow[] = [
+export const INDIVIDUAL_CODER_GRID_BLOCK_QUALITY: IndividualCoderGridRow[] = [
   {
     id: 1,
-    changeRate: "3.1%",
-    pdx: "8",
-    secondaryDiagnosis: "11",
-    secondaryProcedures: "14",
+    label: "",
+    s1: "3.1%",
+    s2: "8",
+    s3: "11",
+    s4: "14",
+    s5: EM,
   },
 ]
 
@@ -101,3 +87,17 @@ const ACCURACY_SOURCE: Omit<IndividualCoderAccuracyRow, "id">[] = [
 
 export const INDIVIDUAL_CODER_ACCURACY_ROWS: IndividualCoderAccuracyRow[] =
   ACCURACY_SOURCE.map((r, i) => ({ ...r, id: i + 1 }))
+
+export function accuracyRowsToGrid(
+  rows: IndividualCoderAccuracyRow[],
+): IndividualCoderGridRow[] {
+  return rows.map((r) => ({
+    id: r.id,
+    label: r.type,
+    s1: String(r.ttlAssig),
+    s2: String(r.ttlChg),
+    s3: r.pctAcc,
+    s4: EM,
+    s5: EM,
+  }))
+}
