@@ -6,6 +6,7 @@ import { CoderOverviewTables } from "@/components/coder-overview-tables"
 import { DashboardDateRangeToolbar } from "@/components/dashboard-date-range-toolbar"
 import { SiteHeader } from "@/components/site-header"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
+import { CoderOverviewDimensionProvider } from "@/contexts/coder-overview-dimension-context"
 import { DashboardDateRangeProvider } from "@/contexts/dashboard-date-range-context"
 import { DashboardInstitutionsProvider } from "@/contexts/dashboard-institutions-context"
 import {
@@ -30,30 +31,32 @@ export function CoderOverviewPage() {
         <div className="flex flex-1 flex-col">
           <DashboardDateRangeProvider>
             <DashboardInstitutionsProvider>
-              <div
-                className="@container/main flex flex-1 flex-col gap-2"
-                aria-label="Coder overview"
-                style={
-                  {
-                    "--stacked-section-scroll-margin":
-                      "calc(var(--header-height) + 13rem)",
-                  } as CSSProperties
-                }
-              >
+              <CoderOverviewDimensionProvider>
                 <div
-                  className={cn(
-                    "flex flex-col pt-0 pb-4 md:pb-6",
-                    dashboardSectionStackClass,
-                  )}
+                  className="@container/main flex flex-1 flex-col gap-2"
+                  aria-label="Coder overview"
+                  style={
+                    {
+                      "--stacked-section-scroll-margin":
+                        "calc(var(--header-height) + 13rem)",
+                    } as CSSProperties
+                  }
                 >
-                  <DashboardDateRangeToolbar
-                    extension={<CoderOverviewDimensionNav />}
-                  />
-                  <div className={dashboardMainGutterClass}>
-                    <CoderOverviewTables />
+                  <div
+                    className={cn(
+                      "flex flex-col pt-0 pb-4 md:pb-6",
+                      dashboardSectionStackClass,
+                    )}
+                  >
+                    <DashboardDateRangeToolbar
+                      extension={<CoderOverviewDimensionNav />}
+                    />
+                    <div className={dashboardMainGutterClass}>
+                      <CoderOverviewTables />
+                    </div>
                   </div>
                 </div>
-              </div>
+              </CoderOverviewDimensionProvider>
             </DashboardInstitutionsProvider>
           </DashboardDateRangeProvider>
         </div>

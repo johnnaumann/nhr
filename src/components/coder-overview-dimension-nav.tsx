@@ -1,24 +1,32 @@
 "use client"
 
+import { useCoderOverviewDimension } from "@/contexts/coder-overview-dimension-context"
+import type { CoderOverviewDimensionKey } from "@/lib/coder-overview-table-data"
 import { cn } from "@/lib/utils"
 
-/** Section `id` values for Coder Overview tables (used by sticky nav and scroll targets). */
-export const CODER_OVERVIEW_DIMENSIONS = [
-  { sectionId: "coder-overview-overall", label: "Overall" },
-  { sectionId: "coder-overview-drg", label: "DRG" },
-  {
-    sectionId: "coder-overview-missed-opportunities",
-    label: "Missed Opportunities",
-  },
-  { sectionId: "coder-overview-compliance", label: "Compliance" },
-  { sectionId: "coder-overview-quality", label: "Quality" },
-] as const
+export const CODER_OVERVIEW_TABLE_SECTION_ID = "coder-overview-table-section"
 
-function scrollToSection(sectionId: string) {
-  document.getElementById(sectionId)?.scrollIntoView({
-    behavior: "smooth",
-    block: "start",
-  })
+/** Sticky nav: `overall` shows all category rows; other keys filter to one. */
+export const CODER_OVERVIEW_DIMENSIONS: {
+  dimensionKey: CoderOverviewDimensionKey
+  label: string
+}[] = [
+  { dimensionKey: "overall", label: "Overall" },
+  { dimensionKey: "drg", label: "DRG" },
+  { dimensionKey: "missed-opportunities", label: "Missed Opportunities" },
+  { dimensionKey: "compliance", label: "Compliance" },
+  { dimensionKey: "quality", label: "Quality" },
+]
+
+export const CODER_OVERVIEW_DIMENSION_LABELS: Record<
+  CoderOverviewDimensionKey,
+  string
+> = {
+  overall: "Overall",
+  drg: "DRG",
+  "missed-opportunities": "Missed Opportunities",
+  compliance: "Compliance",
+  quality: "Quality",
 }
 
 export function CoderOverviewDimensionNav({
@@ -26,28 +34,35 @@ export function CoderOverviewDimensionNav({
 }: {
   className?: string
 }) {
+  const { activeDimension, setActiveDimension } = useCoderOverviewDimension()
+
   return (
     <nav
       className={cn("flex flex-wrap items-center gap-2", className)}
-      aria-label="Jump to dimension sections"
+      aria-label="Coder overview: Overall shows all categories, or filter by one"
     >
-      <span className="text-xs font-medium text-muted-foreground">
-        Dimensions:
-      </span>
-      {CODER_OVERVIEW_DIMENSIONS.map(({ sectionId, label }) => (
-        <button
-          key={sectionId}
-          type="button"
-          aria-controls={sectionId}
-          className={cn(
-            "rounded-md border border-border/60 bg-muted/40 px-2.5 py-1 text-xs font-medium text-foreground",
-            "transition-colors hover:bg-muted/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-          )}
-          onClick={() => scrollToSection(sectionId)}
-        >
-          {label}
-        </button>
-      ))}
+      <span className="text-xs font-medium text-muted-foreground">View:</span>
+      {CODER_OVERVIEW_DIMENSIONS.map(({ dimensionKey, label }) => {
+        const isActive = activeDimension === dimensionKey
+        return (
+          <button
+            key={dimensionKey}
+            type="button"
+            aria-pressed={isActive}
+            aria-controls={CODER_OVERVIEW_TABLE_SECTION_ID}
+            className={cn(
+              "rounded-md border px-2.5 py-1 text-xs font-medium transition-colors",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+              isActive
+                ? "border-primary bg-primary text-primary-foreground"
+                : "border-border/60 bg-muted/40 text-foreground hover:bg-muted/70",
+            )}
+            onClick={() => setActiveDimension(dimensionKey)}
+          >
+            {label}
+          </button>
+        )
+      })}
     </nav>
   )
 }
