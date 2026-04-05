@@ -187,6 +187,7 @@ export function IndividualCoderOverviewPanel({
           defaultPageSize={10}
           hideColumnsAndExport
           hideFooter
+          hideSelectColumn
         />
 
         <div className="flex flex-col gap-2">
@@ -200,6 +201,7 @@ export function IndividualCoderOverviewPanel({
             defaultPageSize={10}
             hideColumnsAndExport
             hideFooter
+            hideSelectColumn
           />
         </div>
 
@@ -214,6 +216,7 @@ export function IndividualCoderOverviewPanel({
             defaultPageSize={10}
             hideColumnsAndExport
             hideFooter
+            hideSelectColumn
           />
         </div>
 
@@ -228,6 +231,7 @@ export function IndividualCoderOverviewPanel({
             defaultPageSize={10}
             hideColumnsAndExport
             hideFooter
+            hideSelectColumn
           />
         </div>
       </div>

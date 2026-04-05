@@ -73,6 +73,7 @@ export function IndividualCoderAccuracyTable({
         defaultPageSize={20}
         hideColumnsAndExport
         hideFooter
+        hideSelectColumn
       />
     </section>
   )

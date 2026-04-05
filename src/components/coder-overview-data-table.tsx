@@ -124,7 +124,37 @@ function DraggableRow<T extends { id: number }>({ row }: { row: Row<T> }) {
 
 function buildColumns<T extends { id: number }>(
   dataColumns: ColumnDef<T>[],
+  options?: { hideSelectColumn?: boolean },
 ): ColumnDef<T>[] {
+  const selectColumn: ColumnDef<T> = {
+    id: "select",
+    header: ({ table }) => (
+      <div className="flex items-center justify-center">
+        <Checkbox
+          checked={
+            table.getIsAllPageRowsSelected() ||
+            (table.getIsSomePageRowsSelected() && "indeterminate")
+          }
+          onCheckedChange={(value) =>
+            table.toggleAllPageRowsSelected(!!value)
+          }
+          aria-label="Select all"
+        />
+      </div>
+    ),
+    cell: ({ row }) => (
+      <div className="flex items-center justify-center">
+        <Checkbox
+          checked={row.getIsSelected()}
+          onCheckedChange={(value) => row.toggleSelected(!!value)}
+          aria-label={`Select ${row.id}`}
+        />
+      </div>
+    ),
+    enableSorting: false,
+    enableHiding: false,
+  }
+
   return [
     {
       id: "drag",
@@ -133,34 +163,7 @@ function buildColumns<T extends { id: number }>(
       enableHiding: false,
       enableSorting: false,
     },
-    {
-      id: "select",
-      header: ({ table }) => (
-        <div className="flex items-center justify-center">
-          <Checkbox
-            checked={
-              table.getIsAllPageRowsSelected() ||
-              (table.getIsSomePageRowsSelected() && "indeterminate")
-            }
-            onCheckedChange={(value) =>
-              table.toggleAllPageRowsSelected(!!value)
-            }
-            aria-label="Select all"
-          />
-        </div>
-      ),
-      cell: ({ row }) => (
-        <div className="flex items-center justify-center">
-          <Checkbox
-            checked={row.getIsSelected()}
-            onCheckedChange={(value) => row.toggleSelected(!!value)}
-            aria-label={`Select ${row.id}`}
-          />
-        </div>
-      ),
-      enableSorting: false,
-      enableHiding: false,
-    },
+    ...(options?.hideSelectColumn ? [] : [selectColumn]),
     ...dataColumns,
     {
       id: "actions",
@@ -202,6 +205,8 @@ export type CoderOverviewDataTableProps<T extends { id: number }> = {
   hideColumnsAndExport?: boolean
   /** When true, no selection summary, rows-per-page, or page controls. */
   hideFooter?: boolean
+  /** When true, no row checkbox column (e.g. individual coder tables). */
+  hideSelectColumn?: boolean
 }
 
 export function coderOverviewColumnMenuLabel(column: Column<unknown, unknown>) {
@@ -218,6 +223,7 @@ export function CoderOverviewDataTable<T extends { id: number }>({
   defaultPageSize = 10,
   hideColumnsAndExport = false,
   hideFooter = false,
+  hideSelectColumn = false,
 }: CoderOverviewDataTableProps<T>) {
   const headingId = React.useId()
   const dndInstanceId = React.useId()
@@ -242,8 +248,8 @@ export function CoderOverviewDataTable<T extends { id: number }>({
   }, [initialData])
 
   const columns = React.useMemo(
-    () => buildColumns(dataColumns),
-    [dataColumns],
+    () => buildColumns(dataColumns, { hideSelectColumn }),
+    [dataColumns, hideSelectColumn],
   )
 
   const sensors = useSensors(
@@ -268,7 +274,7 @@ export function CoderOverviewDataTable<T extends { id: number }>({
       pagination,
     },
     getRowId: (row) => String(row.id),
-    enableRowSelection: true,
+    enableRowSelection: !hideSelectColumn,
     onRowSelectionChange: setRowSelection,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
