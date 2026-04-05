@@ -1,11 +1,14 @@
 import type { CSSProperties } from "react"
 
 import { AppSidebar } from "@/components/app-sidebar"
+import { CoderOverviewToolbarActions } from "@/components/coder-overview-toolbar-actions"
 import { CoderTrendsDimensionNav } from "@/components/coder-trends-dimension-nav"
 import { CoderTrendsTables } from "@/components/coder-trends-tables"
 import { DashboardDateRangeToolbar } from "@/components/dashboard-date-range-toolbar"
 import { SiteHeader } from "@/components/site-header"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
+import { CoderOverviewTableToolbarProvider } from "@/contexts/coder-overview-table-toolbar-context"
+import { CoderTrendsDimensionProvider } from "@/contexts/coder-trends-dimension-context"
 import { DashboardDateRangeProvider } from "@/contexts/dashboard-date-range-context"
 import { DashboardInstitutionsProvider } from "@/contexts/dashboard-institutions-context"
 import {
@@ -30,30 +33,35 @@ export function CoderTrendsPage() {
         <div className="flex flex-1 flex-col">
           <DashboardDateRangeProvider>
             <DashboardInstitutionsProvider>
-              <div
-                className="@container/main flex flex-1 flex-col gap-2"
-                aria-label="Coder Trends"
-                style={
-                  {
-                    "--stacked-section-scroll-margin":
-                      "calc(var(--header-height) + 13rem)",
-                  } as CSSProperties
-                }
-              >
-                <div
-                  className={cn(
-                    "flex flex-col pt-0 pb-4 md:pb-6",
-                    dashboardSectionStackClass,
-                  )}
-                >
-                  <DashboardDateRangeToolbar
-                    extension={<CoderTrendsDimensionNav />}
-                  />
-                  <div className={dashboardMainGutterClass}>
-                    <CoderTrendsTables />
+              <CoderTrendsDimensionProvider>
+                <CoderOverviewTableToolbarProvider>
+                  <div
+                    className="@container/main flex flex-1 flex-col gap-2"
+                    aria-label="Coder trends"
+                    style={
+                      {
+                        "--stacked-section-scroll-margin":
+                          "calc(var(--header-height) + 13rem)",
+                      } as CSSProperties
+                    }
+                  >
+                    <div
+                      className={cn(
+                        "flex flex-col pt-0 pb-4 md:pb-6",
+                        dashboardSectionStackClass,
+                      )}
+                    >
+                      <DashboardDateRangeToolbar
+                        extension={<CoderTrendsDimensionNav />}
+                        trailing={<CoderOverviewToolbarActions />}
+                      />
+                      <div className={dashboardMainGutterClass}>
+                        <CoderTrendsTables />
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
+                </CoderOverviewTableToolbarProvider>
+              </CoderTrendsDimensionProvider>
             </DashboardInstitutionsProvider>
           </DashboardDateRangeProvider>
         </div>

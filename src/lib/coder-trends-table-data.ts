@@ -1,12 +1,15 @@
 import {
-  CODER_TRENDS_FLAGGED,
-  CODER_TRENDS_RECENT,
-  CODER_TRENDS_TOP_PERFORMERS,
+  CODER_TRENDS_GENERATED_ROWS,
   type CoderTrendChartRow,
+  type CoderTrendCohortKey,
+  type CoderTrendGeneratedRow,
 } from "@/lib/coder-trends-data"
 
-export type CoderTrendTableRow = {
+export type { CoderTrendCohortKey }
+
+export type CoderTrendUnifiedRow = {
   id: number
+  cohort: CoderTrendCohortKey
   coderId: string
   totalChartsReviewed: string
   changeRate: string
@@ -14,6 +17,12 @@ export type CoderTrendTableRow = {
   denialRatePotential: string
   avgComplianceRiskSaved: string
   missedQualityChanges: string
+}
+
+export const CODER_TRENDS_COHORT_LABELS: Record<CoderTrendCohortKey, string> = {
+  "top-performers": "Top performers",
+  "flagged-risk": "Flagged for risk",
+  "recently-added": "Recently added",
 }
 
 function fmtPct(n: number, decimals = 2) {
@@ -29,9 +38,10 @@ function fmtUsd(n: number) {
   }).format(n)
 }
 
-function toTableRows(rows: CoderTrendChartRow[]): CoderTrendTableRow[] {
-  return rows.map((r, i) => ({
-    id: i + 1,
+function chartRowToFormatted(
+  r: CoderTrendChartRow,
+): Omit<CoderTrendUnifiedRow, "id" | "cohort"> {
+  return {
     coderId: r.coderId,
     totalChartsReviewed: r.chartsReviewed.toLocaleString(),
     changeRate: fmtPct(r.changeRate),
@@ -39,16 +49,21 @@ function toTableRows(rows: CoderTrendChartRow[]): CoderTrendTableRow[] {
     denialRatePotential: fmtPct(r.denialRate),
     avgComplianceRiskSaved: fmtUsd(r.avgComplianceRiskSaved),
     missedQualityChanges: fmtPct(r.missedQualityChanges, 1),
-  }))
+  }
 }
 
-export const CODER_TRENDS_TOP_TABLE_DATA: CoderTrendTableRow[] = toTableRows(
-  CODER_TRENDS_TOP_PERFORMERS,
-)
+function toUnifiedRow(
+  r: CoderTrendGeneratedRow,
+  id: number,
+): CoderTrendUnifiedRow {
+  const { cohort, ...chart } = r
+  return {
+    id,
+    cohort,
+    ...chartRowToFormatted(chart),
+  }
+}
 
-export const CODER_TRENDS_FLAGGED_TABLE_DATA: CoderTrendTableRow[] =
-  toTableRows(CODER_TRENDS_FLAGGED)
-
-export const CODER_TRENDS_RECENT_TABLE_DATA: CoderTrendTableRow[] = toTableRows(
-  CODER_TRENDS_RECENT,
-)
+/** Single dataset for the unified trends table (50 coders, shuffled cohort types). */
+export const CODER_TRENDS_UNIFIED_DATA: CoderTrendUnifiedRow[] =
+  CODER_TRENDS_GENERATED_ROWS.map((row, i) => toUnifiedRow(row, i + 1))

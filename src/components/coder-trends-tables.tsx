@@ -1,115 +1,210 @@
 "use client"
 
+import * as React from "react"
 import type { ColumnDef } from "@tanstack/react-table"
+import { AlertTriangleIcon, AwardIcon, UserPlusIcon } from "lucide-react"
 
 import { CoderOverviewDataTable } from "@/components/coder-overview-data-table"
-import { CODER_TRENDS_SECTIONS } from "@/components/coder-trends-dimension-nav"
+import { CODER_TRENDS_TABLE_SECTION_ID } from "@/components/coder-trends-dimension-nav"
+import { Badge } from "@/components/ui/badge"
 import {
-  CODER_TRENDS_FLAGGED_TABLE_DATA,
-  CODER_TRENDS_RECENT_TABLE_DATA,
-  CODER_TRENDS_TOP_TABLE_DATA,
-  type CoderTrendTableRow,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
+import { useCoderTrendsDimension } from "@/contexts/coder-trends-dimension-context"
+import type { CoderTrendCohortKey } from "@/lib/coder-trends-data"
+import {
+  CODER_TRENDS_COHORT_LABELS,
+  CODER_TRENDS_UNIFIED_DATA,
+  type CoderTrendUnifiedRow,
 } from "@/lib/coder-trends-table-data"
+import { cn } from "@/lib/utils"
 
-function rightHeader(label: string) {
-  return () => <div className="w-full text-right">{label}</div>
+const tableTypeBadgeLayoutClass =
+  "inline-flex flex-row flex-nowrap items-center justify-center gap-0 leading-none [&_svg]:inline-block [&_svg]:shrink-0"
+
+const tableTypeBadgeLabelClass = "pl-1 leading-none text-inherit"
+
+const cohortBadgeTone: Record<CoderTrendCohortKey, string> = {
+  "top-performers":
+    "border-emerald-500/45 text-emerald-800 dark:text-emerald-300",
+  "flagged-risk": "border-destructive/45 text-destructive dark:text-red-400",
+  "recently-added": "border-sky-500/45 text-sky-800 dark:text-sky-300",
 }
 
-const trendColumns: ColumnDef<CoderTrendTableRow>[] = [
+const cohortTypeIcon: Record<
+  CoderTrendCohortKey,
+  React.ComponentType<{ className?: string }>
+> = {
+  "top-performers": AwardIcon,
+  "flagged-risk": AlertTriangleIcon,
+  "recently-added": UserPlusIcon,
+}
+
+function CoderTrendsTypeBadge({ cohort }: { cohort: CoderTrendCohortKey }) {
+  const Icon = cohortTypeIcon[cohort]
+  const label = CODER_TRENDS_COHORT_LABELS[cohort]
+  return (
+    <Badge
+      variant="outline"
+      className={cn(
+        tableTypeBadgeLayoutClass,
+        "px-1.5",
+        cohortBadgeTone[cohort],
+      )}
+    >
+      <Icon className="size-3 shrink-0 opacity-90" aria-hidden />
+      <span className={tableTypeBadgeLabelClass}>{label}</span>
+    </Badge>
+  )
+}
+
+const CODER_TRENDS_COLUMN_HELP: Record<string, string> = {
+  Reviewed:
+    "Total charts or encounters reviewed for this coder in the selected reporting period.",
+  "Chg %":
+    "Share of reviewed charts with at least one coding change in the trend window.",
+  "Avg miss +$":
+    "Average estimated dollar increase tied to missed-revenue opportunities per chart.",
+  "Denial %":
+    "Modeled denial-rate exposure based on coding patterns in this cohort.",
+  "Avg comp $":
+    "Average compliance dollars saved or corrected per chart for this coder.",
+  "Qual miss %":
+    "Share of charts with missed quality-related coding changes in the period.",
+}
+
+function metricHeaderRight(columnId: string) {
+  const description = CODER_TRENDS_COLUMN_HELP[columnId]
+  const label = columnId
+  if (!description) {
+    return () => <div className="w-full text-right">{label}</div>
+  }
+  return function MetricHeader() {
+    return (
+      <div className="flex w-full justify-end">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              type="button"
+              className={cn(
+                "cursor-help border-0 border-b border-dashed border-muted-foreground bg-transparent p-0 text-right font-medium text-inherit underline-offset-4 transition-colors",
+                "hover:text-foreground",
+                "focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+              )}
+            >
+              {label}
+            </button>
+          </TooltipTrigger>
+          <TooltipContent
+            side="bottom"
+            align="end"
+            sideOffset={6}
+            className="max-w-none text-left"
+          >
+            <span className="inline-block max-w-sm text-left whitespace-normal">
+              {description}
+            </span>
+          </TooltipContent>
+        </Tooltip>
+      </div>
+    )
+  }
+}
+
+const typeColumn: ColumnDef<CoderTrendUnifiedRow> = {
+  id: "Type",
+  accessorKey: "cohort",
+  header: "Type",
+  cell: ({ row }) => <CoderTrendsTypeBadge cohort={row.original.cohort} />,
+  enableHiding: false,
+}
+
+const coderColumn: ColumnDef<CoderTrendUnifiedRow> = {
+  id: "Coder",
+  accessorKey: "coderId",
+  header: "Coder",
+  cell: ({ row }) => (
+    <span className="font-medium">{row.original.coderId}</span>
+  ),
+  enableHiding: false,
+}
+
+const metricColumns: ColumnDef<CoderTrendUnifiedRow>[] = [
   {
-    id: "Coder ID",
-    accessorKey: "coderId",
-    header: "Coder ID",
-    cell: ({ row }) => (
-      <span className="font-medium">{row.original.coderId}</span>
-    ),
-    enableHiding: false,
-  },
-  {
-    id: "Total Charts Reviewed",
+    id: "Reviewed",
     accessorKey: "totalChartsReviewed",
-    header: rightHeader("Total charts reviewed"),
+    header: metricHeaderRight("Reviewed"),
     cell: ({ getValue }) => (
       <div className="text-right tabular-nums">{getValue<string>()}</div>
     ),
   },
   {
-    id: "Change Rate",
+    id: "Chg %",
     accessorKey: "changeRate",
-    header: rightHeader("Change rate"),
+    header: metricHeaderRight("Chg %"),
     cell: ({ getValue }) => (
       <div className="text-right tabular-nums">{getValue<string>()}</div>
     ),
   },
   {
-    id: "Avg missed $ increase",
+    id: "Avg miss +$",
     accessorKey: "avgMissedIncrease",
-    header: rightHeader("Avg missed $ increase"),
+    header: metricHeaderRight("Avg miss +$"),
     cell: ({ getValue }) => (
       <div className="text-right tabular-nums">{getValue<string>()}</div>
     ),
   },
   {
-    id: "Denial Rate Potential",
+    id: "Denial %",
     accessorKey: "denialRatePotential",
-    header: rightHeader("Denial rate potential"),
+    header: metricHeaderRight("Denial %"),
     cell: ({ getValue }) => (
       <div className="text-right tabular-nums">{getValue<string>()}</div>
     ),
   },
   {
-    id: "Avg. compliance risk saved",
+    id: "Avg comp $",
     accessorKey: "avgComplianceRiskSaved",
-    header: rightHeader("Avg. compliance risk saved"),
+    header: metricHeaderRight("Avg comp $"),
     cell: ({ getValue }) => (
       <div className="text-right tabular-nums">{getValue<string>()}</div>
     ),
   },
   {
-    id: "Missed Quality Changes",
+    id: "Qual miss %",
     accessorKey: "missedQualityChanges",
-    header: rightHeader("Missed quality changes"),
+    header: metricHeaderRight("Qual miss %"),
     cell: ({ getValue }) => (
       <div className="text-right tabular-nums">{getValue<string>()}</div>
     ),
   },
 ]
 
+const dataColumns: ColumnDef<CoderTrendUnifiedRow>[] = [
+  coderColumn,
+  typeColumn,
+  ...metricColumns,
+]
+
 export function CoderTrendsTables() {
+  const { activeFilter } = useCoderTrendsDimension()
+
+  const filteredData = React.useMemo(() => {
+    if (activeFilter === "overall") return CODER_TRENDS_UNIFIED_DATA
+    return CODER_TRENDS_UNIFIED_DATA.filter(
+      (row) => row.cohort === activeFilter,
+    )
+  }, [activeFilter])
+
   return (
-    <div className="flex flex-col gap-10">
-      <div className="flex flex-col gap-4 border-b border-border/60 pb-6">
-        <div>
-          <h1 className="font-heading text-2xl font-semibold tracking-tight">
-            Coder Trends
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Use the sticky bar for reporting period, sites, and cohort
-            shortcuts. Tables mirror the Excel-style export—demo data only.
-          </p>
-        </div>
-      </div>
-
-      <CoderOverviewDataTable
-        title="Top performers"
-        sectionId={CODER_TRENDS_SECTIONS[0].sectionId}
-        initialData={CODER_TRENDS_TOP_TABLE_DATA}
-        dataColumns={trendColumns}
-      />
-
-      <CoderOverviewDataTable
-        title="Flagged for risk"
-        sectionId={CODER_TRENDS_SECTIONS[1].sectionId}
-        initialData={CODER_TRENDS_FLAGGED_TABLE_DATA}
-        dataColumns={trendColumns}
-      />
-
-      <CoderOverviewDataTable
-        title="Recently added (last 14 days)"
-        sectionId={CODER_TRENDS_SECTIONS[2].sectionId}
-        initialData={CODER_TRENDS_RECENT_TABLE_DATA}
-        dataColumns={trendColumns}
-      />
-    </div>
+    <CoderOverviewDataTable
+      key={activeFilter}
+      sectionId={CODER_TRENDS_TABLE_SECTION_ID}
+      initialData={filteredData}
+      dataColumns={dataColumns}
+      defaultPageSize={30}
+    />
   )
 }

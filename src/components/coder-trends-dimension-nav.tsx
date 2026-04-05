@@ -1,50 +1,61 @@
 "use client"
 
+import { useCoderTrendsDimension } from "@/contexts/coder-trends-dimension-context"
+import type { CoderTrendCohortKey } from "@/lib/coder-trends-data"
+import { CODER_TRENDS_COHORT_LABELS } from "@/lib/coder-trends-table-data"
 import { cn } from "@/lib/utils"
 
-export const CODER_TRENDS_SECTIONS = [
-  { sectionId: "coder-trends-top-performers", label: "Top performers" },
-  { sectionId: "coder-trends-flagged-risk", label: "Flagged for risk" },
-  {
-    sectionId: "coder-trends-recently-added",
-    label: "Recently added",
-  },
-] as const
+export const CODER_TRENDS_TABLE_SECTION_ID = "coder-trends-table-section"
 
-function scrollToSection(sectionId: string) {
-  document.getElementById(sectionId)?.scrollIntoView({
-    behavior: "smooth",
-    block: "start",
-  })
-}
+const COHORT_KEYS = Object.keys(CODER_TRENDS_COHORT_LABELS) as CoderTrendCohortKey[]
+
+export const CODER_TRENDS_DIMENSIONS: {
+  filterKey: "overall" | CoderTrendCohortKey
+  label: string
+}[] = [
+  { filterKey: "overall", label: "Overall" },
+  ...COHORT_KEYS.map((k) => ({
+    filterKey: k,
+    label: CODER_TRENDS_COHORT_LABELS[k],
+  })),
+]
 
 export function CoderTrendsDimensionNav({
   className,
 }: {
   className?: string
 }) {
+  const { activeFilter, setActiveFilter } = useCoderTrendsDimension()
+
   return (
     <nav
-      className={cn("flex flex-wrap items-center gap-2", className)}
-      aria-label="Jump to trend cohort sections"
+      className={cn(
+        "flex min-h-8 flex-wrap items-center gap-2",
+        className,
+      )}
+      aria-label="Coder trends: Overall shows all cohorts, or filter by one"
     >
-      <span className="text-xs font-medium text-muted-foreground">
-        Cohorts:
-      </span>
-      {CODER_TRENDS_SECTIONS.map(({ sectionId, label }) => (
-        <button
-          key={sectionId}
-          type="button"
-          aria-controls={sectionId}
-          className={cn(
-            "rounded-md border border-border/60 bg-muted/40 px-2.5 py-1 text-xs font-medium text-foreground",
-            "transition-colors hover:bg-muted/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-          )}
-          onClick={() => scrollToSection(sectionId)}
-        >
-          {label}
-        </button>
-      ))}
+      {CODER_TRENDS_DIMENSIONS.map(({ filterKey, label }) => {
+        const isActive = activeFilter === filterKey
+        return (
+          <button
+            key={filterKey}
+            type="button"
+            aria-pressed={isActive}
+            aria-controls={CODER_TRENDS_TABLE_SECTION_ID}
+            className={cn(
+              "inline-flex h-8 items-center rounded-md border px-2.5 text-[0.8rem] font-medium leading-none transition-colors",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+              isActive
+                ? "border-primary bg-primary text-primary-foreground"
+                : "border-border/60 bg-muted/40 text-foreground hover:bg-muted/70",
+            )}
+            onClick={() => setActiveFilter(filterKey)}
+          >
+            {label}
+          </button>
+        )
+      })}
     </nav>
   )
 }
