@@ -5,6 +5,7 @@ import { ThemeToggle } from '@/components/theme-toggle'
 import { CoderOverviewPage } from '@/pages/coder-overview-page'
 import { CoderTrendsPage } from '@/pages/coder-trends-page'
 import { DashboardPage } from '@/pages/dashboard-page'
+import { IndividualCoderPage } from '@/pages/individual-coder-page'
 
 function LoginPage() {
   const navigate = useNavigate()
@@ -30,6 +31,7 @@ function App() {
       <Route path="/dashboard" element={<DashboardPage />} />
       <Route path="/coder-overview" element={<CoderOverviewPage />} />
       <Route path="/coder-trends" element={<CoderTrendsPage />} />
+      <Route path="/coder/:coderSlug" element={<IndividualCoderPage />} />
     </Routes>
   )
 }

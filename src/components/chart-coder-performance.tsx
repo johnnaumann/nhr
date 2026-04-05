@@ -138,7 +138,14 @@ const DETAIL_PIE_COPY = {
   spreadSuffix: "Compare top vs bottom detail slices on line and pie.",
 } as const
 
-export function ChartCoderPerformance() {
+export type ChartCoderPerformanceProps = {
+  /** Hide the “Displaying … / view coder details of …” filter row (e.g. individual coder page). */
+  hideChartFilters?: boolean
+}
+
+export function ChartCoderPerformance({
+  hideChartFilters = false,
+}: ChartCoderPerformanceProps = {}) {
   const { range } = useDashboardDateRange()
   const { visibleInstitutionKeys } = useDashboardInstitutions()
 
@@ -173,16 +180,34 @@ export function ChartCoderPerformance() {
   )
   const [detailSortDesc, setDetailSortDesc] = React.useState(true)
 
-  const filterMultiplier = addFilter === "drg-cqe" ? 0.72 : addFilter === "all-sheets" ? 1.18 : 1
+  const effectiveAddFilter = hideChartFilters ? "none" : addFilter
+  const effectiveDetailScope = hideChartFilters ? "all" : detailScope
+
+  const filterMultiplier =
+    effectiveAddFilter === "drg-cqe"
+      ? 0.72
+      : effectiveAddFilter === "all-sheets"
+        ? 1.18
+        : 1
 
   const detailLineData = React.useMemo(() => {
     const scopeFactor =
-      detailScope === "single" ? 0.88 : detailScope === "top5" ? 0.94 : 1
+      effectiveDetailScope === "single"
+        ? 0.88
+        : effectiveDetailScope === "top5"
+          ? 0.94
+          : 1
     return buildDetailLineSeries(
       rangeIsoDays,
       scale * scopeFactor * filterMultiplier * headerBlend
     )
-  }, [detailScope, rangeIsoDays, scale, filterMultiplier, headerBlend])
+  }, [
+    effectiveDetailScope,
+    rangeIsoDays,
+    scale,
+    filterMultiplier,
+    headerBlend,
+  ])
 
   const detailCounts = React.useMemo(() => {
     const next = {} as Record<DetailKey, number>
@@ -261,46 +286,54 @@ export function ChartCoderPerformance() {
       </CardHeader>
       <CardContent className={chartContentClass}>
         <section className={cn("flex flex-col", dashboardGridGapClass)}>
-          <p
-            className={cn(
-              filterToolbarClass,
-              "m-0 max-w-full min-w-0 items-baseline leading-relaxed",
-            )}
-          >
-            <span>Displaying</span>
-            <Select value={addFilter} onValueChange={setAddFilter}>
-              <SelectTrigger
-                size="sm"
-                className={cn(filterSelectTriggerClass, "max-w-[min(100%,18rem)]")}
-              >
-                <SelectValue placeholder="Add filter" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  <SelectItem value="none">No extra filter</SelectItem>
-                  <SelectItem value="drg-cqe">DRG + CQE worksheets</SelectItem>
-                  <SelectItem value="all-sheets">All worksheets</SelectItem>
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-            <span>, view coder details of</span>
-            <Select value={detailScope} onValueChange={setDetailScope}>
-              <SelectTrigger
-                size="sm"
-                className={cn(filterSelectTriggerClass, "max-w-[min(100%,14rem)]")}
-              >
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  <SelectItem value="all">All coders</SelectItem>
-                  <SelectItem value="top5">Top 5 by volume</SelectItem>
-                  <SelectItem value="single">Single coder (demo)</SelectItem>
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-            <span className="text-muted-foreground">.</span>
-          </p>
+          {!hideChartFilters ? (
+            <p
+              className={cn(
+                filterToolbarClass,
+                "m-0 max-w-full min-w-0 items-baseline leading-relaxed",
+              )}
+            >
+              <span>Displaying</span>
+              <Select value={addFilter} onValueChange={setAddFilter}>
+                <SelectTrigger
+                  size="sm"
+                  className={cn(
+                    filterSelectTriggerClass,
+                    "max-w-[min(100%,18rem)]",
+                  )}
+                >
+                  <SelectValue placeholder="Add filter" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectItem value="none">No extra filter</SelectItem>
+                    <SelectItem value="drg-cqe">DRG + CQE worksheets</SelectItem>
+                    <SelectItem value="all-sheets">All worksheets</SelectItem>
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+              <span>, view coder details of</span>
+              <Select value={detailScope} onValueChange={setDetailScope}>
+                <SelectTrigger
+                  size="sm"
+                  className={cn(
+                    filterSelectTriggerClass,
+                    "max-w-[min(100%,14rem)]",
+                  )}
+                >
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectItem value="all">All coders</SelectItem>
+                    <SelectItem value="top5">Top 5 by volume</SelectItem>
+                    <SelectItem value="single">Single coder (demo)</SelectItem>
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+              <span className="text-muted-foreground">.</span>
+            </p>
+          ) : null}
 
           <div
             className={cn(

@@ -16,6 +16,7 @@ import {
   LayoutDashboardIcon,
   ListIcon,
   ChartBarIcon,
+  UserRoundIcon,
   CameraIcon,
   FileTextIcon,
   Settings2Icon,
@@ -52,6 +53,14 @@ const data = {
       url: "/coder-trends",
       icon: (
         <ChartBarIcon
+        />
+      ),
+    },
+    {
+      title: "Individual coder",
+      url: "/coder/coder-2",
+      icon: (
+        <UserRoundIcon
         />
       ),
     },
