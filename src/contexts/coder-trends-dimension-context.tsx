@@ -4,11 +4,9 @@ import * as React from "react"
 
 import type { CoderTrendCohortKey } from "@/lib/coder-trends-data"
 
-export type CoderTrendsFilterKey = "overall" | CoderTrendCohortKey
-
 type CoderTrendsDimensionContextValue = {
-  activeFilter: CoderTrendsFilterKey
-  setActiveFilter: (key: CoderTrendsFilterKey) => void
+  activeFilter: CoderTrendCohortKey
+  setActiveFilter: (key: CoderTrendCohortKey) => void
 }
 
 const CoderTrendsDimensionContext =
@@ -20,7 +18,7 @@ export function CoderTrendsDimensionProvider({
   children: React.ReactNode
 }) {
   const [activeFilter, setActiveFilter] =
-    React.useState<CoderTrendsFilterKey>("overall")
+    React.useState<CoderTrendCohortKey>("top-performers")
 
   const value = React.useMemo(
     () => ({ activeFilter, setActiveFilter }),

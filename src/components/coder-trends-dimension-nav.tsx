@@ -7,18 +7,19 @@ import { cn } from "@/lib/utils"
 
 export const CODER_TRENDS_TABLE_SECTION_ID = "coder-trends-table-section"
 
-const COHORT_KEYS = Object.keys(CODER_TRENDS_COHORT_LABELS) as CoderTrendCohortKey[]
+const COHORT_NAV_ORDER: CoderTrendCohortKey[] = [
+  "top-performers",
+  "flagged-risk",
+  "recently-added",
+]
 
 export const CODER_TRENDS_DIMENSIONS: {
-  filterKey: "overall" | CoderTrendCohortKey
+  filterKey: CoderTrendCohortKey
   label: string
-}[] = [
-  { filterKey: "overall", label: "Overall" },
-  ...COHORT_KEYS.map((k) => ({
-    filterKey: k,
-    label: CODER_TRENDS_COHORT_LABELS[k],
-  })),
-]
+}[] = COHORT_NAV_ORDER.map((k) => ({
+  filterKey: k,
+  label: CODER_TRENDS_COHORT_LABELS[k],
+}))
 
 export function CoderTrendsDimensionNav({
   className,
@@ -33,7 +34,7 @@ export function CoderTrendsDimensionNav({
         "flex min-h-8 flex-wrap items-center gap-2",
         className,
       )}
-      aria-label="Coder trends: Overall shows all cohorts, or filter by one"
+      aria-label="Coder trends: filter table by cohort"
     >
       {CODER_TRENDS_DIMENSIONS.map(({ filterKey, label }) => {
         const isActive = activeFilter === filterKey

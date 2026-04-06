@@ -2,79 +2,74 @@
 
 import * as React from "react"
 import type { ColumnDef } from "@tanstack/react-table"
-import { AlertTriangleIcon, AwardIcon, UserPlusIcon } from "lucide-react"
 
 import { CoderOverviewDataTable } from "@/components/coder-overview-data-table"
 import { CODER_TRENDS_TABLE_SECTION_ID } from "@/components/coder-trends-dimension-nav"
-import { Badge } from "@/components/ui/badge"
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { useCoderTrendsDimension } from "@/contexts/coder-trends-dimension-context"
-import { useDashboardDateRange } from "@/contexts/dashboard-date-range-context"
-import { useDashboardInstitutions } from "@/contexts/dashboard-institutions-context"
-import type { CoderTrendCohortKey } from "@/lib/coder-trends-data"
-import { deriveCoderTrendsUnifiedData } from "@/lib/coder-trends-derived-data"
 import {
-  CODER_TRENDS_COHORT_LABELS,
   CODER_TRENDS_UNIFIED_DATA,
   type CoderTrendUnifiedRow,
 } from "@/lib/coder-trends-table-data"
 import { cn } from "@/lib/utils"
 
-const tableTypeBadgeLayoutClass =
-  "inline-flex flex-row flex-nowrap items-center justify-center gap-0 leading-none [&_svg]:inline-block [&_svg]:shrink-0"
+const CODER_TRENDS_ALERT_USD_MIN = 5000
+const CODER_TRENDS_ALERT_PERCENT_MIN = 10
 
-const tableTypeBadgeLabelClass = "pl-1 leading-none text-inherit"
-
-const cohortBadgeTone: Record<CoderTrendCohortKey, string> = {
-  "top-performers":
-    "border-emerald-500/45 text-emerald-800 dark:text-emerald-300",
-  "flagged-risk": "border-destructive/45 text-destructive dark:text-red-400",
-  "recently-added": "border-sky-500/45 text-sky-800 dark:text-sky-300",
+function parseDisplayUsd(value: string): number | null {
+  const n = Number.parseFloat(value.replace(/[$,]/g, ""))
+  return Number.isFinite(n) ? n : null
 }
 
-const cohortTypeIcon: Record<
-  CoderTrendCohortKey,
-  React.ComponentType<{ className?: string }>
-> = {
-  "top-performers": AwardIcon,
-  "flagged-risk": AlertTriangleIcon,
-  "recently-added": UserPlusIcon,
+function parseDisplayPercent(value: string): number | null {
+  const n = Number.parseFloat(value.replace(/%/g, "").trim())
+  return Number.isFinite(n) ? n : null
 }
 
-function CoderTrendsTypeBadge({ cohort }: { cohort: CoderTrendCohortKey }) {
-  const Icon = cohortTypeIcon[cohort]
-  const label = CODER_TRENDS_COHORT_LABELS[cohort]
+function CoderTrendsMetricCell({
+  value,
+  highlight,
+}: {
+  value: string
+  highlight: "money" | "percent" | "none"
+}) {
+  let over = false
+  if (highlight === "money") {
+    const v = parseDisplayUsd(value)
+    over = v !== null && v > CODER_TRENDS_ALERT_USD_MIN
+  } else if (highlight === "percent") {
+    const v = parseDisplayPercent(value)
+    over = v !== null && v > CODER_TRENDS_ALERT_PERCENT_MIN
+  }
+
   return (
-    <Badge
-      variant="outline"
+    <div
       className={cn(
-        tableTypeBadgeLayoutClass,
-        "px-1.5",
-        cohortBadgeTone[cohort],
+        "text-right tabular-nums",
+        over && "font-medium text-destructive",
       )}
     >
-      <Icon className="size-3 shrink-0 opacity-90" aria-hidden />
-      <span className={tableTypeBadgeLabelClass}>{label}</span>
-    </Badge>
+      {value}
+    </div>
   )
 }
 
 const CODER_TRENDS_COLUMN_HELP: Record<string, string> = {
-  Reviewed:
-    "Total charts or encounters reviewed for this coder in the selected reporting period.",
-  "Chg %":
+  "Total Charts Reviewed":
+    "Total charts or encounters reviewed for this coder in the last three months.",
+  "Change Rate":
     "Share of reviewed charts with at least one coding change in the trend window.",
-  "Avg miss +$":
+  "Avg missed $ increase":
     "Average estimated dollar increase tied to missed-revenue opportunities per chart.",
-  "Denial %":
+  "Denial Rate Potential":
     "Modeled denial-rate exposure based on coding patterns in this cohort.",
-  "Avg comp $":
+  "Avg. compliance risk saved":
     "Average compliance dollars saved or corrected per chart for this coder.",
-  "Qual miss %":
+  "Missed Quality Changes":
     "Share of charts with missed quality-related coding changes in the period.",
 }
 
@@ -116,18 +111,10 @@ function metricHeaderRight(columnId: string) {
   }
 }
 
-const typeColumn: ColumnDef<CoderTrendUnifiedRow> = {
-  id: "Type",
-  accessorKey: "cohort",
-  header: "Type",
-  cell: ({ row }) => <CoderTrendsTypeBadge cohort={row.original.cohort} />,
-  enableHiding: false,
-}
-
 const coderColumn: ColumnDef<CoderTrendUnifiedRow> = {
-  id: "Coder",
+  id: "Coder ID",
   accessorKey: "coderId",
-  header: "Coder",
+  header: "Coder ID",
   cell: ({ row }) => (
     <span className="font-medium">{row.original.coderId}</span>
   ),
@@ -136,87 +123,77 @@ const coderColumn: ColumnDef<CoderTrendUnifiedRow> = {
 
 const metricColumns: ColumnDef<CoderTrendUnifiedRow>[] = [
   {
-    id: "Reviewed",
+    id: "Total Charts Reviewed",
     accessorKey: "totalChartsReviewed",
-    header: metricHeaderRight("Reviewed"),
+    header: metricHeaderRight("Total Charts Reviewed"),
     cell: ({ getValue }) => (
-      <div className="text-right tabular-nums">{getValue<string>()}</div>
+      <CoderTrendsMetricCell value={getValue<string>()} highlight="none" />
     ),
   },
   {
-    id: "Chg %",
+    id: "Change Rate",
     accessorKey: "changeRate",
-    header: metricHeaderRight("Chg %"),
+    header: metricHeaderRight("Change Rate"),
     cell: ({ getValue }) => (
-      <div className="text-right tabular-nums">{getValue<string>()}</div>
+      <CoderTrendsMetricCell value={getValue<string>()} highlight="percent" />
     ),
   },
   {
-    id: "Avg miss +$",
+    id: "Avg missed $ increase",
     accessorKey: "avgMissedIncrease",
-    header: metricHeaderRight("Avg miss +$"),
+    header: metricHeaderRight("Avg missed $ increase"),
     cell: ({ getValue }) => (
-      <div className="text-right tabular-nums">{getValue<string>()}</div>
+      <CoderTrendsMetricCell value={getValue<string>()} highlight="money" />
     ),
   },
   {
-    id: "Denial %",
+    id: "Denial Rate Potential",
     accessorKey: "denialRatePotential",
-    header: metricHeaderRight("Denial %"),
+    header: metricHeaderRight("Denial Rate Potential"),
     cell: ({ getValue }) => (
-      <div className="text-right tabular-nums">{getValue<string>()}</div>
+      <CoderTrendsMetricCell value={getValue<string>()} highlight="percent" />
     ),
   },
   {
-    id: "Avg comp $",
+    id: "Avg. compliance risk saved",
     accessorKey: "avgComplianceRiskSaved",
-    header: metricHeaderRight("Avg comp $"),
+    header: metricHeaderRight("Avg. compliance risk saved"),
     cell: ({ getValue }) => (
-      <div className="text-right tabular-nums">{getValue<string>()}</div>
+      <CoderTrendsMetricCell value={getValue<string>()} highlight="money" />
     ),
   },
   {
-    id: "Qual miss %",
+    id: "Missed Quality Changes",
     accessorKey: "missedQualityChanges",
-    header: metricHeaderRight("Qual miss %"),
+    header: metricHeaderRight("Missed Quality Changes"),
     cell: ({ getValue }) => (
-      <div className="text-right tabular-nums">{getValue<string>()}</div>
+      <CoderTrendsMetricCell value={getValue<string>()} highlight="percent" />
     ),
   },
 ]
 
 const dataColumns: ColumnDef<CoderTrendUnifiedRow>[] = [
   coderColumn,
-  typeColumn,
   ...metricColumns,
 ]
 
 export function CoderTrendsTables() {
   const { activeFilter } = useCoderTrendsDimension()
-  const { range } = useDashboardDateRange()
-  const { visibleInstitutionKeys } = useDashboardInstitutions()
 
-  const derivedData = React.useMemo(
-    () =>
-      deriveCoderTrendsUnifiedData(CODER_TRENDS_UNIFIED_DATA, {
-        range,
-        visibleInstitutionKeys,
-      }),
-    [range, visibleInstitutionKeys],
+  const filteredData = React.useMemo(
+    () => CODER_TRENDS_UNIFIED_DATA.filter((row) => row.cohort === activeFilter),
+    [activeFilter],
   )
-
-  const filteredData = React.useMemo(() => {
-    if (activeFilter === "overall") return derivedData
-    return derivedData.filter((row) => row.cohort === activeFilter)
-  }, [activeFilter, derivedData])
 
   return (
     <CoderOverviewDataTable
       key={activeFilter}
+      title="Last 3 months"
+      titleAs="h3"
       sectionId={CODER_TRENDS_TABLE_SECTION_ID}
       initialData={filteredData}
       dataColumns={dataColumns}
-      defaultPageSize={30}
+      defaultPageSize={20}
     />
   )
 }
