@@ -247,7 +247,7 @@ function ChartTooltipContent({
                 )
               )}
               {formatter && item?.value !== undefined && item.name ? (
-                <div className="flex min-w-0 flex-1 flex-col gap-1 leading-none">
+                <div className="flex min-w-0 flex-1 flex-col gap-1 leading-normal">
                   <span className="text-muted-foreground">
                     {itemConfig?.label ?? item.name}
                   </span>
