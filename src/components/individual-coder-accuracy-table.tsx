@@ -50,9 +50,10 @@ export function IndividualCoderAccuracyTable({
         initialData={gridRows}
         dataColumns={buildIndividualCoderGridColumns({
           emptyLabelHeader: false,
-          h1: "Ttl assig",
-          h2: "Ttl chg",
-          h3: "% acc",
+          labelHeader: "Accuracy category",
+          h1: "Total assignments",
+          h2: "Total changes",
+          h3: "Percent accuracy",
         })}
         defaultPageSize={20}
         hideColumnsAndExport

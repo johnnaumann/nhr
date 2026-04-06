@@ -6,12 +6,26 @@ import type { IndividualCoderGridRow } from "@/lib/individual-coder-table-data"
 import { cn } from "@/lib/utils"
 
 /** Label + three metrics (no actions column; use with `hideActionsColumn` on the data table). */
+const ACCURACY_LABEL_COL_PCT = 38
+
 export const INDIVIDUAL_CODER_ACCURACY_TABLE_COLGROUP = (
   <colgroup>
-    <col style={{ width: "28%" }} />
-    <col style={{ width: "calc((100% - 28%) / 3)" }} />
-    <col style={{ width: "calc((100% - 28%) / 3)" }} />
-    <col style={{ width: "calc((100% - 28%) / 3)" }} />
+    <col style={{ width: `${ACCURACY_LABEL_COL_PCT}%` }} />
+    <col
+      style={{
+        width: `calc((100% - ${ACCURACY_LABEL_COL_PCT}%) / 3)`,
+      }}
+    />
+    <col
+      style={{
+        width: `calc((100% - ${ACCURACY_LABEL_COL_PCT}%) / 3)`,
+      }}
+    />
+    <col
+      style={{
+        width: `calc((100% - ${ACCURACY_LABEL_COL_PCT}%) / 3)`,
+      }}
+    />
   </colgroup>
 )
 
@@ -65,11 +79,13 @@ function BlankLabelHeader() {
  */
 export function buildIndividualCoderGridColumns(options: {
   emptyLabelHeader: boolean
+  /** First column header when `emptyLabelHeader` is false (default "Type"). */
+  labelHeader?: string
   h1: string
   h2: string
   h3: string
 }): ColumnDef<IndividualCoderGridRow>[] {
-  const { emptyLabelHeader, h1, h2, h3 } = options
+  const { emptyLabelHeader, labelHeader = "Type", h1, h2, h3 } = options
   const headers = [h1, h2, h3] as const
   const keys = ["s1", "s2", "s3"] as const
 
@@ -79,7 +95,7 @@ export function buildIndividualCoderGridColumns(options: {
       accessorKey: "label",
       header: emptyLabelHeader
         ? () => <BlankLabelHeader />
-        : "Type",
+        : labelHeader,
       cell: ({ row }) => {
         const v = row.original.label
         if (!v) {

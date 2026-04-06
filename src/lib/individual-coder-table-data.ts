@@ -77,10 +77,10 @@ export type IndividualCoderAccuracyRow = {
 
 const ACCURACY_SOURCE: Omit<IndividualCoderAccuracyRow, "id">[] = [
   { type: "Coding accuracy", ttlAssig: 235, ttlChg: 9, pctAcc: "96%" },
-  { type: "Dx accuracy", ttlAssig: 182, ttlChg: 9, pctAcc: "95%" },
-  { type: "PCS accuracy", ttlAssig: 53, ttlChg: 0, pctAcc: "100%" },
-  { type: "Disposition acc", ttlAssig: 23, ttlChg: 0, pctAcc: "100%" },
-  { type: "POA accuracy", ttlAssig: 182, ttlChg: 0, pctAcc: "100%" },
+  { type: "Diagnosis accuracy", ttlAssig: 182, ttlChg: 9, pctAcc: "95%" },
+  { type: "Procedure coding accuracy", ttlAssig: 53, ttlChg: 0, pctAcc: "100%" },
+  { type: "Disposition accuracy", ttlAssig: 23, ttlChg: 0, pctAcc: "100%" },
+  { type: "Present on admission accuracy", ttlAssig: 182, ttlChg: 0, pctAcc: "100%" },
   { type: "Risk of mortality", ttlAssig: 23, ttlChg: 1, pctAcc: "96%" },
   { type: "Severity of illness", ttlAssig: 23, ttlChg: 3, pctAcc: "87%" },
 ]
