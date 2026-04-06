@@ -4,6 +4,7 @@ import { CoderOverviewDataTable } from "@/components/coder-overview-data-table"
 import {
   buildIndividualCoderOverviewMetricColumns,
   INDIVIDUAL_CODER_OVERVIEW_TABLE_CLASS,
+  INDIVIDUAL_CODER_OVERVIEW_TABLE_COLGROUP,
 } from "@/components/individual-coder-grid-table"
 import { dashboardMainGutterClass } from "@/lib/dashboard-layout"
 import {
@@ -17,7 +18,8 @@ import { cn } from "@/lib/utils"
 
 const gridTableProps = {
   tableClassName: INDIVIDUAL_CODER_OVERVIEW_TABLE_CLASS,
-  tableFrameClassName: "w-fit max-w-full",
+  tableColGroup: INDIVIDUAL_CODER_OVERVIEW_TABLE_COLGROUP,
+  tableFrameClassName: "w-full",
 } as const
 
 export type IndividualCoderOverviewPanelProps = {

@@ -20,9 +20,22 @@ export const INDIVIDUAL_CODER_TABLE_COLGROUP = (
 
 export const INDIVIDUAL_CODER_TABLE_CLASS = "table-fixed"
 
-/** Overview summary tables: hug content so right-aligned metrics are not pushed across a full-width row. */
-export const INDIVIDUAL_CODER_OVERVIEW_TABLE_CLASS =
-  "table-auto w-max max-w-full [&_th:first-child]:pl-1.5 [&_td:first-child]:pl-1.5"
+/** Four metric columns + actions; widths fill the table so overview blocks span the full content width. */
+export const INDIVIDUAL_CODER_OVERVIEW_TABLE_COLGROUP = (
+  <colgroup>
+    <col style={{ width: "calc((100% - 2.75rem) / 4)" }} />
+    <col style={{ width: "calc((100% - 2.75rem) / 4)" }} />
+    <col style={{ width: "calc((100% - 2.75rem) / 4)" }} />
+    <col style={{ width: "calc((100% - 2.75rem) / 4)" }} />
+    <col style={{ width: "2.75rem" }} />
+  </colgroup>
+)
+
+/** Individual coder overview summary tables: full-width fixed layout aligned with {@link INDIVIDUAL_CODER_OVERVIEW_TABLE_COLGROUP}. */
+export const INDIVIDUAL_CODER_OVERVIEW_TABLE_CLASS = cn(
+  INDIVIDUAL_CODER_TABLE_CLASS,
+  "w-full [&_th:first-child]:pl-1.5 [&_td:first-child]:pl-1.5",
+)
 
 function metricHead(label: string) {
   return () => (
