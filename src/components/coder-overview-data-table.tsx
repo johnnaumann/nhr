@@ -220,6 +220,11 @@ export type CoderOverviewDataTableProps<T extends { id: number }> = {
   title?: string
   /** Semantic level for {@link title} (default h2). Use h3 when nested under a page h2. */
   titleAs?: "h2" | "h3"
+  /**
+   * When there is no visible `title`, names the section for assistive tech (e.g. title
+   * appears inside the table instead).
+   */
+  sectionAccessibleName?: string
   /** Anchor id for in-page navigation (e.g. from sticky dimension nav). */
   sectionId: string
   initialData: T[]
@@ -253,6 +258,7 @@ export function coderOverviewColumnMenuLabel(column: Column<unknown, unknown>) {
 export function CoderOverviewDataTable<T extends { id: number }>({
   title,
   titleAs = "h2",
+  sectionAccessibleName,
   sectionId,
   initialData,
   dataColumns,
@@ -365,7 +371,9 @@ export function CoderOverviewDataTable<T extends { id: number }>({
       className={cn(
         "flex flex-col gap-4 scroll-mt-[var(--stacked-section-scroll-margin)]",
       )}
-      aria-label={title ? undefined : "Data table"}
+      aria-label={
+        title ? undefined : (sectionAccessibleName ?? "Data table")
+      }
       aria-labelledby={title ? headingId : undefined}
     >
       {showInlineColumnsExport ? (

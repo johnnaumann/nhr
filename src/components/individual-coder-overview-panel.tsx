@@ -2,7 +2,7 @@
 
 import { CoderOverviewDataTable } from "@/components/coder-overview-data-table"
 import {
-  buildIndividualCoderOverviewMetricColumns,
+  buildIndividualCoderOverviewColumns,
   INDIVIDUAL_CODER_OVERVIEW_TABLE_CLASS,
   INDIVIDUAL_CODER_OVERVIEW_TABLE_COLGROUP,
 } from "@/components/individual-coder-grid-table"
@@ -57,10 +57,10 @@ export function IndividualCoderOverviewPanel({
       <div className="flex flex-col gap-4 md:gap-5">
         <CoderOverviewDataTable
           sectionId={INDIVIDUAL_CODER_OVERVIEW_BLOCK_IDS.drg}
+          sectionAccessibleName="Charts Changed"
           initialData={INDIVIDUAL_CODER_GRID_BLOCK_DRG}
-          title="Charts Changed"
-          titleAs="h3"
-          dataColumns={buildIndividualCoderOverviewMetricColumns({
+          dataColumns={buildIndividualCoderOverviewColumns({
+            sectionTitle: "Charts Changed",
             h1: "Change Rate",
             h2: "DRG Changes",
             h3: "Quality Changes",
@@ -76,10 +76,10 @@ export function IndividualCoderOverviewPanel({
 
         <CoderOverviewDataTable
           sectionId={INDIVIDUAL_CODER_OVERVIEW_BLOCK_IDS.missed}
+          sectionAccessibleName="Missed Revenue Opportunities"
           initialData={INDIVIDUAL_CODER_GRID_BLOCK_MISSED}
-          title="Missed Revenue Opportunities"
-          titleAs="h3"
-          dataColumns={buildIndividualCoderOverviewMetricColumns({
+          dataColumns={buildIndividualCoderOverviewColumns({
+            sectionTitle: "Missed Revenue Opportunities",
             h1: "Change Rate",
             h2: "Up Changes",
             h3: "Avg missed $ increase",
@@ -96,10 +96,10 @@ export function IndividualCoderOverviewPanel({
 
         <CoderOverviewDataTable
           sectionId={INDIVIDUAL_CODER_OVERVIEW_BLOCK_IDS.compliance}
+          sectionAccessibleName="Compliance"
           initialData={INDIVIDUAL_CODER_GRID_BLOCK_COMPLIANCE}
-          title="Compliance"
-          titleAs="h3"
-          dataColumns={buildIndividualCoderOverviewMetricColumns({
+          dataColumns={buildIndividualCoderOverviewColumns({
+            sectionTitle: "Compliance",
             h1: "Change Rate",
             h2: "Compliance Changes",
             h3: "Avg compliance Risk Prevented",
@@ -115,10 +115,10 @@ export function IndividualCoderOverviewPanel({
 
         <CoderOverviewDataTable
           sectionId={INDIVIDUAL_CODER_OVERVIEW_BLOCK_IDS.quality}
+          sectionAccessibleName="Quality"
           initialData={INDIVIDUAL_CODER_GRID_BLOCK_QUALITY}
-          title="Quality"
-          titleAs="h3"
-          dataColumns={buildIndividualCoderOverviewMetricColumns({
+          dataColumns={buildIndividualCoderOverviewColumns({
+            sectionTitle: "Quality",
             h1: "Change Rate",
             h2: "PDX",
             h3: "Secondary Diagnosis",

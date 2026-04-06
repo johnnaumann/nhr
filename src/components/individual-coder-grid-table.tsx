@@ -17,13 +17,14 @@ export const INDIVIDUAL_CODER_ACCURACY_TABLE_COLGROUP = (
 
 export const INDIVIDUAL_CODER_TABLE_CLASS = "table-fixed"
 
-/** Four metric columns + actions; widths fill the table so overview blocks span the full content width. */
+/** Section title column + four metric columns + actions; full-width fixed layout. */
 export const INDIVIDUAL_CODER_OVERVIEW_TABLE_COLGROUP = (
   <colgroup>
-    <col style={{ width: "calc((100% - 2.75rem) / 4)" }} />
-    <col style={{ width: "calc((100% - 2.75rem) / 4)" }} />
-    <col style={{ width: "calc((100% - 2.75rem) / 4)" }} />
-    <col style={{ width: "calc((100% - 2.75rem) / 4)" }} />
+    <col style={{ width: "24%" }} />
+    <col style={{ width: "calc((100% - 24% - 2.75rem) / 4)" }} />
+    <col style={{ width: "calc((100% - 24% - 2.75rem) / 4)" }} />
+    <col style={{ width: "calc((100% - 24% - 2.75rem) / 4)" }} />
+    <col style={{ width: "calc((100% - 24% - 2.75rem) / 4)" }} />
     <col style={{ width: "2.75rem" }} />
   </colgroup>
 )
@@ -31,7 +32,7 @@ export const INDIVIDUAL_CODER_OVERVIEW_TABLE_COLGROUP = (
 /** Individual coder overview summary tables: full-width fixed layout aligned with {@link INDIVIDUAL_CODER_OVERVIEW_TABLE_COLGROUP}. */
 export const INDIVIDUAL_CODER_OVERVIEW_TABLE_CLASS = cn(
   INDIVIDUAL_CODER_TABLE_CLASS,
-  "w-full [&_th:first-child]:pl-1.5 [&_td:first-child]:pl-1.5",
+  "w-full [&_th:first-child]:pl-1.5 [&_td:first-child]:pl-1.5 [&_th:first-child]:align-top",
 )
 
 function metricHead(label: string) {
@@ -139,4 +140,37 @@ export function buildIndividualCoderOverviewMetricColumns(options: {
       )
     },
   }))
+}
+
+/**
+ * Section title in the first header cell + four metric columns; first body cell is a
+ * layout placeholder (values are in the metric columns only).
+ */
+export function buildIndividualCoderOverviewColumns(options: {
+  sectionTitle: string
+  h1: string
+  h2: string
+  h3: string
+  h4: string
+  dangerMetricIndices?: number[]
+}): ColumnDef<IndividualCoderGridRow>[] {
+  const { sectionTitle, ...metricOptions } = options
+  return [
+    {
+      id: "section",
+      accessorKey: "label",
+      header: () => (
+        <span className="block max-w-[16rem] text-left text-sm font-semibold leading-snug text-foreground sm:text-base">
+          {sectionTitle}
+        </span>
+      ),
+      cell: () => (
+        <span className="block text-muted-foreground" aria-hidden>
+          {"\u00a0"}
+        </span>
+      ),
+      enableHiding: false,
+    },
+    ...buildIndividualCoderOverviewMetricColumns(metricOptions),
+  ]
 }
