@@ -6,7 +6,6 @@ import { cn } from "@/lib/utils"
 
 export const CODER_OVERVIEW_TABLE_SECTION_ID = "coder-overview-table-section"
 
-/** Sticky nav: `overall` shows all category rows; other keys filter to one. */
 export const CODER_OVERVIEW_DIMENSIONS: {
   dimensionKey: CoderOverviewDimensionKey
   label: string
@@ -42,7 +41,7 @@ export function CoderOverviewDimensionNav({
         "flex min-h-8 flex-wrap items-center gap-2",
         className,
       )}
-      aria-label="Coder overview: Overall shows all categories, or filter by one"
+      aria-label="Coder overview: choose summary or metric lens"
     >
       {CODER_OVERVIEW_DIMENSIONS.map(({ dimensionKey, label }) => {
         const isActive = activeDimension === dimensionKey

@@ -1,250 +1,579 @@
-/** Row badge / slice: one of the category tables (not “Overall”). */
+/** Lens tabs excluding the combined summary. */
 export type CoderOverviewRowDimension =
   | "drg"
   | "missed-opportunities"
   | "compliance"
   | "quality"
 
-/**
- * Sticky nav selection. `overall` means show every category row; other keys
- * filter to that category only.
- */
 export type CoderOverviewDimensionKey =
   | "overall"
   | CoderOverviewRowDimension
 
-/** One row per coder; every metric populated for the combined “Overall” view. */
-export type CoderOverviewUnifiedRow = {
-  id: number
-  dimension: CoderOverviewRowDimension
-  coderId: string
-  totalReviewed: string
-  changeRate: string
-  totalChanges: string
-  increasedChanges: string
-  decreasedChanges: string
-  upChanges: string
-  avgMissedIncrease: string
-  totalMissedRevenue: string
-  avgComplianceRiskSaved: string
-  totalComplianceRiskPrevented: string
-  secondaryDiagnosis: string
-  secondaryProcedures: string
-}
-
-const DIMENSION_MIX_CYCLE: CoderOverviewRowDimension[] = [
-  "compliance",
-  "drg",
-  "quality",
-  "missed-opportunities",
-  "drg",
-  "compliance",
-  "missed-opportunities",
-  "quality",
-  "drg",
-]
-
-function formatUsd(n: number): string {
-  return `$${n.toLocaleString("en-US", {
+function formatUsd(amount: number): string {
+  return `$${amount.toLocaleString("en-US", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })}`
 }
 
-function buildDemoCoderRow(id: number): CoderOverviewUnifiedRow {
-  const dimension = DIMENSION_MIX_CYCLE[(id - 1) % DIMENSION_MIX_CYCLE.length]
-  const tc = 8 + ((id * 31) % 52)
-  const inc = Math.max(1, Math.round(tc * (0.45 + (id % 7) * 0.03)))
-  const dec = Math.max(1, tc - inc)
-  const up = Math.max(1, Math.min(tc, Math.round(tc * 0.42 + (id % 6))))
-  const reviewed = 420 + ((id * 79) % 740)
-  const ratePct = 0.6 + (((id * 13) % 77) / 10)
-
-  return {
-    id,
-    dimension,
-    coderId: `Coder ${id}`,
-    totalReviewed: reviewed.toLocaleString("en-US"),
-    changeRate: `${ratePct.toFixed(2)}%`,
-    totalChanges: String(tc),
-    increasedChanges: String(inc),
-    decreasedChanges: String(dec),
-    upChanges: String(up),
-    avgMissedIncrease: formatUsd(120 + id * 47 + (id % 11) * 12),
-    totalMissedRevenue: formatUsd(8000 + id * 4980 + (id % 13) * 900),
-    avgComplianceRiskSaved: formatUsd(180 + id * 23),
-    totalComplianceRiskPrevented: formatUsd(28000 + id * 11200),
-    secondaryDiagnosis: String(4 + (id * 5) % 24),
-    secondaryProcedures: String(5 + (id * 7) % 28),
-  }
+function parseIntLocale(s: string): number {
+  return Number.parseInt(s.replace(/,/g, ""), 10) || 0
 }
 
-/** First nine rows (curated); remaining rows follow the same mix pattern with generated metrics. */
-const CODER_OVERVIEW_BASE_ROWS: CoderOverviewUnifiedRow[] = [
+function parseUsd(s: string): number {
+  return Number.parseFloat(s.replace(/[$,]/g, "")) || 0
+}
+
+function parsePct(s: string): number {
+  return Number.parseFloat(s.replace(/%/g, "").trim()) || 0
+}
+
+// ——— Overall (9 source rows → Coder 1–9; 10–15 extended) ———
+
+export type CoderOverviewOverallRow = {
+  id: number
+  coderId: string
+  totalReviewed: string
+  changeRate: string
+  totalMissedRevenue: string
+  totalComplianceRiskPrevented: string
+  missedQualityChangeRate: string
+}
+
+const OVERALL_NINE: Omit<
+  CoderOverviewOverallRow,
+  "id" | "coderId"
+>[] = [
   {
-    id: 1,
-    dimension: "compliance",
-    coderId: "Coder 1",
-    totalReviewed: "743",
-    changeRate: "2.10%",
-    totalChanges: "16",
-    increasedChanges: "10",
-    decreasedChanges: "6",
-    upChanges: "8",
-    avgMissedIncrease: "$442.10",
-    totalMissedRevenue: "$58,320.40",
-    avgComplianceRiskSaved: "$612.40",
-    totalComplianceRiskPrevented: "$98,200.00",
-    secondaryDiagnosis: "9",
-    secondaryProcedures: "11",
+    totalReviewed: "889",
+    changeRate: "2.23%",
+    totalMissedRevenue: "$13,587.84",
+    totalComplianceRiskPrevented: "$30,382.50",
+    missedQualityChangeRate: "1.8%",
   },
   {
-    id: 2,
-    dimension: "drg",
-    coderId: "Coder 2",
-    totalReviewed: "892",
-    changeRate: "4.20%",
-    totalChanges: "38",
-    increasedChanges: "24",
-    decreasedChanges: "14",
-    upChanges: "11",
-    avgMissedIncrease: "$318.50",
-    totalMissedRevenue: "$112,400.00",
-    avgComplianceRiskSaved: "$198.30",
-    totalComplianceRiskPrevented: "$76,500.00",
-    secondaryDiagnosis: "5",
+    totalReviewed: "842",
+    changeRate: "35.6%",
+    totalMissedRevenue: "$2,017,816.92",
+    totalComplianceRiskPrevented: "$1,430,382.50",
+    missedQualityChangeRate: "38.8%",
+  },
+  {
+    totalReviewed: "999",
+    changeRate: "5.28%",
+    totalMissedRevenue: "$240,387.84",
+    totalComplianceRiskPrevented: "$55,382.50",
+    missedQualityChangeRate: "2.8%",
+  },
+  {
+    totalReviewed: "889",
+    changeRate: "28.2%",
+    totalMissedRevenue: "$254,268.00",
+    totalComplianceRiskPrevented: "$1,130,382.50",
+    missedQualityChangeRate: "4.5%",
+  },
+  {
+    totalReviewed: "532",
+    changeRate: "6.23%",
+    totalMissedRevenue: "$217,448.28",
+    totalComplianceRiskPrevented: "$130,382.50",
+    missedQualityChangeRate: "3.6%",
+  },
+  {
+    totalReviewed: "1,042",
+    changeRate: "4.43%",
+    totalMissedRevenue: "$65,068.92",
+    totalComplianceRiskPrevented: "$55,555.00",
+    missedQualityChangeRate: "1.3%",
+  },
+  {
+    totalReviewed: "1,021",
+    changeRate: "8.0%",
+    totalMissedRevenue: "$1,262,268.00",
+    totalComplianceRiskPrevented: "$168,255.00",
+    missedQualityChangeRate: "3.1%",
+  },
+  {
+    totalReviewed: "931",
+    changeRate: "6.1%",
+    totalMissedRevenue: "$245,196.00",
+    totalComplianceRiskPrevented: "$155,682.50",
+    missedQualityChangeRate: "23.9%",
+  },
+  {
+    totalReviewed: "1,058",
+    changeRate: "5.43%",
+    totalMissedRevenue: "$265,587.84",
+    totalComplianceRiskPrevented: "$508,607.50",
+    missedQualityChangeRate: "2.3%",
+  },
+]
+
+function buildOverall15(): CoderOverviewOverallRow[] {
+  const rows: CoderOverviewOverallRow[] = OVERALL_NINE.map((r, i) => ({
+    id: i + 1,
+    coderId: `Coder ${i + 1}`,
+    ...r,
+  }))
+  for (let id = 10; id <= 15; id++) {
+    const s = OVERALL_NINE[(id - 10) % 9]!
+    const reviewed = parseIntLocale(s.totalReviewed) + (id - 9) * 19
+    const rate = Math.min(55, parsePct(s.changeRate) + (id - 10) * 0.42)
+    const miss = parseUsd(s.totalMissedRevenue) * (1 + (id - 10) * 0.055)
+    const comp =
+      parseUsd(s.totalComplianceRiskPrevented) * (1 + (id % 5) * 0.035)
+    const qual = Math.min(99, parsePct(s.missedQualityChangeRate) + (id - 10) * 0.55)
+    rows.push({
+      id,
+      coderId: `Coder ${id}`,
+      totalReviewed: reviewed.toLocaleString("en-US"),
+      changeRate: `${rate.toFixed(2)}%`,
+      totalMissedRevenue: formatUsd(miss),
+      totalComplianceRiskPrevented: formatUsd(comp),
+      missedQualityChangeRate: `${qual.toFixed(1)}%`,
+    })
+  }
+  return rows
+}
+
+export const CODER_OVERVIEW_OVERALL_DATA = buildOverall15()
+
+// ——— DRG ———
+
+export type CoderOverviewDrgRow = {
+  id: number
+  coderId: string
+  totalReviewed: string
+  totalChanges: string
+  changeRate: string
+  increasedChanges: string
+  decreasedChanges: string
+}
+
+const DRG_NINE: Omit<CoderOverviewDrgRow, "id" | "coderId">[] = [
+  {
+    totalReviewed: "889",
+    totalChanges: "11",
+    changeRate: "1.23%",
+    increasedChanges: "7",
+    decreasedChanges: "4",
+  },
+  {
+    totalReviewed: "842",
+    totalChanges: "241",
+    changeRate: "28.6%",
+    increasedChanges: "152",
+    decreasedChanges: "89",
+  },
+  {
+    totalReviewed: "999",
+    totalChanges: "33",
+    changeRate: "3.28%",
+    increasedChanges: "21",
+    decreasedChanges: "12",
+  },
+  {
+    totalReviewed: "889",
+    totalChanges: "224",
+    changeRate: "25.2%",
+    increasedChanges: "141",
+    decreasedChanges: "83",
+  },
+  {
+    totalReviewed: "532",
+    totalChanges: "17",
+    changeRate: "3.23%",
+    increasedChanges: "11",
+    decreasedChanges: "6",
+  },
+  {
+    totalReviewed: "1,042",
+    totalChanges: "25",
+    changeRate: "2.43%",
+    increasedChanges: "16",
+    decreasedChanges: "9",
+  },
+  {
+    totalReviewed: "1,021",
+    totalChanges: "84",
+    changeRate: "8.2%",
+    increasedChanges: "53",
+    decreasedChanges: "31",
+  },
+  {
+    totalReviewed: "931",
+    totalChanges: "57",
+    changeRate: "6.1%",
+    increasedChanges: "36",
+    decreasedChanges: "21",
+  },
+  {
+    totalReviewed: "1,058",
+    totalChanges: "34",
+    changeRate: "3.21%",
+    increasedChanges: "21",
+    decreasedChanges: "13",
+  },
+]
+
+function buildDrg15(): CoderOverviewDrgRow[] {
+  const rows: CoderOverviewDrgRow[] = DRG_NINE.map((r, i) => ({
+    id: i + 1,
+    coderId: `Coder ${i + 1}`,
+    ...r,
+  }))
+  for (let id = 10; id <= 15; id++) {
+    const s = DRG_NINE[(id - 10) % 9]!
+    const reviewed = parseIntLocale(s.totalReviewed) + (id - 9) * 16
+    let tc = parseIntLocale(s.totalChanges) + (id - 9)
+    let inc = parseIntLocale(s.increasedChanges) + ((id - 10) % 5)
+    let dec = parseIntLocale(s.decreasedChanges) + ((id - 11) % 4)
+    if (inc + dec > tc) {
+      tc = inc + dec
+    } else {
+      dec = tc - inc
+    }
+    const rate = Math.min(55, (tc / Math.max(1, reviewed)) * 100)
+    rows.push({
+      id,
+      coderId: `Coder ${id}`,
+      totalReviewed: reviewed.toLocaleString("en-US"),
+      totalChanges: String(tc),
+      changeRate: `${rate.toFixed(2)}%`,
+      increasedChanges: String(inc),
+      decreasedChanges: String(dec),
+    })
+  }
+  return rows
+}
+
+export const CODER_OVERVIEW_DRG_DATA = buildDrg15()
+
+// ——— Missed opportunities ———
+
+export type CoderOverviewMissedRow = {
+  id: number
+  coderId: string
+  totalReviewed: string
+  upChanges: string
+  changeRate: string
+  avgMissedIncrease: string
+  totalMissedRevenue: string
+}
+
+const MISSED_NINE: Omit<CoderOverviewMissedRow, "id" | "coderId">[] = [
+  {
+    totalReviewed: "889",
+    upChanges: "7",
+    changeRate: "0.75%",
+    avgMissedIncrease: "$53.92",
+    totalMissedRevenue: "$13,587.84",
+  },
+  {
+    totalReviewed: "842",
+    upChanges: "190",
+    changeRate: "22.6%",
+    avgMissedIncrease: "$8,007.21",
+    totalMissedRevenue: "$2,017,816.92",
+  },
+  {
+    totalReviewed: "999",
+    upChanges: "17",
+    changeRate: "1.75%",
+    avgMissedIncrease: "$953.92",
+    totalMissedRevenue: "$240,387.84",
+  },
+  {
+    totalReviewed: "889",
+    upChanges: "163",
+    changeRate: "18.3%",
+    avgMissedIncrease: "$1,009.00",
+    totalMissedRevenue: "$254,268.00",
+  },
+  {
+    totalReviewed: "532",
+    upChanges: "13",
+    changeRate: "2.50%",
+    avgMissedIncrease: "$862.89",
+    totalMissedRevenue: "$217,448.28",
+  },
+  {
+    totalReviewed: "1,042",
+    upChanges: "13",
+    changeRate: "1.24%",
+    avgMissedIncrease: "$258.21",
+    totalMissedRevenue: "$65,068.92",
+  },
+  {
+    totalReviewed: "1,021",
+    upChanges: "63",
+    changeRate: "6.2%",
+    avgMissedIncrease: "$5,009.00",
+    totalMissedRevenue: "$1,262,268.00",
+  },
+  {
+    totalReviewed: "931",
+    upChanges: "38",
+    changeRate: "4.1%",
+    avgMissedIncrease: "$973.00",
+    totalMissedRevenue: "$245,196.00",
+  },
+  {
+    totalReviewed: "1,058",
+    upChanges: "12",
+    changeRate: "1.18%",
+    avgMissedIncrease: "$1,053.92",
+    totalMissedRevenue: "$265,587.84",
+  },
+]
+
+function buildMissed15(): CoderOverviewMissedRow[] {
+  const rows: CoderOverviewMissedRow[] = MISSED_NINE.map((r, i) => ({
+    id: i + 1,
+    coderId: `Coder ${i + 1}`,
+    ...r,
+  }))
+  for (let id = 10; id <= 15; id++) {
+    const s = MISSED_NINE[(id - 10) % 9]!
+    const reviewed = parseIntLocale(s.totalReviewed) + (id - 9) * 14
+    const up = Math.min(
+      reviewed,
+      parseIntLocale(s.upChanges) + ((id - 10) % 6) + 1,
+    )
+    const avg = parseUsd(s.avgMissedIncrease) * (1 + (id - 10) * 0.04)
+    const miss = parseUsd(s.totalMissedRevenue) * (1 + (id % 4) * 0.045)
+    const rate = Math.min(55, (up / Math.max(1, reviewed)) * 100)
+    rows.push({
+      id,
+      coderId: `Coder ${id}`,
+      totalReviewed: reviewed.toLocaleString("en-US"),
+      upChanges: String(up),
+      changeRate: `${rate.toFixed(2)}%`,
+      avgMissedIncrease: formatUsd(avg),
+      totalMissedRevenue: formatUsd(miss),
+    })
+  }
+  return rows
+}
+
+export const CODER_OVERVIEW_MISSED_DATA = buildMissed15()
+
+// ——— Compliance ———
+
+export type CoderOverviewComplianceRow = {
+  id: number
+  coderId: string
+  totalReviewed: string
+  totalChanges: string
+  changeRate: string
+  avgComplianceRiskSaved: string
+  totalComplianceRiskPrevented: string
+}
+
+const COMPLIANCE_NINE: Omit<CoderOverviewComplianceRow, "id" | "coderId">[] = [
+  {
+    totalReviewed: "889",
+    totalChanges: "2",
+    changeRate: "0.23%",
+    avgComplianceRiskSaved: "$121.53",
+    totalComplianceRiskPrevented: "$30,382.50",
+  },
+  {
+    totalReviewed: "842",
+    totalChanges: "157",
+    changeRate: "18.6%",
+    avgComplianceRiskSaved: "$5,721.53",
+    totalComplianceRiskPrevented: "$1,430,382.50",
+  },
+  {
+    totalReviewed: "999",
+    totalChanges: "23",
+    changeRate: "2.28%",
+    avgComplianceRiskSaved: "$221.53",
+    totalComplianceRiskPrevented: "$55,382.50",
+  },
+  {
+    totalReviewed: "889",
+    totalChanges: "129",
+    changeRate: "14.6%",
+    avgComplianceRiskSaved: "$4,521.53",
+    totalComplianceRiskPrevented: "$1,130,382.50",
+  },
+  {
+    totalReviewed: "532",
+    totalChanges: "12",
+    changeRate: "2.23%",
+    avgComplianceRiskSaved: "$521.53",
+    totalComplianceRiskPrevented: "$130,382.50",
+  },
+  {
+    totalReviewed: "1,042",
+    totalChanges: "15",
+    changeRate: "1.43%",
+    avgComplianceRiskSaved: "$222.22",
+    totalComplianceRiskPrevented: "$55,555.00",
+  },
+  {
+    totalReviewed: "1,021",
+    totalChanges: "20",
+    changeRate: "2.0%",
+    avgComplianceRiskSaved: "$673.02",
+    totalComplianceRiskPrevented: "$168,255.00",
+  },
+  {
+    totalReviewed: "931",
+    totalChanges: "10",
+    changeRate: "1.1%",
+    avgComplianceRiskSaved: "$622.73",
+    totalComplianceRiskPrevented: "$155,682.50",
+  },
+  {
+    totalReviewed: "1,058",
+    totalChanges: "35",
+    changeRate: "3.30%",
+    avgComplianceRiskSaved: "$2,034.43",
+    totalComplianceRiskPrevented: "$508,607.50",
+  },
+]
+
+function buildCompliance15(): CoderOverviewComplianceRow[] {
+  const rows: CoderOverviewComplianceRow[] = COMPLIANCE_NINE.map((r, i) => ({
+    id: i + 1,
+    coderId: `Coder ${i + 1}`,
+    ...r,
+  }))
+  for (let id = 10; id <= 15; id++) {
+    const s = COMPLIANCE_NINE[(id - 10) % 9]!
+    const reviewed = parseIntLocale(s.totalReviewed) + (id - 9) * 18
+    let tc = parseIntLocale(s.totalChanges) + ((id - 10) % 4)
+    tc = Math.min(reviewed, Math.max(1, tc))
+    const rate = Math.min(55, (tc / Math.max(1, reviewed)) * 100)
+    const avg = parseUsd(s.avgComplianceRiskSaved) * (1 + (id - 10) * 0.035)
+    const tot = parseUsd(s.totalComplianceRiskPrevented) * (1 + (id % 5) * 0.028)
+    rows.push({
+      id,
+      coderId: `Coder ${id}`,
+      totalReviewed: reviewed.toLocaleString("en-US"),
+      totalChanges: String(tc),
+      changeRate: `${rate.toFixed(2)}%`,
+      avgComplianceRiskSaved: formatUsd(avg),
+      totalComplianceRiskPrevented: formatUsd(tot),
+    })
+  }
+  return rows
+}
+
+export const CODER_OVERVIEW_COMPLIANCE_DATA = buildCompliance15()
+
+// ——— Quality ———
+
+export type CoderOverviewQualityRow = {
+  id: number
+  coderId: string
+  totalReviewed: string
+  totalChanges: string
+  changeRate: string
+  secondaryDiagnosis: string
+  secondaryProcedures: string
+}
+
+const QUALITY_NINE: Omit<CoderOverviewQualityRow, "id" | "coderId">[] = [
+  {
+    totalReviewed: "889",
+    totalChanges: "16",
+    changeRate: "1.8%",
+    secondaryDiagnosis: "6",
     secondaryProcedures: "7",
   },
   {
-    id: 3,
-    dimension: "quality",
-    coderId: "Coder 3",
-    totalReviewed: "521",
-    changeRate: "1.90%",
-    totalChanges: "10",
-    increasedChanges: "6",
-    decreasedChanges: "4",
-    upChanges: "3",
-    avgMissedIncrease: "$890.00",
-    totalMissedRevenue: "$24,100.00",
-    avgComplianceRiskSaved: "$445.00",
-    totalComplianceRiskPrevented: "$32,000.00",
-    secondaryDiagnosis: "12",
-    secondaryProcedures: "14",
+    totalReviewed: "842",
+    totalChanges: "327",
+    changeRate: "38.8%",
+    secondaryDiagnosis: "118",
+    secondaryProcedures: "140",
   },
   {
-    id: 4,
-    dimension: "missed-opportunities",
-    coderId: "Coder 4",
-    totalReviewed: "967",
-    changeRate: "5.60%",
-    totalChanges: "54",
-    increasedChanges: "31",
-    decreasedChanges: "23",
-    upChanges: "44",
-    avgMissedIncrease: "$1,102.25",
-    totalMissedRevenue: "$485,900.00",
-    avgComplianceRiskSaved: "$267.80",
-    totalComplianceRiskPrevented: "$145,600.00",
-    secondaryDiagnosis: "8",
-    secondaryProcedures: "9",
+    totalReviewed: "999",
+    totalChanges: "28",
+    changeRate: "2.8%",
+    secondaryDiagnosis: "10",
+    secondaryProcedures: "12",
   },
   {
-    id: 5,
-    dimension: "drg",
-    coderId: "Coder 5",
-    totalReviewed: "634",
-    changeRate: "3.10%",
-    totalChanges: "20",
-    increasedChanges: "13",
-    decreasedChanges: "7",
-    upChanges: "9",
-    avgMissedIncrease: "$205.00",
-    totalMissedRevenue: "$41,200.00",
-    avgComplianceRiskSaved: "$334.50",
-    totalComplianceRiskPrevented: "$51,800.00",
-    secondaryDiagnosis: "6",
+    totalReviewed: "889",
+    totalChanges: "40",
+    changeRate: "4.5%",
+    secondaryDiagnosis: "14",
+    secondaryProcedures: "17",
+  },
+  {
+    totalReviewed: "532",
+    totalChanges: "19",
+    changeRate: "3.6%",
+    secondaryDiagnosis: "7",
     secondaryProcedures: "8",
   },
   {
-    id: 6,
-    dimension: "compliance",
-    coderId: "Coder 6",
-    totalReviewed: "1,102",
-    changeRate: "0.80%",
-    totalChanges: "9",
-    increasedChanges: "5",
-    decreasedChanges: "4",
-    upChanges: "2",
-    avgMissedIncrease: "$156.75",
-    totalMissedRevenue: "$12,450.00",
-    avgComplianceRiskSaved: "$721.20",
-    totalComplianceRiskPrevented: "$210,300.00",
-    secondaryDiagnosis: "4",
-    secondaryProcedures: "5",
+    totalReviewed: "1,042",
+    totalChanges: "14",
+    changeRate: "1.3%",
+    secondaryDiagnosis: "5",
+    secondaryProcedures: "6",
   },
   {
-    id: 7,
-    dimension: "missed-opportunities",
-    coderId: "Coder 7",
-    totalReviewed: "778",
-    changeRate: "7.20%",
-    totalChanges: "56",
-    increasedChanges: "34",
-    decreasedChanges: "22",
-    upChanges: "51",
-    avgMissedIncrease: "$2,015.80",
-    totalMissedRevenue: "$1,025,000.00",
-    avgComplianceRiskSaved: "$589.10",
-    totalComplianceRiskPrevented: "$88,400.00",
-    secondaryDiagnosis: "15",
-    secondaryProcedures: "18",
+    totalReviewed: "1,021",
+    totalChanges: "32",
+    changeRate: "3.1%",
+    secondaryDiagnosis: "11",
+    secondaryProcedures: "14",
   },
   {
-    id: 8,
-    dimension: "quality",
-    coderId: "Coder 8",
-    totalReviewed: "445",
-    changeRate: "3.80%",
-    totalChanges: "27",
-    increasedChanges: "17",
-    decreasedChanges: "10",
-    upChanges: "14",
-    avgMissedIncrease: "$412.30",
-    totalMissedRevenue: "$55,780.00",
-    avgComplianceRiskSaved: "$203.60",
-    totalComplianceRiskPrevented: "$67,200.00",
-    secondaryDiagnosis: "22",
-    secondaryProcedures: "26",
+    totalReviewed: "931",
+    totalChanges: "223",
+    changeRate: "23.9%",
+    secondaryDiagnosis: "80",
+    secondaryProcedures: "96",
   },
   {
-    id: 9,
-    dimension: "drg",
-    coderId: "Coder 9",
-    totalReviewed: "901",
-    changeRate: "2.90%",
-    totalChanges: "29",
-    increasedChanges: "18",
-    decreasedChanges: "11",
-    upChanges: "12",
-    avgMissedIncrease: "$501.00",
-    totalMissedRevenue: "$98,650.00",
-    avgComplianceRiskSaved: "$412.75",
-    totalComplianceRiskPrevented: "$124,900.00",
-    secondaryDiagnosis: "7",
+    totalReviewed: "1,058",
+    totalChanges: "24",
+    changeRate: "2.3%",
+    secondaryDiagnosis: "9",
     secondaryProcedures: "10",
   },
 ]
 
-const EXTRA_CODER_COUNT = 41
+function buildQuality15(): CoderOverviewQualityRow[] {
+  const rows: CoderOverviewQualityRow[] = QUALITY_NINE.map((r, i) => ({
+    id: i + 1,
+    coderId: `Coder ${i + 1}`,
+    ...r,
+  }))
+  for (let id = 10; id <= 15; id++) {
+    const s = QUALITY_NINE[(id - 10) % 9]!
+    const reviewed = parseIntLocale(s.totalReviewed) + (id - 9) * 15
+    let tc = parseIntLocale(s.totalChanges) + ((id - 10) % 7)
+    tc = Math.min(reviewed, Math.max(1, tc))
+    const rate = Math.min(55, (tc / Math.max(1, reviewed)) * 100)
+    const dx = Math.max(
+      1,
+      parseIntLocale(s.secondaryDiagnosis) + ((id - 10) % 3),
+    )
+    const px = Math.max(
+      1,
+      parseIntLocale(s.secondaryProcedures) + ((id - 11) % 4),
+    )
+    rows.push({
+      id,
+      coderId: `Coder ${id}`,
+      totalReviewed: reviewed.toLocaleString("en-US"),
+      totalChanges: String(tc),
+      changeRate: `${rate.toFixed(1)}%`,
+      secondaryDiagnosis: String(dx),
+      secondaryProcedures: String(px),
+    })
+  }
+  return rows
+}
 
-/**
- * 50 coders (`Coder 1` … `Coder 50`). Types cycle through the mix pattern; all
- * metric columns are filled on every row (demo).
- */
-export const CODER_OVERVIEW_UNIFIED_DATA: CoderOverviewUnifiedRow[] = [
-  ...CODER_OVERVIEW_BASE_ROWS,
-  ...Array.from({ length: EXTRA_CODER_COUNT }, (_, i) =>
-    buildDemoCoderRow(10 + i),
-  ),
-]
+export const CODER_OVERVIEW_QUALITY_DATA = buildQuality15()

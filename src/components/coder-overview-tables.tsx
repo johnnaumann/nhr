@@ -1,106 +1,95 @@
 "use client"
 
-import * as React from "react"
 import type { ColumnDef } from "@tanstack/react-table"
-import {
-  AwardIcon,
-  LayersIcon,
-  ShieldCheckIcon,
-  TrendingUpIcon,
-} from "lucide-react"
-
 import { CoderOverviewDataTable } from "@/components/coder-overview-data-table"
-import {
-  CODER_OVERVIEW_DIMENSION_LABELS,
-  CODER_OVERVIEW_TABLE_SECTION_ID,
-} from "@/components/coder-overview-dimension-nav"
-import { Badge } from "@/components/ui/badge"
+import { CODER_OVERVIEW_TABLE_SECTION_ID } from "@/components/coder-overview-dimension-nav"
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { useCoderOverviewDimension } from "@/contexts/coder-overview-dimension-context"
-import { useDashboardDateRange } from "@/contexts/dashboard-date-range-context"
-import { useDashboardInstitutions } from "@/contexts/dashboard-institutions-context"
-import { deriveCoderOverviewUnifiedData } from "@/lib/coder-overview-derived-data"
 import {
-  CODER_OVERVIEW_UNIFIED_DATA,
-  type CoderOverviewRowDimension,
-  type CoderOverviewUnifiedRow,
+  CODER_OVERVIEW_COMPLIANCE_DATA,
+  CODER_OVERVIEW_DRG_DATA,
+  CODER_OVERVIEW_MISSED_DATA,
+  CODER_OVERVIEW_OVERALL_DATA,
+  CODER_OVERVIEW_QUALITY_DATA,
+  type CoderOverviewComplianceRow,
+  type CoderOverviewDrgRow,
+  type CoderOverviewMissedRow,
+  type CoderOverviewOverallRow,
+  type CoderOverviewQualityRow,
 } from "@/lib/coder-overview-table-data"
 import { cn } from "@/lib/utils"
 
-/** Match dashboard `DataTable` status cell layout (icon + label). */
-const tableTypeBadgeLayoutClass =
-  "inline-flex flex-row flex-nowrap items-center justify-center gap-0 leading-none [&_svg]:inline-block [&_svg]:shrink-0"
+const CODER_OVERVIEW_ALERT_USD_MIN = 5000
+const CODER_OVERVIEW_ALERT_PERCENT_MIN = 10
 
-const tableTypeBadgeLabelClass = "pl-1 leading-none text-inherit"
-
-const dimensionBadgeTone: Record<CoderOverviewRowDimension, string> = {
-  drg: "border-sky-500/45 text-sky-800 dark:text-sky-300",
-  "missed-opportunities":
-    "border-amber-500/45 text-amber-900 dark:text-amber-300",
-  compliance: "border-violet-500/45 text-violet-800 dark:text-violet-300",
-  quality: "border-emerald-500/45 text-emerald-800 dark:text-emerald-300",
+function parseDisplayUsd(value: string): number | null {
+  const n = Number.parseFloat(value.replace(/[$,]/g, ""))
+  return Number.isFinite(n) ? n : null
 }
 
-const dimensionTypeIcon: Record<
-  CoderOverviewRowDimension,
-  React.ComponentType<{ className?: string }>
-> = {
-  drg: LayersIcon,
-  "missed-opportunities": TrendingUpIcon,
-  compliance: ShieldCheckIcon,
-  quality: AwardIcon,
+function parseDisplayPercent(value: string): number | null {
+  const n = Number.parseFloat(value.replace(/%/g, "").trim())
+  return Number.isFinite(n) ? n : null
 }
 
-function CoderOverviewTypeBadge({
-  dimension,
+function CoderOverviewMetricCell({
+  value,
+  highlight,
 }: {
-  dimension: CoderOverviewRowDimension
+  value: string
+  highlight: "money" | "percent" | "none"
 }) {
-  const Icon = dimensionTypeIcon[dimension]
-  const label = CODER_OVERVIEW_DIMENSION_LABELS[dimension]
+  let over = false
+  if (highlight === "money") {
+    const v = parseDisplayUsd(value)
+    over = v !== null && v > CODER_OVERVIEW_ALERT_USD_MIN
+  } else if (highlight === "percent") {
+    const v = parseDisplayPercent(value)
+    over = v !== null && v > CODER_OVERVIEW_ALERT_PERCENT_MIN
+  }
+
   return (
-    <Badge
-      variant="outline"
+    <div
       className={cn(
-        tableTypeBadgeLayoutClass,
-        "px-1.5",
-        dimensionBadgeTone[dimension],
+        "text-right tabular-nums",
+        over && "font-medium text-destructive",
       )}
     >
-      <Icon className="size-3 shrink-0 opacity-90" aria-hidden />
-      <span className={tableTypeBadgeLabelClass}>{label}</span>
-    </Badge>
+      {value}
+    </div>
   )
 }
 
-/** Hover help for numeric / metric columns (not Coder or Type). */
 const CODER_OVERVIEW_COLUMN_HELP: Record<string, string> = {
-  Reviewed:
+  "Total Reviewed":
     "Count of encounters or charts this coder completed in the selected date range and sites.",
-  "Chg %":
+  "Change Rate":
     "Percentage of reviewed records that had at least one coding change in this lens.",
-  Changes:
-    "Total coding changes recorded for this coder in the selected period.",
-  "+Chg":
-    "Changes that increased weight, relative weight, or financial impact (e.g. higher DRG or dollars).",
-  "-Chg":
-    "Changes that decreased weight, relative weight, or financial impact.",
-  Up: "Count of upward-only adjustments in the missed-revenue view (e.g. captures that increased payment).",
-  "Avg miss $":
-    "Average estimated dollar impact per upward missed-revenue opportunity.",
-  "Missed $":
+  "Total Missed Revenue":
     "Total estimated missed revenue associated with upward coding changes in this view.",
-  "Avg comp $":
-    "Average compliance dollars attributed to each change in this compliance lens.",
-  "Comp prev $":
+  "Total Compliance Risk Prevented":
     "Total estimated compliance risk avoided or corrected for this coder in the period.",
-  "2° Dx":
+  "Missed Quality Change Rate":
+    "Share of quality-related changes tied to missed-opportunity signals for this coder.",
+  "Total Changes":
+    "Total coding changes recorded for this coder in the selected period.",
+  "Increased Changes":
+    "Changes that increased weight, relative weight, or financial impact.",
+  "Decreased Changes":
+    "Changes that decreased weight, relative weight, or financial impact.",
+  "Up Changes":
+    "Count of upward-only adjustments (e.g. captures that increased payment).",
+  "Avg missed $ increase":
+    "Average estimated dollar impact per upward missed-revenue opportunity.",
+  "Avg. Compliance Risk Saved":
+    "Average compliance dollars attributed to each change in this compliance lens.",
+  "Secondary Diagnosis":
     "Number of secondary diagnosis coding changes in the quality lens.",
-  "2° Proc":
+  "Secondary Procedures":
     "Number of secondary procedure coding changes in the quality lens.",
 }
 
@@ -142,381 +131,319 @@ function metricHeaderRight(columnId: string) {
   }
 }
 
-const typeColumn: ColumnDef<CoderOverviewUnifiedRow> = {
-  id: "Type",
-  accessorKey: "dimension",
-  header: "Type",
-  cell: ({ row }) => (
-    <CoderOverviewTypeBadge dimension={row.original.dimension} />
-  ),
-  enableHiding: false,
-}
-
-/** All categories at once: full metric set (every row has values). */
-const allCategoriesMetricColumns: ColumnDef<CoderOverviewUnifiedRow>[] = [
+const OVERALL_COLUMNS: ColumnDef<CoderOverviewOverallRow>[] = [
   {
-    id: "Coder",
+    id: "Coder ID",
     accessorKey: "coderId",
-    header: "Coder",
+    header: "Coder ID",
     cell: ({ row }) => (
       <span className="font-medium">{row.original.coderId}</span>
     ),
     enableHiding: false,
   },
   {
-    id: "Reviewed",
+    id: "Total Reviewed",
     accessorKey: "totalReviewed",
-    header: metricHeaderRight("Reviewed"),
+    header: metricHeaderRight("Total Reviewed"),
     cell: ({ getValue }) => (
-      <div className="text-right tabular-nums">{getValue<string>()}</div>
+      <CoderOverviewMetricCell value={getValue<string>()} highlight="none" />
     ),
   },
   {
-    id: "Chg %",
+    id: "Change Rate",
     accessorKey: "changeRate",
-    header: metricHeaderRight("Chg %"),
+    header: metricHeaderRight("Change Rate"),
     cell: ({ getValue }) => (
-      <div className="text-right tabular-nums">{getValue<string>()}</div>
+      <CoderOverviewMetricCell value={getValue<string>()} highlight="percent" />
     ),
   },
   {
-    id: "Changes",
-    accessorKey: "totalChanges",
-    header: metricHeaderRight("Changes"),
-    cell: ({ getValue }) => (
-      <div className="text-right tabular-nums">{getValue<string>()}</div>
-    ),
-  },
-  {
-    id: "+Chg",
-    accessorKey: "increasedChanges",
-    header: metricHeaderRight("+Chg"),
-    cell: ({ getValue }) => (
-      <div className="text-right tabular-nums">{getValue<string>()}</div>
-    ),
-  },
-  {
-    id: "-Chg",
-    accessorKey: "decreasedChanges",
-    header: metricHeaderRight("-Chg"),
-    cell: ({ getValue }) => (
-      <div className="text-right tabular-nums">{getValue<string>()}</div>
-    ),
-  },
-  {
-    id: "Up",
-    accessorKey: "upChanges",
-    header: metricHeaderRight("Up"),
-    cell: ({ getValue }) => (
-      <div className="text-right tabular-nums">{getValue<string>()}</div>
-    ),
-  },
-  {
-    id: "Avg miss $",
-    accessorKey: "avgMissedIncrease",
-    header: metricHeaderRight("Avg miss $"),
-    cell: ({ getValue }) => (
-      <div className="text-right tabular-nums">{getValue<string>()}</div>
-    ),
-  },
-  {
-    id: "Missed $",
+    id: "Total Missed Revenue",
     accessorKey: "totalMissedRevenue",
-    header: metricHeaderRight("Missed $"),
+    header: metricHeaderRight("Total Missed Revenue"),
     cell: ({ getValue }) => (
-      <div className="text-right tabular-nums">{getValue<string>()}</div>
+      <CoderOverviewMetricCell value={getValue<string>()} highlight="none" />
     ),
   },
   {
-    id: "Avg comp $",
-    accessorKey: "avgComplianceRiskSaved",
-    header: metricHeaderRight("Avg comp $"),
-    cell: ({ getValue }) => (
-      <div className="text-right tabular-nums">{getValue<string>()}</div>
-    ),
-  },
-  {
-    id: "Comp prev $",
+    id: "Total Compliance Risk Prevented",
     accessorKey: "totalComplianceRiskPrevented",
-    header: metricHeaderRight("Comp prev $"),
+    header: metricHeaderRight("Total Compliance Risk Prevented"),
     cell: ({ getValue }) => (
-      <div className="text-right tabular-nums">{getValue<string>()}</div>
+      <CoderOverviewMetricCell value={getValue<string>()} highlight="none" />
     ),
   },
   {
-    id: "2° Dx",
-    accessorKey: "secondaryDiagnosis",
-    header: metricHeaderRight("2° Dx"),
+    id: "Missed Quality Change Rate",
+    accessorKey: "missedQualityChangeRate",
+    header: metricHeaderRight("Missed Quality Change Rate"),
     cell: ({ getValue }) => (
-      <div className="text-right tabular-nums">{getValue<string>()}</div>
-    ),
-  },
-  {
-    id: "2° Proc",
-    accessorKey: "secondaryProcedures",
-    header: metricHeaderRight("2° Proc"),
-    cell: ({ getValue }) => (
-      <div className="text-right tabular-nums">{getValue<string>()}</div>
+      <CoderOverviewMetricCell value={getValue<string>()} highlight="percent" />
     ),
   },
 ]
 
-const drgColumns: ColumnDef<CoderOverviewUnifiedRow>[] = [
+const DRG_COLUMNS: ColumnDef<CoderOverviewDrgRow>[] = [
   {
-    id: "Coder",
+    id: "Coder ID",
     accessorKey: "coderId",
-    header: "Coder",
+    header: "Coder ID",
     cell: ({ row }) => (
       <span className="font-medium">{row.original.coderId}</span>
     ),
     enableHiding: false,
   },
   {
-    id: "Reviewed",
+    id: "Total Reviewed",
     accessorKey: "totalReviewed",
-    header: metricHeaderRight("Reviewed"),
+    header: metricHeaderRight("Total Reviewed"),
     cell: ({ getValue }) => (
-      <div className="text-right tabular-nums">{getValue<string>()}</div>
+      <CoderOverviewMetricCell value={getValue<string>()} highlight="none" />
     ),
   },
   {
-    id: "Changes",
+    id: "Total Changes",
     accessorKey: "totalChanges",
-    header: metricHeaderRight("Changes"),
+    header: metricHeaderRight("Total Changes"),
     cell: ({ getValue }) => (
-      <div className="text-right tabular-nums">{getValue<string>()}</div>
+      <CoderOverviewMetricCell value={getValue<string>()} highlight="none" />
     ),
   },
   {
-    id: "Chg %",
+    id: "Change Rate",
     accessorKey: "changeRate",
-    header: metricHeaderRight("Chg %"),
+    header: metricHeaderRight("Change Rate"),
     cell: ({ getValue }) => (
-      <div className="text-right tabular-nums">{getValue<string>()}</div>
+      <CoderOverviewMetricCell value={getValue<string>()} highlight="percent" />
     ),
   },
   {
-    id: "+Chg",
+    id: "Increased Changes",
     accessorKey: "increasedChanges",
-    header: metricHeaderRight("+Chg"),
+    header: metricHeaderRight("Increased Changes"),
     cell: ({ getValue }) => (
-      <div className="text-right tabular-nums">{getValue<string>()}</div>
+      <CoderOverviewMetricCell value={getValue<string>()} highlight="none" />
     ),
   },
   {
-    id: "-Chg",
+    id: "Decreased Changes",
     accessorKey: "decreasedChanges",
-    header: metricHeaderRight("-Chg"),
+    header: metricHeaderRight("Decreased Changes"),
     cell: ({ getValue }) => (
-      <div className="text-right tabular-nums">{getValue<string>()}</div>
+      <CoderOverviewMetricCell value={getValue<string>()} highlight="none" />
     ),
   },
 ]
 
-const missedColumns: ColumnDef<CoderOverviewUnifiedRow>[] = [
+const MISSED_COLUMNS: ColumnDef<CoderOverviewMissedRow>[] = [
   {
-    id: "Coder",
+    id: "Coder ID",
     accessorKey: "coderId",
-    header: "Coder",
+    header: "Coder ID",
     cell: ({ row }) => (
       <span className="font-medium">{row.original.coderId}</span>
     ),
     enableHiding: false,
   },
   {
-    id: "Reviewed",
+    id: "Total Reviewed",
     accessorKey: "totalReviewed",
-    header: metricHeaderRight("Reviewed"),
+    header: metricHeaderRight("Total Reviewed"),
     cell: ({ getValue }) => (
-      <div className="text-right tabular-nums">{getValue<string>()}</div>
+      <CoderOverviewMetricCell value={getValue<string>()} highlight="none" />
     ),
   },
   {
-    id: "Up",
+    id: "Up Changes",
     accessorKey: "upChanges",
-    header: metricHeaderRight("Up"),
+    header: metricHeaderRight("Up Changes"),
     cell: ({ getValue }) => (
-      <div className="text-right tabular-nums">{getValue<string>()}</div>
+      <CoderOverviewMetricCell value={getValue<string>()} highlight="none" />
     ),
   },
   {
-    id: "Chg %",
+    id: "Change Rate",
     accessorKey: "changeRate",
-    header: metricHeaderRight("Chg %"),
+    header: metricHeaderRight("Change Rate"),
     cell: ({ getValue }) => (
-      <div className="text-right tabular-nums">{getValue<string>()}</div>
+      <CoderOverviewMetricCell value={getValue<string>()} highlight="percent" />
     ),
   },
   {
-    id: "Avg miss $",
+    id: "Avg missed $ increase",
     accessorKey: "avgMissedIncrease",
-    header: metricHeaderRight("Avg miss $"),
+    header: metricHeaderRight("Avg missed $ increase"),
     cell: ({ getValue }) => (
-      <div className="text-right tabular-nums">{getValue<string>()}</div>
+      <CoderOverviewMetricCell value={getValue<string>()} highlight="money" />
     ),
   },
   {
-    id: "Missed $",
+    id: "Total Missed Revenue",
     accessorKey: "totalMissedRevenue",
-    header: metricHeaderRight("Missed $"),
+    header: metricHeaderRight("Total Missed Revenue"),
     cell: ({ getValue }) => (
-      <div className="text-right tabular-nums">{getValue<string>()}</div>
+      <CoderOverviewMetricCell value={getValue<string>()} highlight="none" />
     ),
   },
 ]
 
-const complianceColumns: ColumnDef<CoderOverviewUnifiedRow>[] = [
+const COMPLIANCE_COLUMNS: ColumnDef<CoderOverviewComplianceRow>[] = [
   {
-    id: "Coder",
+    id: "Coder ID",
     accessorKey: "coderId",
-    header: "Coder",
+    header: "Coder ID",
     cell: ({ row }) => (
       <span className="font-medium">{row.original.coderId}</span>
     ),
     enableHiding: false,
   },
   {
-    id: "Reviewed",
+    id: "Total Reviewed",
     accessorKey: "totalReviewed",
-    header: metricHeaderRight("Reviewed"),
+    header: metricHeaderRight("Total Reviewed"),
     cell: ({ getValue }) => (
-      <div className="text-right tabular-nums">{getValue<string>()}</div>
+      <CoderOverviewMetricCell value={getValue<string>()} highlight="none" />
     ),
   },
   {
-    id: "Changes",
+    id: "Total Changes",
     accessorKey: "totalChanges",
-    header: metricHeaderRight("Changes"),
+    header: metricHeaderRight("Total Changes"),
     cell: ({ getValue }) => (
-      <div className="text-right tabular-nums">{getValue<string>()}</div>
+      <CoderOverviewMetricCell value={getValue<string>()} highlight="none" />
     ),
   },
   {
-    id: "Chg %",
+    id: "Change Rate",
     accessorKey: "changeRate",
-    header: metricHeaderRight("Chg %"),
+    header: metricHeaderRight("Change Rate"),
     cell: ({ getValue }) => (
-      <div className="text-right tabular-nums">{getValue<string>()}</div>
+      <CoderOverviewMetricCell value={getValue<string>()} highlight="percent" />
     ),
   },
   {
-    id: "Avg comp $",
+    id: "Avg. Compliance Risk Saved",
     accessorKey: "avgComplianceRiskSaved",
-    header: metricHeaderRight("Avg comp $"),
+    header: metricHeaderRight("Avg. Compliance Risk Saved"),
     cell: ({ getValue }) => (
-      <div className="text-right tabular-nums">{getValue<string>()}</div>
+      <CoderOverviewMetricCell value={getValue<string>()} highlight="money" />
     ),
   },
   {
-    id: "Comp prev $",
+    id: "Total Compliance Risk Prevented",
     accessorKey: "totalComplianceRiskPrevented",
-    header: metricHeaderRight("Comp prev $"),
+    header: metricHeaderRight("Total Compliance Risk Prevented"),
     cell: ({ getValue }) => (
-      <div className="text-right tabular-nums">{getValue<string>()}</div>
+      <CoderOverviewMetricCell value={getValue<string>()} highlight="none" />
     ),
   },
 ]
 
-const qualityColumns: ColumnDef<CoderOverviewUnifiedRow>[] = [
+const QUALITY_COLUMNS: ColumnDef<CoderOverviewQualityRow>[] = [
   {
-    id: "Coder",
+    id: "Coder ID",
     accessorKey: "coderId",
-    header: "Coder",
+    header: "Coder ID",
     cell: ({ row }) => (
       <span className="font-medium">{row.original.coderId}</span>
     ),
     enableHiding: false,
   },
   {
-    id: "Reviewed",
+    id: "Total Reviewed",
     accessorKey: "totalReviewed",
-    header: metricHeaderRight("Reviewed"),
+    header: metricHeaderRight("Total Reviewed"),
     cell: ({ getValue }) => (
-      <div className="text-right tabular-nums">{getValue<string>()}</div>
+      <CoderOverviewMetricCell value={getValue<string>()} highlight="none" />
     ),
   },
   {
-    id: "Changes",
+    id: "Total Changes",
     accessorKey: "totalChanges",
-    header: metricHeaderRight("Changes"),
+    header: metricHeaderRight("Total Changes"),
     cell: ({ getValue }) => (
-      <div className="text-right tabular-nums">{getValue<string>()}</div>
+      <CoderOverviewMetricCell value={getValue<string>()} highlight="none" />
     ),
   },
   {
-    id: "Chg %",
+    id: "Change Rate",
     accessorKey: "changeRate",
-    header: metricHeaderRight("Chg %"),
+    header: metricHeaderRight("Change Rate"),
     cell: ({ getValue }) => (
-      <div className="text-right tabular-nums">{getValue<string>()}</div>
+      <CoderOverviewMetricCell value={getValue<string>()} highlight="percent" />
     ),
   },
   {
-    id: "2° Dx",
+    id: "Secondary Diagnosis",
     accessorKey: "secondaryDiagnosis",
-    header: metricHeaderRight("2° Dx"),
+    header: metricHeaderRight("Secondary Diagnosis"),
     cell: ({ getValue }) => (
-      <div className="text-right tabular-nums">{getValue<string>()}</div>
+      <CoderOverviewMetricCell value={getValue<string>()} highlight="none" />
     ),
   },
   {
-    id: "2° Proc",
+    id: "Secondary Procedures",
     accessorKey: "secondaryProcedures",
-    header: metricHeaderRight("2° Proc"),
+    header: metricHeaderRight("Secondary Procedures"),
     cell: ({ getValue }) => (
-      <div className="text-right tabular-nums">{getValue<string>()}</div>
+      <CoderOverviewMetricCell value={getValue<string>()} highlight="none" />
     ),
   },
 ]
-
-const METRIC_COLUMNS_BY_ROW_DIMENSION: Record<
-  CoderOverviewRowDimension,
-  ColumnDef<CoderOverviewUnifiedRow>[]
-> = {
-  drg: drgColumns,
-  "missed-opportunities": missedColumns,
-  compliance: complianceColumns,
-  quality: qualityColumns,
-}
 
 export function CoderOverviewTables() {
   const { activeDimension } = useCoderOverviewDimension()
-  const { range } = useDashboardDateRange()
-  const { visibleInstitutionKeys } = useDashboardInstitutions()
 
-  const derivedData = React.useMemo(
-    () =>
-      deriveCoderOverviewUnifiedData(CODER_OVERVIEW_UNIFIED_DATA, {
-        range,
-        visibleInstitutionKeys,
-      }),
-    [range, visibleInstitutionKeys],
-  )
-
-  const filteredData = React.useMemo(
-    () =>
-      activeDimension === "overall"
-        ? derivedData
-        : derivedData.filter((row) => row.dimension === activeDimension),
-    [activeDimension, derivedData],
-  )
-
-  const dataColumns = React.useMemo(() => {
-    const metrics =
-      activeDimension === "overall"
-        ? allCategoriesMetricColumns
-        : METRIC_COLUMNS_BY_ROW_DIMENSION[activeDimension]
-    const [coderIdColumn, ...restMetrics] = metrics
-    return [coderIdColumn, typeColumn, ...restMetrics]
-  }, [activeDimension])
-
-  return (
-    <CoderOverviewDataTable
-      key={activeDimension}
-      sectionId={CODER_OVERVIEW_TABLE_SECTION_ID}
-      initialData={filteredData}
-      dataColumns={dataColumns}
-      defaultPageSize={30}
-    />
-  )
+  switch (activeDimension) {
+    case "overall":
+      return (
+        <CoderOverviewDataTable<CoderOverviewOverallRow>
+          key={activeDimension}
+          sectionId={CODER_OVERVIEW_TABLE_SECTION_ID}
+          initialData={CODER_OVERVIEW_OVERALL_DATA}
+          dataColumns={OVERALL_COLUMNS}
+          defaultPageSize={20}
+        />
+      )
+    case "drg":
+      return (
+        <CoderOverviewDataTable<CoderOverviewDrgRow>
+          key={activeDimension}
+          sectionId={CODER_OVERVIEW_TABLE_SECTION_ID}
+          initialData={CODER_OVERVIEW_DRG_DATA}
+          dataColumns={DRG_COLUMNS}
+          defaultPageSize={20}
+        />
+      )
+    case "missed-opportunities":
+      return (
+        <CoderOverviewDataTable<CoderOverviewMissedRow>
+          key={activeDimension}
+          sectionId={CODER_OVERVIEW_TABLE_SECTION_ID}
+          initialData={CODER_OVERVIEW_MISSED_DATA}
+          dataColumns={MISSED_COLUMNS}
+          defaultPageSize={20}
+        />
+      )
+    case "compliance":
+      return (
+        <CoderOverviewDataTable<CoderOverviewComplianceRow>
+          key={activeDimension}
+          sectionId={CODER_OVERVIEW_TABLE_SECTION_ID}
+          initialData={CODER_OVERVIEW_COMPLIANCE_DATA}
+          dataColumns={COMPLIANCE_COLUMNS}
+          defaultPageSize={20}
+        />
+      )
+    case "quality":
+      return (
+        <CoderOverviewDataTable<CoderOverviewQualityRow>
+          key={activeDimension}
+          sectionId={CODER_OVERVIEW_TABLE_SECTION_ID}
+          initialData={CODER_OVERVIEW_QUALITY_DATA}
+          dataColumns={QUALITY_COLUMNS}
+          defaultPageSize={20}
+        />
+      )
+  }
 }
