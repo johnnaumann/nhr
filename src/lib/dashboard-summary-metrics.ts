@@ -40,19 +40,19 @@ const CARD_DEF = [
   },
   {
     label: "Quality enhancement cases",
-    caption: "Down vs last period after coder coaching",
+    caption: "Down vs last period",
     kind: "integer" as const,
     base: 45,
   },
   {
     label: "Compliance flags",
-    caption: "Fewer flags; legacy audit backlog cleared",
+    caption: "Fewer flags",
     kind: "integer" as const,
     base: 156,
   },
   {
     label: "Pending decisions",
-    caption: "Queue up — network & benefits changes",
+    caption: "Queue up",
     kind: "integer" as const,
     base: 72,
   },

@@ -21,8 +21,8 @@ export const CODER_TRENDS_COHORT_LABELS: Record<CoderTrendCohortKey, string> = {
 }
 
 /**
- * Coder 1–15: eight top performers, four flagged, three recently added.
- * Figures match the provided “Last 3 Months” spec (plus three extra top rows).
+ * Coder 1–12 plus two “recently added” rows: eight top performers, four flagged,
+ * and two recently added that duplicate two of the flagged coders (same metrics).
  */
 export const CODER_TRENDS_UNIFIED_DATA: CoderTrendUnifiedRow[] = [
   // Top performers — Coder 1–5 from spec (former Coder 10, 57, 63, 44, 46)
@@ -160,11 +160,11 @@ export const CODER_TRENDS_UNIFIED_DATA: CoderTrendUnifiedRow[] = [
     avgComplianceRiskSaved: "$622.73",
     missedQualityChanges: "23.9%",
   },
-  // Recently added — Coder 13–15 (three rows)
+  // Recently added — same two coders as flagged Coder 9 & Coder 11 (subset of flagged pool)
   {
     id: 13,
     cohort: "recently-added",
-    coderId: "Coder 13",
+    coderId: "Coder 9",
     totalChartsReviewed: "889",
     changeRate: "28.2%",
     avgMissedIncrease: "$1,009.00",
@@ -175,23 +175,12 @@ export const CODER_TRENDS_UNIFIED_DATA: CoderTrendUnifiedRow[] = [
   {
     id: 14,
     cohort: "recently-added",
-    coderId: "Coder 14",
-    totalChartsReviewed: "931",
-    changeRate: "6.1%",
-    avgMissedIncrease: "$973.00",
-    denialRatePotential: "4.2%",
-    avgComplianceRiskSaved: "$622.73",
-    missedQualityChanges: "23.9%",
-  },
-  {
-    id: 15,
-    cohort: "recently-added",
-    coderId: "Coder 15",
-    totalChartsReviewed: "1,021",
-    changeRate: "8.0%",
-    avgMissedIncrease: "$5,009.00",
-    denialRatePotential: "2.3%",
-    avgComplianceRiskSaved: "$673.02",
-    missedQualityChanges: "3.1%",
+    coderId: "Coder 11",
+    totalChartsReviewed: "842",
+    changeRate: "35.6%",
+    avgMissedIncrease: "$8,007.21",
+    denialRatePotential: "9.1%",
+    avgComplianceRiskSaved: "$5,721.53",
+    missedQualityChanges: "38.8%",
   },
 ]
