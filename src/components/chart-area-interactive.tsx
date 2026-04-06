@@ -183,11 +183,8 @@ export function ChartAreaInteractive() {
           Worksheets changed
         </CardTitle>
         <CardDescription>
-          <span className="hidden @[540px]/card:block">
-            Worksheet changes by site for the reporting period. Choose sites
-            in the sticky reporting header above.
-          </span>
-          <span className="@[540px]/card:hidden">By site</span>
+          Daily worksheet-change counts by hospital over the reporting period,
+          with the pie showing each hospital’s share of the total.
         </CardDescription>
       </CardHeader>
       <CardContent className={chartContentClass}>

@@ -173,7 +173,7 @@ export function ChartCoderPerformance({
     [rangeIsoDays.length]
   )
 
-  const [addFilter, setAddFilter] = React.useState("none")
+  const [addFilter, setAddFilter] = React.useState("all-sheets")
   const [detailScope, setDetailScope] = React.useState("all")
   const [visibleDetail, setVisibleDetail] = React.useState<DetailKey[]>(
     DEFAULT_VISIBLE_DETAIL
@@ -191,12 +191,7 @@ export function ChartCoderPerformance({
         : 1
 
   const detailLineData = React.useMemo(() => {
-    const scopeFactor =
-      effectiveDetailScope === "single"
-        ? 0.88
-        : effectiveDetailScope === "top5"
-          ? 0.94
-          : 1
+    const scopeFactor = effectiveDetailScope === "top5" ? 0.94 : 1
     return buildDetailLineSeries(
       rangeIsoDays,
       scale * scopeFactor * filterMultiplier * headerBlend
@@ -275,13 +270,8 @@ export function ChartCoderPerformance({
           Coder Performance
         </CardTitle>
         <CardDescription>
-          <span className="hidden @[540px]/coder-performance:block">
-            Coder detail trends and change-type mix for the reporting period
-            selected above
-          </span>
-          <span className="@[540px]/coder-performance:hidden">
-            Trends and change mix
-          </span>
+          Per-coder activity and detail over time with change-type counts for
+          the reporting period.
         </CardDescription>
       </CardHeader>
       <CardContent className={chartContentClass}>
@@ -327,7 +317,6 @@ export function ChartCoderPerformance({
                   <SelectGroup>
                     <SelectItem value="all">All coders</SelectItem>
                     <SelectItem value="top5">Top 5 by volume</SelectItem>
-                    <SelectItem value="single">Single coder (demo)</SelectItem>
                   </SelectGroup>
                 </SelectContent>
               </Select>

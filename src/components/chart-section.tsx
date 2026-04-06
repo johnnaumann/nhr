@@ -65,7 +65,7 @@ const chartConfig = {
   hospitalMod: { label: "Hospital Mod", color: "var(--chart-3)" },
   needsAddDoc: { label: "Needs Add Doc", color: "var(--chart-2)" },
   noChange: { label: "No Change", color: "var(--chart-4)" },
-  noDecision: { label: "No Decision", color: "var(--muted)" },
+  noDecision: { label: "No Decision", color: "var(--chart-neutral)" },
 } satisfies ChartConfig
 
 /** Deterministic demo volumes per day (same day index as worksheets chart). */
@@ -279,11 +279,8 @@ export function ChartSection() {
           Types of Changes
         </CardTitle>
         <CardDescription>
-          <span className="hidden @[540px]/types-chart:block">
-            Required document changes by category—counts, trend over time, and
-            share of total for the reporting period selected above
-          </span>
-          <span className="@[540px]/types-chart:hidden">By change type</span>
+          Required document changes by category over time and each category’s
+          share of the total for the selected reporting period.
         </CardDescription>
       </CardHeader>
       <CardContent className={chartContentClass}>

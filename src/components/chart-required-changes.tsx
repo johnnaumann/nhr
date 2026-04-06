@@ -289,13 +289,8 @@ export function ChartRequiredChanges() {
           What most impacted the change
         </CardTitle>
         <CardDescription>
-          <span className="hidden @[540px]/required-changes:block">
-            Required-change drivers by site, then site-level reactions—sites
-            are filtered from the sticky reporting header above.
-          </span>
-          <span className="@[540px]/required-changes:hidden">
-            Impact and reactions
-          </span>
+          Required-change impact stacked by hospital and reaction-type volumes
+          by hospital for the reporting period.
         </CardDescription>
       </CardHeader>
       <CardContent className={chartContentClass}>
