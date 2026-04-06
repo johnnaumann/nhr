@@ -8,7 +8,6 @@ import { ChartRequiredChanges } from '@/components/chart-required-changes'
 import { ChartSection } from '@/components/chart-section'
 import { DashboardDateRangeToolbar } from '@/components/dashboard-date-range-toolbar'
 import { DashboardLegendDetailProvider } from '@/components/dashboard-legend-detail-provider'
-import { DataTable } from '@/components/data-table'
 import { SectionCards } from '@/components/section-cards'
 import { SiteHeader } from '@/components/site-header'
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
@@ -61,7 +60,6 @@ export function DashboardPage() {
                 <div className={dashboardMainGutterClass}>
                   <ChartCoderPerformance />
                 </div>
-                <DataTable data={data as DocumentChange[]} />
               </div>
             </div>
             </DashboardLegendDetailProvider>
