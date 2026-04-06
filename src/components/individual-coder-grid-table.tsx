@@ -5,16 +5,13 @@ import type { ColumnDef } from "@tanstack/react-table"
 import type { IndividualCoderGridRow } from "@/lib/individual-coder-table-data"
 import { cn } from "@/lib/utils"
 
-/** Aligns label + five metrics + actions (no drag column) across individual coder tables. */
-export const INDIVIDUAL_CODER_TABLE_COLGROUP = (
+/** Label + three metrics (no actions column; use with `hideActionsColumn` on the data table). */
+export const INDIVIDUAL_CODER_ACCURACY_TABLE_COLGROUP = (
   <colgroup>
-    <col style={{ width: "14%" }} />
-    <col style={{ width: "17.1%" }} />
-    <col style={{ width: "17.1%" }} />
-    <col style={{ width: "17.1%" }} />
-    <col style={{ width: "17.1%" }} />
-    <col style={{ width: "17.1%" }} />
-    <col style={{ width: "2.75rem" }} />
+    <col style={{ width: "28%" }} />
+    <col style={{ width: "calc((100% - 28%) / 3)" }} />
+    <col style={{ width: "calc((100% - 28%) / 3)" }} />
+    <col style={{ width: "calc((100% - 28%) / 3)" }} />
   </colgroup>
 )
 
@@ -62,22 +59,18 @@ function BlankLabelHeader() {
 }
 
 /**
- * Six data columns: label (optional blank) + five right-aligned metric slots.
- * Matches {@link INDIVIDUAL_CODER_TABLE_COLGROUP} column count with actions only.
+ * Label (optional blank header) + three right-aligned metric slots (`s1`–`s3`).
+ * Use with `INDIVIDUAL_CODER_ACCURACY_TABLE_COLGROUP` (coder accuracy snapshot table).
  */
-export function buildIndividualCoderGridColumns(
-  options: {
-    emptyLabelHeader: boolean
-    h1: string
-    h2: string
-    h3: string
-    h4: string
-    h5: string
-  },
-): ColumnDef<IndividualCoderGridRow>[] {
-  const { emptyLabelHeader, h1, h2, h3, h4, h5 } = options
-  const headers = [h1, h2, h3, h4, h5] as const
-  const keys = ["s1", "s2", "s3", "s4", "s5"] as const
+export function buildIndividualCoderGridColumns(options: {
+  emptyLabelHeader: boolean
+  h1: string
+  h2: string
+  h3: string
+}): ColumnDef<IndividualCoderGridRow>[] {
+  const { emptyLabelHeader, h1, h2, h3 } = options
+  const headers = [h1, h2, h3] as const
+  const keys = ["s1", "s2", "s3"] as const
 
   return [
     {

@@ -136,7 +136,11 @@ function StaticDataRow<T extends { id: number }>({ row }: { row: Row<T> }) {
 
 function buildColumns<T extends { id: number }>(
   dataColumns: ColumnDef<T>[],
-  options?: { hideSelectColumn?: boolean; hideDragColumn?: boolean },
+  options?: {
+    hideSelectColumn?: boolean
+    hideDragColumn?: boolean
+    hideActionsColumn?: boolean
+  },
 ): ColumnDef<T>[] {
   const dragColumn: ColumnDef<T> = {
     id: "drag",
@@ -175,37 +179,39 @@ function buildColumns<T extends { id: number }>(
     enableHiding: false,
   }
 
+  const actionsColumn: ColumnDef<T> = {
+    id: "actions",
+    cell: () => (
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="ghost"
+            className={cn(
+              "flex text-muted-foreground data-[state=open]:bg-muted",
+              options?.hideDragColumn ? "size-7" : "size-8",
+            )}
+            size="icon"
+          >
+            <EllipsisVerticalIcon />
+            <span className="sr-only">Open menu</span>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-40">
+          <DropdownMenuItem>View detail</DropdownMenuItem>
+          <DropdownMenuItem>Compare selected</DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem variant="destructive">Remove from view</DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    ),
+    enableHiding: false,
+  }
+
   return [
     ...(options?.hideDragColumn ? [] : [dragColumn]),
     ...(options?.hideSelectColumn ? [] : [selectColumn]),
     ...dataColumns,
-    {
-      id: "actions",
-      cell: () => (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              className={cn(
-                "flex text-muted-foreground data-[state=open]:bg-muted",
-                options?.hideDragColumn ? "size-7" : "size-8",
-              )}
-              size="icon"
-            >
-              <EllipsisVerticalIcon />
-              <span className="sr-only">Open menu</span>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-40">
-            <DropdownMenuItem>View detail</DropdownMenuItem>
-            <DropdownMenuItem>Compare selected</DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem variant="destructive">Remove from view</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      ),
-      enableHiding: false,
-    },
+    ...(options?.hideActionsColumn ? [] : [actionsColumn]),
   ]
 }
 
@@ -228,6 +234,8 @@ export type CoderOverviewDataTableProps<T extends { id: number }> = {
   hideSelectColumn?: boolean
   /** When true, no drag handle column and rows are not reorderable. */
   hideDragColumn?: boolean
+  /** When true, no row actions (⋯) column (e.g. read-only accuracy snapshot). */
+  hideActionsColumn?: boolean
   /** Passed to {@link Table} (e.g. `table-fixed`). */
   tableClassName?: string
   /** Inserted after `<table>` (e.g. `<colgroup>` for column widths). */
@@ -253,6 +261,7 @@ export function CoderOverviewDataTable<T extends { id: number }>({
   hideFooter = false,
   hideSelectColumn = false,
   hideDragColumn = false,
+  hideActionsColumn = false,
   tableClassName,
   tableColGroup,
   tableFrameClassName,
@@ -282,8 +291,12 @@ export function CoderOverviewDataTable<T extends { id: number }>({
 
   const columns = React.useMemo(
     () =>
-      buildColumns(dataColumns, { hideSelectColumn, hideDragColumn }),
-    [dataColumns, hideDragColumn, hideSelectColumn],
+      buildColumns(dataColumns, {
+        hideSelectColumn,
+        hideDragColumn,
+        hideActionsColumn,
+      }),
+    [dataColumns, hideActionsColumn, hideDragColumn, hideSelectColumn],
   )
 
   const sensors = useSensors(

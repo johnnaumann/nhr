@@ -97,7 +97,7 @@ export function accuracyRowsToGrid(
     s1: String(r.ttlAssig),
     s2: String(r.ttlChg),
     s3: r.pctAcc,
-    s4: EM,
-    s5: EM,
+    s4: "",
+    s5: "",
   }))
 }

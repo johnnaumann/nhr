@@ -1,28 +1,18 @@
 import * as React from "react"
 import { SearchIcon } from "lucide-react"
 
+import { badgeVariants } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 
 /**
- * Count + search affordance for chart legend rows. Uses secondary surface tokens
- * like `Badge variant="secondary"` but owns layout so the shared `Badge` stays
- * for tables and generic UI only.
+ * Same row layout as `tableTypeBadgeLayoutClass` in `coder-overview-tables.tsx`
+ * (icon + label). Applied on top of `badgeVariants({ variant: "secondary" })`.
+ *
+ * Native `button`/`span` + classes avoid `Badge asChild`/`Slot` merges that were
+ * collapsing to a column layout in some builds.
  */
-/** Shell: chrome + vertical centering; inner span uses inline flex row for count + icon. */
-const legendCountPillClass =
-  "inline-flex h-6 w-fit shrink-0 items-center justify-center whitespace-nowrap rounded-4xl border border-transparent bg-secondary px-2 py-0 text-xs font-normal leading-none text-secondary-foreground tabular-nums transition-colors"
-
-/** Inline grid so count + icon stay in one row even if a parent uses `flex-col` on `button`. */
-const countIconRowStyle: React.CSSProperties = {
-  display: "inline-grid",
-  gridAutoFlow: "column",
-  gridAutoColumns: "max-content",
-  alignItems: "center",
-  columnGap: "0.375rem",
-}
-
-const legendCountPillInteractiveClass =
-  "cursor-pointer font-inherit hover:bg-secondary/80 focus-visible:border-ring focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+const legendCountChipRowClass =
+  "!inline-flex !flex-row flex-nowrap items-center justify-center gap-1 leading-none [&_svg]:inline-block [&>svg]:shrink-0"
 
 export function LegendItemCountPill({
   count,
@@ -31,38 +21,50 @@ export function LegendItemCountPill({
   className,
 }: {
   count: number
-  /** Legend row label (for accessible name when interactive). */
   itemLabel: string
   onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void
   className?: string
 }) {
   const formatted = count.toLocaleString()
 
-  const inner = (
-    <span className="whitespace-nowrap leading-none" style={countIconRowStyle}>
-      <span className="tabular-nums">{formatted}</span>
-      <SearchIcon className="size-3 shrink-0 opacity-60" aria-hidden />
-    </span>
+  const chipClass = cn(
+    badgeVariants({ variant: "secondary" }),
+    legendCountChipRowClass,
+    "!font-normal tabular-nums",
+    onClick &&
+      "cursor-pointer hover:bg-secondary/80 active:bg-secondary/90 focus-visible:outline-none",
+    className,
+  )
+
+  const content = (
+    <>
+      <span className="leading-none tabular-nums">{formatted}</span>
+      <SearchIcon className="opacity-60" aria-hidden />
+    </>
   )
 
   if (onClick) {
     return (
       <button
         type="button"
-        className={cn(
-          legendCountPillClass,
-          legendCountPillInteractiveClass,
-          className
-        )}
+        data-slot="badge"
+        data-variant="secondary"
+        className={chipClass}
         aria-label={`Open change details for ${itemLabel}, ${formatted} items`}
         onClick={onClick}
       >
-        {inner}
+        {content}
       </button>
     )
   }
 
   return (
-    <span className={cn(legendCountPillClass, className)}>{inner}</span>
+    <span
+      data-slot="badge"
+      data-variant="secondary"
+      className={chipClass}
+    >
+      {content}
+    </span>
   )
 }

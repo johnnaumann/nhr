@@ -5,8 +5,8 @@ import * as React from "react"
 import { CoderOverviewDataTable } from "@/components/coder-overview-data-table"
 import {
   buildIndividualCoderGridColumns,
+  INDIVIDUAL_CODER_ACCURACY_TABLE_COLGROUP,
   INDIVIDUAL_CODER_TABLE_CLASS,
-  INDIVIDUAL_CODER_TABLE_COLGROUP,
 } from "@/components/individual-coder-grid-table"
 import { dashboardMainGutterClass } from "@/lib/dashboard-layout"
 import {
@@ -18,11 +18,9 @@ import { cn } from "@/lib/utils"
 export const INDIVIDUAL_CODER_ACCURACY_SECTION_ID =
   "individual-coder-accuracy-table"
 
-const EM = "—"
-
 const gridTableProps = {
   tableClassName: INDIVIDUAL_CODER_TABLE_CLASS,
-  tableColGroup: INDIVIDUAL_CODER_TABLE_COLGROUP,
+  tableColGroup: INDIVIDUAL_CODER_ACCURACY_TABLE_COLGROUP,
 } as const
 
 export function IndividualCoderAccuracyTable({
@@ -55,14 +53,13 @@ export function IndividualCoderAccuracyTable({
           h1: "Ttl assig",
           h2: "Ttl chg",
           h3: "% acc",
-          h4: EM,
-          h5: EM,
         })}
         defaultPageSize={20}
         hideColumnsAndExport
         hideFooter
         hideSelectColumn
         hideDragColumn
+        hideActionsColumn
         {...gridTableProps}
       />
     </section>
